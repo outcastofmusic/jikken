@@ -1,1 +1,1 @@
-from .experiment import experiment
+from .experiment import experiment, cli_experiment
