@@ -1,8 +1,8 @@
 import json
 
 import pytest
-import click
 from click.testing import CliRunner
+
 from .mock_experiment import main_yaml, main_json, main_error, main_cli
 
 
@@ -52,3 +52,9 @@ class TestCli:
 
         }
         assert json.loads(result.output) == expected_dict
+
+    def test_cli_experiment_no_file(self):
+        runner = CliRunner()
+        result = runner.invoke(main_cli, ["./tests/exper.ymal", "experiment", "test"])
+        assert result.exception
+        assert result.output.find('does not exist') != -1

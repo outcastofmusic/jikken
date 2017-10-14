@@ -37,20 +37,19 @@ class Experiment:
         return json.dumps(self._variables)
 
 
-def experiment(experiment_definition_filepath=None):
-    def experiment_decorator(func):
-        @functools.wraps(func)
-        def setup_experiment(*args, **kwargs):
-            variables = load_experiment_from_file(
-                experiment_definition_filepath) if experiment_definition_filepath is not None else {}
-            experiment = Experiment(variables=variables, code_directory=os.getcwd())
-            print(experiment)
-            kwargs = {**kwargs, **variables}
-            return func(*args, **kwargs)
+def experiment(func=None, *, experiment_definition_filepath=None):
+    if func is None:
+        return partial(experiment, experiment_definition_filepath=experiment_definition_filepath)
 
-        return setup_experiment
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        variables = load_experiment_from_file(
+            experiment_definition_filepath) if experiment_definition_filepath is not None else {}
+        exp = Experiment(variables=variables, code_directory=os.getcwd())
+        kwargs = {**kwargs, **variables}
+        return func(*args, **kwargs)
 
-    return experiment_decorator
+    return wrapper
 
 
 def cli_experiment(func=None, *, experiment_definition_filepath=None):
@@ -63,7 +62,7 @@ def cli_experiment(func=None, *, experiment_definition_filepath=None):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         variables = load_experiment_from_file(kwargs.pop('experiment_definition'))
-        experiment = Experiment(variables=variables, code_directory=os.getcwd(), tags=kwargs.pop("tags"))
+        exp = Experiment(variables=variables, code_directory=os.getcwd(), tags=kwargs.pop("tags"))
         kwargs = {**kwargs, **variables}
         return func(*args, **kwargs)
 
