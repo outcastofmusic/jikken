@@ -1,0 +1,2 @@
+# scipio
+Lightweight experiment manager
