@@ -10,6 +10,13 @@ def get_code_commit_id(directory=None):
     result = subprocess.check_output(["git", "rev-parse", "HEAD"])
     return result.decode()
 
+def load_experiment_from_dir(experiment_dir):
+    all_variables = {}
+    for root, dirname, filename in os.walk(experiment_dir):
+        if filename.endswith("json") or filename.endswith("yaml"):
+            all_variables[root] = load_experiment_from_file(os.path.join(root,filename))
+    return all_variables
+
 
 def load_experiment_from_file(experiment_filepath):
     with open(experiment_filepath, 'rt') as file_handle:

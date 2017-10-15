@@ -5,6 +5,8 @@ import click
 from .utils import load_experiment_from_file, get_code_commit_id, get_schema, get_hash
 from types import MappingProxyType
 import os
+from io import StringIO
+from contextlib import redirect_stdout, redirect_stderr
 
 
 class Experiment:
@@ -64,6 +66,7 @@ def cli_experiment(func=None, *, experiment_definition_filepath=None):
         variables = load_experiment_from_file(kwargs.pop('experiment_definition'))
         exp = Experiment(variables=variables, code_directory=os.getcwd(), tags=kwargs.pop("tags"))
         kwargs = {**kwargs, **variables}
-        return func(*args, **kwargs)
+        stdoutput = redirect_stdout
+        results = func(*args, **kwargs)
 
     return wrapper
