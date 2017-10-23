@@ -35,7 +35,7 @@ class TestCli:
 
     def test_cli_experiment(self):
         runner = CliRunner()
-        result = runner.invoke(main_cli, ["./tests/experiment.yaml", "experiment", "test"])
+        result = runner.invoke(main_cli, ["./tests/experiment.yaml", "-t", "experiment", "-t", "test"])
         assert result.exit_code == 0
         expected_dict = {
             "training_parameters":
@@ -53,8 +53,29 @@ class TestCli:
         }
         assert json.loads(result.output) == expected_dict
 
+    def test_cli_folder_experiment(self):
+        runner = CliRunner()
+        result = runner.invoke(main_cli, ["./tests/", "-t", "experiment", "-t", "test"])
+        assert result.exit_code == 0
+        expected_dict = {
+            "training_parameters":
+                {"batch_size": 100,
+                 "algorithm": "Seq2Seq",
+                 "attention": "multiplicative"
+                 },
+            "input_parameters":
+                {'batch_size': 4,
+                 "filepath": "/data",
+                 "preprocessing": True,
+                 "transformations": ["stopwords", "tokenize", "remove_punct"]
+                 }
+
+        }
+        expected_dict = {'./tests/experiment.json': expected_dict, './tests/experiment.yaml': expected_dict}
+        assert json.loads(result.output) == expected_dict
+
     def test_cli_experiment_no_file(self):
         runner = CliRunner()
-        result = runner.invoke(main_cli, ["./tests/exper.ymal", "experiment", "test"])
+        result = runner.invoke(main_cli, ["./tests/exper.ymal", "-t", "experiment", "-t", "test"])
         assert result.exception
         assert result.output.find('does not exist') != -1

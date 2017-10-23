@@ -59,8 +59,8 @@ def cli_experiment(func=None, *, experiment_definition_filepath=None):
         return partial(cli_experiment, experiment_definition_filepath=experiment_definition_filepath)
 
     @click.command()
-    @click.argument('experiment_definition', type=click.Path(exists=True))
-    @click.argument('tags', nargs=-1)
+    @click.argument('experiment_definition', type=click.Path(exists=True, file_okay=True, dir_okay=True))
+    @click.option('--tags','-t', multiple=True)
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         variables = load_experiment_from_file(kwargs.pop('experiment_definition'))
