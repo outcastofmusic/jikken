@@ -71,7 +71,10 @@ class TestCli:
                  }
 
         }
-        expected_dict = {'./tests/experiment.json': expected_dict, './tests/experiment.yaml': expected_dict}
+        expected_dict = {'experiment.json': expected_dict,
+                         'experiment.yaml': expected_dict,
+                         'subfolder_experiment2.json': expected_dict,
+                         'subfolder_subfolder2_experiment3.json': expected_dict}
         assert json.loads(result.output) == expected_dict
 
     def test_cli_experiment_no_file(self):
