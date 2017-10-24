@@ -1,12 +1,16 @@
 import functools
-from functools import partial
+import inspect
+import io
 import json
-import click
-from .utils import load_experiment_from_file, get_code_commit_id, get_schema, get_hash
-from types import MappingProxyType
 import os
-from io import StringIO
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import redirect_stdout
+from functools import partial
+from subprocess import Popen, PIPE
+from types import MappingProxyType
+
+import click
+
+from .utils import load_experiment_from_file, get_code_commit_id, get_schema, get_hash
 
 
 class Experiment:
@@ -49,7 +53,11 @@ def experiment(func=None, *, experiment_definition_filepath=None):
             experiment_definition_filepath) if experiment_definition_filepath is not None else {}
         exp = Experiment(variables=variables, code_directory=os.getcwd())
         kwargs = {**kwargs, **variables}
-        return func(*args, **kwargs)
+        f = io.StringIO()
+        with redirect_stdout(f):
+            results = func(*args, **kwargs)
+        print(f.getvalue())
+        return results
 
     return wrapper
 
@@ -60,13 +68,21 @@ def cli_experiment(func=None, *, experiment_definition_filepath=None):
 
     @click.command()
     @click.argument('experiment_definition', type=click.Path(exists=True, file_okay=True, dir_okay=True))
-    @click.option('--tags','-t', multiple=True)
+    @click.option('--tags', '-t', multiple=True)
+    @click.option('--is_main', is_flag=True)
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        variables = load_experiment_from_file(kwargs.pop('experiment_definition'))
-        exp = Experiment(variables=variables, code_directory=os.getcwd(), tags=kwargs.pop("tags"))
-        kwargs = {**kwargs, **variables}
-        stdoutput = redirect_stdout
-        results = func(*args, **kwargs)
+        run = kwargs.pop('is_main')
+        experiment_definition = kwargs.pop('experiment_definition')
+        if run:
+            variables = load_experiment_from_file(experiment_definition)
+            exp = Experiment(variables=variables, code_directory=os.getcwd(), tags=kwargs.pop("tags"))
+            kwargs = {**kwargs, **variables}
+            return func(*args, **kwargs)
+        else:
+            cmd = ["python3", inspect.getfile(func), experiment_definition, '--is_main']
+            with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+                for line in p.stdout:
+                    print(line.decode('utf-8'))
 
     return wrapper
