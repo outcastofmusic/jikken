@@ -10,7 +10,7 @@ from types import MappingProxyType
 
 import click
 
-from .utils import load_experiment_from_file, get_code_commit_id, get_schema, get_hash
+from .utils import load_experiment_from_filepath, get_code_commit_id, get_schema, get_hash
 
 
 class Experiment:
@@ -49,7 +49,7 @@ def experiment(func=None, *, experiment_definition_filepath=None):
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        variables = load_experiment_from_file(
+        variables = load_experiment_from_filepath(
             experiment_definition_filepath) if experiment_definition_filepath is not None else {}
         exp = Experiment(variables=variables, code_directory=os.getcwd())
         kwargs = {**kwargs, **variables}
@@ -75,7 +75,7 @@ def cli_experiment(func=None, *, experiment_definition_filepath=None):
         run = kwargs.pop('is_main')
         experiment_definition = kwargs.pop('experiment_definition')
         if run:
-            variables = load_experiment_from_file(experiment_definition)
+            variables = load_experiment_from_filepath(experiment_definition)
             exp = Experiment(variables=variables, code_directory=os.getcwd(), tags=kwargs.pop("tags"))
             kwargs = {**kwargs, **variables}
             return func(*args, **kwargs)

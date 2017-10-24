@@ -15,14 +15,14 @@ def load_experiment_from_dir(experiment_dir):
     for root, dirname, filenames in os.walk(experiment_dir):
         for filename in filenames:
             if filename.endswith("json") or filename.endswith("yaml"):
-                all_variables[root+filename] = load_experiment_from_file(os.path.join(root, filename))
+                all_variables[root+filename] = load_experiment_from_filepath(os.path.join(root, filename))
     return all_variables
 
 
-def load_experiment_from_file(experiment_filepath):
+def load_experiment_from_filepath(experiment_filepath):
     if os.path.isdir(experiment_filepath):
         variables = load_experiment_from_dir(experiment_filepath)
-    elif experiment_filepath.endswith("yaml") or experiment_filepath.endswith(".json"):
+    elif experiment_filepath.endswith("yaml") or experiment_filepath.endswith("json"):
         with open(experiment_filepath, 'rt') as file_handle:
             variables = yaml.load(file_handle)
     else:
