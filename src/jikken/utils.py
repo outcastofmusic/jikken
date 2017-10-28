@@ -5,10 +5,22 @@ from hashlib import md5
 import yaml
 
 
-def get_code_commit_id(directory=None):
-    directory = os.getcwd() if directory is None else directory
-    result = subprocess.check_output(["git", "rev-parse", "HEAD"])
-    return result.decode()
+def get_code_commit_id(directory):
+    """Returns the current commit_id of the git folder or a hexdist of the directory
+       if the directory is not a git repo dir
+
+    Args:
+        directory (str): The git directory of the code
+
+    Returns:
+            (str): the commit_id
+    """
+    try:
+        result = subprocess.check_output(["git", "rev-parse", "HEAD"])
+        commit_id = result.decode()
+    except subprocess.CalledProcessError as exp:
+        commit_id = md5(directory.encode()).hexdigest()
+    return commit_id
 
 
 def load_experiment_from_dir(experiment_dir):
