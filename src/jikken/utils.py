@@ -19,11 +19,11 @@ def get_code_commit_id(directory):
         result = subprocess.check_output(["git", "rev-parse", "HEAD"])
         commit_id = result.decode()
     except subprocess.CalledProcessError as exp:
-        commit_id = md5(directory.encode()).hexdigest()
+        commit_id = get_hash(directory)
     return commit_id
 
 
-def load_experiment_from_dir(experiment_dir):
+def load_variables_from_dir(experiment_dir):
     all_variables = {}
     root_path = os.path.dirname(experiment_dir)
     for root, dirname, filenames in os.walk(experiment_dir):
@@ -31,13 +31,13 @@ def load_experiment_from_dir(experiment_dir):
             if filename.endswith("json") or filename.endswith("yaml"):
                 root_key = "_".join(root[len(root_path) + 1:].split("/"))
                 key = filename if root_key == "" else root_key + "_" + filename
-                all_variables[key] = load_experiment_from_filepath(os.path.join(root, filename))
+                all_variables[key] = load_variables_from_filepath(os.path.join(root, filename))
     return all_variables
 
 
-def load_experiment_from_filepath(experiment_filepath):
+def load_variables_from_filepath(experiment_filepath):
     if os.path.isdir(experiment_filepath):
-        variables = load_experiment_from_dir(experiment_filepath)
+        variables = load_variables_from_dir(experiment_filepath)
     elif experiment_filepath.endswith("yaml") or experiment_filepath.endswith("json"):
         with open(experiment_filepath, 'rt') as file_handle:
             variables = yaml.load(file_handle)
@@ -70,5 +70,14 @@ def get_schema(dictionary, parameters=False):
     return global_definition
 
 
-def get_hash(input):
-    return md5(input.encode()).hexdigest()
+def get_hash(input_string: str):
+    """ Return the md5 has of the input
+
+    Args:
+        input_string (str): A string that will be hash
+
+    Returns:
+        str: The md5 hash
+
+    """
+    return md5(input_string.encode()).hexdigest()

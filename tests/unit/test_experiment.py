@@ -1,7 +1,7 @@
 import os
 import copy
 import pytest
-from jikken import Experiment
+from jikken.api import Experiment
 
 
 @pytest.fixture(autouse=True, scope='module')
