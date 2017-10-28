@@ -5,6 +5,9 @@ from hashlib import md5
 import yaml
 
 
+def get_repo_origin(directory):
+   pass
+
 def get_code_commit_id(directory):
     """Returns the current commit_id of the git folder or a hexdist of the directory
        if the directory is not a git repo dir
