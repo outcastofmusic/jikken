@@ -1,5 +1,5 @@
 import click
-from .api import run_experiment
+import jikken.api as api
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -14,7 +14,7 @@ def jikken_cli():
 @click.option('--args', '-a', multiple=True)
 @click.option('--tags', '-t', multiple=True)
 def run(script_path, configuration_path, args, tags):
-    run_experiment(script_path=script_path, configuration_path=configuration_path, args=args, tags=tags)
+    api.run(script_path=script_path, configuration_path=configuration_path, args=args, tags=tags)
 
 
 if __name__ == '__main__':

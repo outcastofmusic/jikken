@@ -5,7 +5,7 @@ from .experiment import Experiment
 from .utils import load_variables_from_filepath
 
 
-def run_experiment(*, configuration_path, script_path, args=None, tags=None):
+def run(*, configuration_path, script_path, args=None, tags=None):
     """Runs an experiment script and captures the stdout and stderr
 
     Args:
@@ -28,3 +28,39 @@ def run_experiment(*, configuration_path, script_path, args=None, tags=None):
             print(line.decode('utf-8'))
         for line in p.stderr:
             print(line.decode('utf-8'))
+
+
+def add():
+    pass
+
+
+def list():
+    pass
+
+
+def update():
+    pass
+
+
+def delete():
+    pass
+
+
+def count():
+    pass
+
+
+def delete_all():
+    pass
+
+
+def get():
+    pass
+
+
+def get_best():
+    pass
+
+
+def unique_id():
+    pass

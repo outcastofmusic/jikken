@@ -1,10 +1,10 @@
-from jikken.api import run_experiment
+from jikken.api import run
 from jsonpickle import json
 
 
 def test_run_experiment_given_script_and_config(file_setup, capsys):
     conf_path, script_path, config_json = file_setup
-    run_experiment(configuration_path=conf_path, script_path=script_path)
+    run(configuration_path=conf_path, script_path=script_path)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
     assert out[2:-4] == expected_output
@@ -13,7 +13,7 @@ def test_run_experiment_given_script_and_config(file_setup, capsys):
 def test_run_experiment_with_tags(file_setup, capsys):
     conf_path, script_path, config_json = file_setup
     tags = ["test", 'hi']
-    run_experiment(configuration_path=conf_path, script_path=script_path, tags=tags)
+    run(configuration_path=conf_path, script_path=script_path, tags=tags)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
     assert out[2:-4] == expected_output
@@ -22,7 +22,7 @@ def test_run_experiment_with_tags(file_setup, capsys):
 def test_run_experiment_with_extra_args(file_setup, capsys):
     conf_path, script_path, config_json = file_setup
     extra_args = ["--var1=1", "--var2=false"]
-    run_experiment(configuration_path=conf_path, script_path=script_path, args=extra_args)
+    run(configuration_path=conf_path, script_path=script_path, args=extra_args)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
     assert out[2:-26] == expected_output
