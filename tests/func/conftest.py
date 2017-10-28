@@ -26,8 +26,14 @@ import click
 import json
 @click.command()
 @click.option('--configuration_path','-c', required=True, type=click.Path(exists=True, file_okay=True, dir_okay=True))
-def main(configuration_path):
+@click.option('--var1',default=None)
+@click.option('--var2', default=None)
+def main(configuration_path,var1,var2):
     print(open(configuration_path).readlines())
+    if var1 is not None:
+        print("var1=",var1)
+    if var2 is not None:
+        print("var2=",var2) 
     
 if __name__ == '__main__':
     main()
