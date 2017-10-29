@@ -7,7 +7,7 @@ from git import Repo
 
 
 @pytest.fixture()
-def jikken_configuration_folder(tmpdir):
+def config_folder(tmpdir):
     expected_variables = {
         "training_parameters":
             {"batch_size": 100,
@@ -33,8 +33,8 @@ def jikken_configuration_folder(tmpdir):
     return tmpdir, expected_variables, json_file, yaml_file
 
 
-def test_load_from_dir(jikken_configuration_folder):
-    conf_dir, expected_variables, json_file, yaml_file = jikken_configuration_folder
+def test_load_from_dir(config_folder):
+    conf_dir, expected_variables, json_file, yaml_file = config_folder
     split_dirs_json = json_file.strpath.split("/")
     split_dirs_yaml = yaml_file.strpath.split("/")
     expected_variables = {"_".join(split_dirs_json[-2:]): expected_variables,
@@ -46,8 +46,8 @@ def test_load_from_dir(jikken_configuration_folder):
     assert variables == expected_variables
 
 
-def test_load_from_file(jikken_configuration_folder):
-    _, expected_variables, json_file, yaml_file = jikken_configuration_folder
+def test_load_from_file(config_folder):
+    _, expected_variables, json_file, yaml_file = config_folder
     variables = utils.load_variables_from_filepath(json_file.strpath)
     assert variables == expected_variables
     variables = utils.load_variables_from_filepath(yaml_file.strpath)
@@ -55,16 +55,16 @@ def test_load_from_file(jikken_configuration_folder):
 
 
 @pytest.fixture()
-def setup_git(jikken_configuration_folder):
-    conf_dir, expected_variables, json_file, yaml_file = jikken_configuration_folder
+def setup_git(config_folder):
+    conf_dir, expected_variables, json_file, yaml_file = config_folder
     repo = Repo.init(conf_dir.strpath)
     repo.index.add([json_file.strpath, yaml_file.strpath])
     repo.index.commit("initial commit")
     return conf_dir, repo
 
 
-def test_commit_id_no_git(jikken_configuration_folder):
-    conf_dir, expected_variables, json_file, yaml_file = jikken_configuration_folder
+def test_commit_id_no_git(config_folder):
+    conf_dir, expected_variables, json_file, yaml_file = config_folder
     commit_id = utils.get_code_commit_id(conf_dir.strpath)
     assert commit_id is None
 
@@ -88,3 +88,35 @@ def test_repo_origin(setup_git):
     origin = utils.get_repo_origin(conf_dir.strpath)
     expected_url = repo.remotes.origin.url
     assert expected_url == origin
+
+def test_get_schema(config_folder):
+    conf_dir, expected_variables, json_file, yaml_file = config_folder
+    schema = utils.get_schema(expected_variables)
+    expected_schema = \
+"""input_parameters_batch_size_value
+input_parameters_filepath_value
+input_parameters_preprocessing_value
+input_parameters_transformations_value
+input_parameters_transformations_value
+input_parameters_transformations_value
+training_parameters_algorithm_value
+training_parameters_attention_value
+training_parameters_batch_size_value
+"""
+    assert schema == expected_schema
+
+def test_get_schema_parameters(config_folder):
+    conf_dir, expected_variables, json_file, yaml_file = config_folder
+    schema = utils.get_schema(expected_variables, parameters=True)
+    expected_schema = \
+"""input_parameters_batch_size_4
+input_parameters_filepath_/data
+input_parameters_preprocessing_True
+input_parameters_transformations_remove_punct
+input_parameters_transformations_stopwords
+input_parameters_transformations_tokenize
+training_parameters_algorithm_Seq2Seq
+training_parameters_attention_multiplicative
+training_parameters_batch_size_100
+"""
+    assert schema == expected_schema
