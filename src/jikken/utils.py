@@ -1,16 +1,23 @@
 import os
-import subprocess
 from hashlib import md5
 
 import yaml
+from git import Repo, InvalidGitRepositoryError
 
 
 def get_repo_origin(directory):
-   pass
+    url = None
+    try:
+        repo = Repo(directory)
+        if len(repo.remotes) > 0:
+            url = repo.remotes[0].url
+    except InvalidGitRepositoryError:
+        url = None
+    return url
+
 
 def get_code_commit_id(directory):
-    """Returns the current commit_id of the git folder or a hexdist of the directory
-       if the directory is not a git repo dir
+    """Returns the current commit_id of the git folder or None if the directory is not a git repo
 
     Args:
         directory (str): The git directory of the code
@@ -19,10 +26,10 @@ def get_code_commit_id(directory):
             (str): the commit_id
     """
     try:
-        result = subprocess.check_output(["git", "rev-parse", "HEAD"])
-        commit_id = result.decode()
-    except subprocess.CalledProcessError as exp:
-        commit_id = get_hash(directory)
+        repo = Repo(directory)
+        commit_id = repo.commit().hexsha
+    except InvalidGitRepositoryError:
+        commit_id = None
     return commit_id
 
 
