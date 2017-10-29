@@ -1,3 +1,5 @@
+import ast
+import copy
 import os
 from hashlib import md5
 
@@ -56,23 +58,23 @@ def load_variables_from_filepath(experiment_filepath):
     return variables
 
 
-def get_schema(dictionary, parameters=False):
+def get_schema(dictionary, parameters=False, delimiter="_"):
     global_definition = ""
 
     def get_key_schema(dl, definition=None):
         definition = "" if definition is None else definition
         if isinstance(dl, dict):
             for key in sorted(dl.keys()):
-                defin = definition + "_" + key if definition != "" else key
+                defin = definition + delimiter + key if definition != "" else key
                 get_key_schema(dl[key], defin)
         elif isinstance(dl, list):
             for item in sorted(dl):
                 get_key_schema(item, definition)
         else:
             if parameters:
-                final_value = definition + "_" + str(dl)
+                final_value = definition + delimiter + str(dl)
             else:
-                final_value = definition + "_value"
+                final_value = definition + delimiter + "value"
             nonlocal global_definition
             global_definition += final_value + "\n"
 
@@ -91,3 +93,19 @@ def get_hash(input_string: str):
 
     """
     return md5(input_string.encode()).hexdigest()
+
+
+def update_variables(reference_dict, update_dict):
+    new_dict = copy.copy(reference_dict)
+    update_schema = get_schema(update_dict, parameters=True, delimiter="\t")
+    for row in update_schema.split("\n")[:-1]:
+        keys = row.split("\t")
+        ref = new_dict
+        for key in keys[:-2]:
+            ref = ref[key]
+        try:
+            literal_value = ast.literal_eval(keys[-1])
+        except ValueError:
+            literal_value = keys[-1]
+        ref[keys[-2]] = literal_value
+    return new_dict
