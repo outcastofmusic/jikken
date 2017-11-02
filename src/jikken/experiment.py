@@ -1,7 +1,7 @@
 import json
 from types import MappingProxyType
 
-from .utils import get_commit_id, get_schema, get_hash, get_repo_origin, get_commit_status
+from .utils import get_commit_id, get_commit_status, get_hash, get_repo_origin, get_schema
 
 
 class Experiment:
@@ -45,10 +45,18 @@ class Experiment:
 
     @property
     def hash(self):
-        if self.commit_id is not None:
-            return self.experiment_parameters_hash + self.commit_id
-        else:
-            return self.experiment_parameters_hash
+        return self.experiment_parameters_hash
 
     def __repr__(self):
         return json.dumps(self._variables)
+
+    def to_dict(self):
+        return {
+            "variables": self._variables,
+            "commit_id": self.commit_id,
+            "dirty": self.commit_status,
+            "repo": self.git_repo_origin,
+            "tags": self.tags,
+            "parameter_hash": self.experiment_parameters_hash,
+            "schema_hash": self.hash,
+        }

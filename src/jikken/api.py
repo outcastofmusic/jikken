@@ -37,7 +37,8 @@ def add(experiment: Experiment):
     if not isinstance(experiment, Experiment):
         raise TypeError("experiment to be added should be an Experiment Object" )
     with setup_database() as db:
-        db.add(experiment)
+        index = db.add(experiment.to_dict())
+    return index
 
 
 def get():

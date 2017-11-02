@@ -75,7 +75,7 @@ def text_same_experiment_hash(jikken_experiment):
     assert exp.experiment_schema_hash == exp_same.experiment_schema_hash
 
 
-def text_experiment_diffent_hash(jikken_experiment):
+def text_experiment_different_hash(jikken_experiment):
     exp, expected_variables, _, tmpdir = jikken_experiment
     exp_diff_dir = Experiment(variables=expected_variables, code_dir=os.getcwd())
     assert exp.experiment_parameters_hash == exp_diff_dir.experiment_parameters_hash
