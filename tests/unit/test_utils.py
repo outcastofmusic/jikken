@@ -63,15 +63,33 @@ def setup_git(config_folder):
     return conf_dir, repo
 
 
-def test_commit_id_no_git(config_folder):
+def test_commit_id_no_repo(config_folder):
     conf_dir, expected_variables, json_file, yaml_file = config_folder
-    commit_id = utils.get_code_commit_id(conf_dir.strpath)
+    commit_id = utils.get_commit_id(conf_dir.strpath)
     assert commit_id is None
+
+
+def test_commit_dirt_no_repo(config_folder):
+    conf_dir, expected_variables, json_file, yaml_file = config_folder
+    commit_status = utils.get_commit_status(conf_dir.strpath)
+    assert commit_status is None
+
+
+def test_commit_dirty(setup_git):
+    conf_dir, repo = setup_git
+    commit_dirty = utils.get_commit_status(conf_dir.strpath)
+    assert commit_dirty == False
+    newfile = conf_dir.join("new_file.json")
+    with newfile.open('w') as f:
+        yaml.dump({'data': 1}, f)
+    repo.index.add([newfile.strpath])
+    commit_dirty = utils.get_commit_status(conf_dir.strpath)
+    assert commit_dirty == True
 
 
 def test_commit_id(setup_git):
     conf_dir, repo = setup_git
-    commit_id = utils.get_code_commit_id(conf_dir.strpath)
+    commit_id = utils.get_commit_id(conf_dir.strpath)
     expected_commit_id = repo.commit().hexsha
     assert expected_commit_id == commit_id
 
@@ -89,10 +107,7 @@ def test_repo_origin(setup_git):
     expected_url = repo.remotes.origin.url
     assert expected_url == origin
 
-def test_get_schema(config_folder):
-    conf_dir, expected_variables, json_file, yaml_file = config_folder
-    schema = utils.get_schema(expected_variables)
-    expected_schema = \
+expected_schema = \
 """input_parameters_batch_size_value
 input_parameters_filepath_value
 input_parameters_preprocessing_value
@@ -103,12 +118,14 @@ training_parameters_algorithm_value
 training_parameters_attention_value
 training_parameters_batch_size_value
 """
+
+def test_get_schema(config_folder):
+    conf_dir, expected_variables, json_file, yaml_file = config_folder
+    schema = utils.get_schema(expected_variables)
     assert schema == expected_schema
 
-def test_get_schema_parameters(config_folder):
-    conf_dir, expected_variables, json_file, yaml_file = config_folder
-    schema = utils.get_schema(expected_variables, parameters=True)
-    expected_schema = \
+
+expected_schema_parameters = \
 """input_parameters_batch_size_4
 input_parameters_filepath_/data
 input_parameters_preprocessing_True
@@ -119,4 +136,7 @@ training_parameters_algorithm_Seq2Seq
 training_parameters_attention_multiplicative
 training_parameters_batch_size_100
 """
-    assert schema == expected_schema
+def test_get_schema_parameters(config_folder):
+    conf_dir, expected_variables, json_file, yaml_file = config_folder
+    schema = utils.get_schema(expected_variables, parameters=True)
+    assert schema == expected_schema_parameters

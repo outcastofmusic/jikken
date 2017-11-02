@@ -1,7 +1,7 @@
 import json
 from types import MappingProxyType
 
-from .utils import get_code_commit_id, get_schema, get_hash, get_repo_origin
+from .utils import get_commit_id, get_schema, get_hash, get_repo_origin, get_commit_status
 
 
 class Experiment:
@@ -14,8 +14,9 @@ class Experiment:
             tags (list, None): An optional list of tags that describe the experiment
         """
         self._variables = variables
-        self.commit_id = get_code_commit_id(code_dir)
+        self.commit_id = get_commit_id(code_dir)
         self.git_repo_origin = get_repo_origin(code_dir)
+        self.commit_status = get_commit_status(code_dir)
         self.schema = get_schema(variables)
         self.parameters_schema = get_schema(variables, parameters=True)
         self._schema_hash = ''

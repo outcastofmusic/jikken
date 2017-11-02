@@ -2,7 +2,7 @@ import os
 from hashlib import md5
 
 import yaml
-from git import Repo, InvalidGitRepositoryError
+from git import InvalidGitRepositoryError, Repo
 
 
 def get_repo_origin(directory):
@@ -16,7 +16,17 @@ def get_repo_origin(directory):
     return url
 
 
-def get_code_commit_id(directory):
+def get_commit_status(directory):
+    status = None
+    try:
+        repo = Repo(directory)
+        status = repo.is_dirty()
+    except InvalidGitRepositoryError:
+        status = None
+    return status
+
+
+def get_commit_id(directory):
     """Returns the current commit_id of the git folder or None if the directory is not a git repo
 
     Args:
