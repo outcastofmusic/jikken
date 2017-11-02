@@ -3,6 +3,7 @@ from subprocess import Popen, PIPE
 
 from .experiment import Experiment
 from .utils import load_variables_from_filepath
+from .database import setup_database
 
 
 def run(*, configuration_path, script_path, args=None, tags=None, reference_configuration_path=None):
@@ -32,9 +33,15 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
             print(line.decode('utf-8'))
 
 
-def add():
-    pass
+def add(experiment: Experiment):
+    if not isinstance(experiment, Experiment):
+        raise TypeError("experiment to be added should be an Experiment Object" )
+    with setup_database() as db:
+        db.add(experiment)
 
+
+def get():
+    pass
 
 def list():
     pass
@@ -53,10 +60,6 @@ def count():
 
 
 def delete_all():
-    pass
-
-
-def get():
     pass
 
 

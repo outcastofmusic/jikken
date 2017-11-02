@@ -1,5 +1,5 @@
+import json
 from jikken.api import run
-from jsonpickle import json
 
 
 def test_run_experiment_given_script_and_config(file_setup, capsys):

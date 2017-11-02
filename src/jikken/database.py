@@ -1,4 +1,7 @@
-from jikken import Experiment
+from contextlib import contextmanager
+
+from .config import get_config
+from .experiment import Experiment
 
 
 class Singleton(type):
@@ -25,10 +28,10 @@ class DataBase(metaclass=Singleton):
         else:
             raise ValueError("db_type must be a 'tiny' or 'mongo'")
 
-    def add(self, experiment: Experiment):
-        self._database.add(experiment)
+    def add(self, experiment: Experiment) -> int:
+        return self._database.add(experiment)
 
-    def get(self, experiment_id):  # type (int) -> dict
+    def get(self, experiment_id: int) -> dict:  # type (int) -> dict
         """Return a experiment dict with matching id."""
         return self._database.get(experiment_id)
 
@@ -36,7 +39,7 @@ class DataBase(metaclass=Singleton):
         """Return list of experiments."""
         return self._database.list_experiments(tags, query_type)
 
-    def count(self):  # type () -> int
+    def count(self) -> int:  # type () -> int
         """Return number of experiments in db."""
         return self._database.count()
 
@@ -63,3 +66,14 @@ class DataBase(metaclass=Singleton):
     def stop_db(self):
         """Disconnect from DB."""
         self._database.stop_db()
+
+
+@contextmanager
+def setup_database():
+    try:
+        config = get_config()
+        database = DataBase(db_path=config.db_path, db_type=config.db_type)
+        yield database
+    finally:
+        database.stop_db()
+        database = None
