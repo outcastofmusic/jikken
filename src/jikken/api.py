@@ -5,7 +5,7 @@ from .experiment import Experiment
 from .utils import load_variables_from_filepath
 
 
-def run(*, configuration_path, script_path, args=None, tags=None):
+def run(*, configuration_path, script_path, args=None, tags=None, reference_configuration_path=None):
     """Runs an experiment script and captures the stdout and stderr
 
     Args:
@@ -14,7 +14,9 @@ def run(*, configuration_path, script_path, args=None, tags=None):
         args (list): Optional, list of strings with extra args not included in the configuration_path to
              be passed to the script. Expected form is ["arg1=x", "arg2=y", "arg3=z"]
         tags (list): Optional, list of strings with tags that describe the experiment
-
+        reference_configuration_path (str): Optional a path for a reference configuration. If it is given
+            the reference_configuration_path defines the experiment and the configuration_path only requires
+            the updated variables
     """
     variables = load_variables_from_filepath(configuration_path)
     args = [] if args is None else [argument.split("=") for argument in args]

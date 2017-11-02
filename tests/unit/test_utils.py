@@ -107,8 +107,9 @@ def test_repo_origin(setup_git):
     expected_url = repo.remotes.origin.url
     assert expected_url == origin
 
+
 expected_schema = \
-"""input_parameters_batch_size_value
+        """input_parameters_batch_size_value
 input_parameters_filepath_value
 input_parameters_preprocessing_value
 input_parameters_transformations_value
@@ -119,6 +120,7 @@ training_parameters_attention_value
 training_parameters_batch_size_value
 """
 
+
 def test_get_schema(config_folder):
     conf_dir, expected_variables, json_file, yaml_file = config_folder
     schema = utils.get_schema(expected_variables)
@@ -126,7 +128,7 @@ def test_get_schema(config_folder):
 
 
 expected_schema_parameters = \
-"""input_parameters_batch_size_4
+        """input_parameters_batch_size_4
 input_parameters_filepath_/data
 input_parameters_preprocessing_True
 input_parameters_transformations_remove_punct
@@ -140,3 +142,49 @@ def test_get_schema_parameters(config_folder):
     conf_dir, expected_variables, json_file, yaml_file = config_folder
     schema = utils.get_schema(expected_variables, parameters=True)
     assert schema == expected_schema_parameters
+
+
+def test_update_variables():
+    reference_variables = {
+        "global_seed": 5,
+        "training_parameters":
+            {"batch_size": 100,
+             "algorithm": "Seq2Seq",
+             "attention": "multiplicative"
+             },
+        "input_parameters":
+            {'batch_size': 4,
+             "filepath": "/data",
+             "preprocessing": True,
+             "transformations": ["stopwords", "tokenize", "remove_punct"]
+             }
+    }
+
+    new_variables = {
+        "global_seed": 1,
+        "training_parameters": {
+            "algorithm": "Conv2d"
+        },
+        "input_parameters": {
+            "batch_size": 8
+        }
+    }
+
+    actual_variables = utils.update_variables(reference_dict=reference_variables, update_dict=new_variables)
+
+    expected_variables = {
+        "global_seed": 1,
+        "training_parameters":
+            {"batch_size": 100,
+             "algorithm": "Conv2d",
+             "attention": "multiplicative"
+             },
+        "input_parameters":
+            {'batch_size': 8,
+             "filepath": "/data",
+             "preprocessing": True,
+             "transformations": ["stopwords", "tokenize", "remove_punct"]
+             }
+    }
+
+    assert actual_variables == expected_variables
