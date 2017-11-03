@@ -22,13 +22,16 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
     """
     variables = load_variables_from_filepath(configuration_path)
     args = [] if args is None else [argument.split("=") for argument in args]
-    extra_args = [x for argument in args for x in argument]
+    extra_kwargs = [x for argument in args for x in argument]
     extra_vars = {argument[0]: argument[1] for argument in args}
     variables = {**variables, **extra_vars}
     exp = Experiment(variables=variables, code_dir=os.path.dirname(script_path), tags=tags)
     with setup_database() as db:
         exp_id = db.add(exp)
-        cmd = ["python3", script_path, "-c", configuration_path] + extra_args
+        if script_path.endswith(".py"):
+            cmd = ["python3", script_path, "-c", configuration_path] + extra_kwargs
+        elif script_path.endswith(".sh"):
+            cmd = ["bash", script_path, configuration_path] + extra_kwargs
         error_found = False
         try:
             with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:

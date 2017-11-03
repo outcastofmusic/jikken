@@ -80,7 +80,7 @@ class TinyDB:  # noqa : E801
         elif mode == 'set':
             self._db.update(set(key, value), eids=[experiment_id])
         elif mode == 'add' and isinstance(key, list):
-            self._db.update(set_inner(key, value), eids=[experiment_id])
+            self._db.update(add_inner(key, value), eids=[experiment_id])
         elif mode == 'add':
             self._db.update(add(key, value), eids=[experiment_id])
         else:
@@ -93,13 +93,6 @@ class TinyDB:  # noqa : E801
     def delete_all(self):
         """Remove all experiments from db."""
         self._db.purge()
-
-    def unique_id(self):  # type () -> int
-        """Return an integer that does not exist in the db."""
-        i = 1
-        while self._db.contains(eids=[i]):
-            i += 1
-        return i
 
     def stop_db(self):
         """Disconnect from DB."""

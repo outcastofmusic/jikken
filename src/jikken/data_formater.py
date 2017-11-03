@@ -2,8 +2,8 @@ import pprint
 
 
 def print_experiment(experiment_dict, stdout=False, stderr=False, variables=True, git=True, monitored=True):
-    header = 100 * "-"
-    print(header)
+    banner = 100 * "-"
+    print(banner)
     db_info = "id: {} | status: {} | tags {}".format(
         experiment_dict['id'],
         experiment_dict['status'],
@@ -28,5 +28,4 @@ def print_experiment(experiment_dict, stdout=False, stderr=False, variables=True
         print("stdout".center(100), mini_banner.center(100), experiment_dict['stdout'], sep="\n")
     if stderr:
         print("stderr".center(100), mini_banner.center(100), experiment_dict['stderr'], sep="\n")
-    footer = 100 * "-"
-    print(footer)
+    print(banner)

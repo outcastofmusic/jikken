@@ -9,7 +9,7 @@ from keras import optimizers
 from keras.callbacks import LambdaCallback
 from keras.datasets import imdb
 
-jikken_callback = LambdaCallback(on_batch_end=lambda epoch, logs: log_value('loss', logs['loss']))
+jikken_callback = LambdaCallback(on_epoch_end=lambda epoch, logs: log_value('val_loss', logs.get('val_loss', np.nan)))
 
 
 @click.command()
@@ -59,10 +59,7 @@ def train(configuration_path):
                         validation_data=(x_val, y_val),
                         callbacks=[jikken_callback]
                         )
-    for val_loss in history.history['val_loss']:
-        log_value('val_loss', val_loss)
-
-    log_value('final_val_loss', val_loss)
+    log_value('final_val_loss', history.history['val_loss'][-1])
 
 
 if __name__ == '__main__':

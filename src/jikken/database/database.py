@@ -83,10 +83,6 @@ class DataBase(metaclass=Singleton):
         """Remove all experiments from db."""
         self._database.delete_all()
 
-    def unique_id(self):  # type () -> int
-        """Return an integer that does not exist in the db."""
-        return self._database.unique_id()
-
     def stop_db(self):
         """Disconnect from DB."""
         self._database.stop_db()
