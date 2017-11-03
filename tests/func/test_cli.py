@@ -24,35 +24,49 @@ def list_stub(*args, **kwargs):
         range(2)]
 
 
+def list_tags_stub():
+    return {"tag1", "tag2"}
+
+
+def test_jikken_cli_list_tags(mocker):
+    mocker.patch.object(jikken.cli.api, 'list_tags', new=list_tags_stub)
+    runner = CliRunner()
+    result = runner.invoke(jikken.cli.jikken_cli, ["list_tags"])
+    assert result.exit_code == 0
+    tags = result.output.split("\n")[1]
+    expected_tags = list_tags_stub()
+    for tag in expected_tags:
+        assert tag in tags
+
 def test_jikken_cli_list(mocker):
     mocker.patch.object(jikken.cli.api, 'list', new=list_stub)
     runner = CliRunner()
     result = runner.invoke(jikken.cli.jikken_cli, ['list', "--stdout", "--stderr", "--no-monitored", "--no-git"])
     expected_results = \
-"""----------------------------------------------------------------------------------------------------
-id: 0 | status: done | tags ['hi']
-                                             variables                                              
-                                             ----------                                             
-{'index': 0}
-                                               stdout                                               
-                                             ----------                                             
-hi
-                                               stderr                                               
-                                             ----------                                             
-bye
-----------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-id: 1 | status: done | tags ['hi']
-                                             variables                                              
-                                             ----------                                             
-{'index': 1}
-                                               stdout                                               
-                                             ----------                                             
-hi
-                                               stderr                                               
-                                             ----------                                             
-bye
-----------------------------------------------------------------------------------------------------
-"""
-    assert result.output == expected_results
+        """----------------------------------------------------------------------------------------------------
+        id: 0 | status: done | tags ['hi']
+                                                     variables                                              
+                                                     ----------                                             
+        {'index': 0}
+                                                       stdout                                               
+                                                     ----------                                             
+        hi
+                                                       stderr                                               
+                                                     ----------                                             
+        bye
+        ----------------------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------------------
+        id: 1 | status: done | tags ['hi']
+                                                     variables                                              
+                                                     ----------                                             
+        {'index': 1}
+                                                       stdout                                               
+                                                     ----------                                             
+        hi
+                                                       stderr                                               
+                                                     ----------                                             
+        bye
+        ----------------------------------------------------------------------------------------------------
+        """
+    assert result.output.replace(" ", "") == expected_results.replace(" ", "")
     assert result.exit_code == 0

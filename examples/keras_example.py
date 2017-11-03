@@ -9,6 +9,7 @@ from keras import optimizers
 from keras.callbacks import LambdaCallback
 from keras.datasets import imdb
 
+# add a callback to jikken for val_loss using LambdaCallback
 jikken_callback = LambdaCallback(on_epoch_end=lambda epoch, logs: log_value('val_loss', logs.get('val_loss', np.nan)))
 
 

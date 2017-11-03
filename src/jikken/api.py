@@ -36,16 +36,20 @@ def run(*, configuration_path: str, script_path: str, args: list = None, tags: l
         elif script_path.endswith(".sh"):
             cmd = ["bash", script_path, configuration_path] + extra_kwargs
         error_found = False
-        try:
-            with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+        with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+            try:
                 db.update_status(exp_id, 'running')
                 for line in p.stdout:
                     print_out = line.decode('utf-8')
                     db.update_std(exp_id, print_out, std_type='stdout')
                     print(print_out)
+            except KeyboardInterrupt:
+                db.update_status(exp_id, 'interrupted')
+                print("Experiment Interrupted")
+                error_found = True
+            finally:
                 for line in p.stderr:
                     print_out = line.decode('utf-8')
-
                     monitored = capture_value(print_out)
                     if monitored is not None:
                         db.update_monitored(exp_id, monitored[0], monitored[1])
@@ -56,14 +60,9 @@ def run(*, configuration_path: str, script_path: str, args: list = None, tags: l
                         error_found = True
                         db.update_status(exp_id, 'error')
                         print("Experiment Failed")
-        except KeyboardInterrupt:
-            db.update_status(exp_id, 'interrupted')
-            print("Experiment Interrupted")
-            error_found = True
-        finally:
-            if not error_found:
-                db.update_status(exp_id, 'completed')
-                print("Experiment Done")
+                if not error_found:
+                    db.update_status(exp_id, 'completed')
+                    print("Experiment Done")
 
 
 def get(_id: int) -> dict:
@@ -105,9 +104,15 @@ def update():
     pass
 
 
-def list_tags():
-    # TODO list all tags in db
-    pass
+def list_tags() -> set:
+    """Return all tags in the db
+    Returns:
+            set: A set of all tags found in the db
+    """
+
+    with setup_database() as db:
+        results = db.list_experiments()
+    return set({tag for exp in results for tag in exp['tags']})
 
 
 def delete(_id: int) -> None:
