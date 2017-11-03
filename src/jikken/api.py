@@ -25,12 +25,18 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
     extra_vars = {argument[0]: argument[1] for argument in args}
     variables = {**variables, **extra_vars}
     exp = Experiment(variables=variables, code_dir=os.path.dirname(script_path), tags=tags)
-    cmd = ["python3", script_path, "-c", configuration_path] + extra_args
-    with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
-        for line in p.stdout:
-            print(line.decode('utf-8'))
-        for line in p.stderr:
-            print(line.decode('utf-8'))
+    with setup_database() as db:
+        exp_id = db.add(exp)
+        cmd = ["python3", script_path, "-c", configuration_path] + extra_args
+        with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+            for line in p.stdout:
+                print_out = line.decode('utf-8')
+                db.update_std(exp_id, print_out, std_type='stdout')
+                print(print_out)
+            for line in p.stderr:
+                print_out = line.decode('utf-8')
+                db.update_std(exp_id, print_out, std_type='stderr')
+                print(print_out)
 
 
 def add(experiment: Experiment):

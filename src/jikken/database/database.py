@@ -21,8 +21,8 @@ class Singleton(type):
 class DataBase(metaclass=Singleton):
     def __init__(self, db_path, db_type):
         if db_type == 'tiny':
-            import database.db_tinydb
-            self._database = database.db_tinydb.TinyDB.start_db(db_path)
+            from .db_tinydb import TinyDB
+            self._database = TinyDB.start_db(db_path)
         elif db_type == 'mongo':
             raise NotImplementedError('mongo not implemented yet')
             # import tasks.tasksdb_pymongo

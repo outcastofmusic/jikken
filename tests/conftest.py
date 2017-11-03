@@ -51,7 +51,7 @@ def file_setup(tmpdir):
     return conf_file.strpath, script_file.strpath, TEST_CONFIG_JSON
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def jikken_db_session(tmpdir_factory):
     """Connect to db before tests, disconnect after."""
     temp_dir = tmpdir_factory.mktemp('temp')

@@ -1,7 +1,6 @@
 import click
 import jikken.api as api
 
-
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(version='0.1.0')
 def jikken_cli():
