@@ -22,11 +22,10 @@ def write_default_config(config_file):
 
 def get_config():
     parser = ConfigParser()
-    config_path = DEFAULT_PATH
-    config_file = os.path.expanduser(config_path)
+    config_file = os.path.expanduser(DEFAULT_PATH)
     if not os.path.exists(config_file):
         write_default_config(config_file=config_file)
     parser.read(config_file)
-    db_path = parser['db']['path']
+    db_path = os.path.expanduser(parser['db']['path'])
     db_type = parser['db']['type']
     return JikkenConfig(db_type=db_type, db_path=db_path)

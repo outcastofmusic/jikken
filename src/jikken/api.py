@@ -37,11 +37,12 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
                 print(print_out)
             for line in p.stderr:
                 print_out = line.decode('utf-8')
-                db.update_std(exp_id, print_out, std_type='stderr')
                 monitored = capture_value(print_out)
                 if monitored is not None:
                     db.update_monitored(exp_id, monitored[0], monitored[1])
-                print(print_out)
+                else:
+                    db.update_std(exp_id, print_out, std_type='stderr')
+                    print(print_out)
         db.update_status(exp_id, 'completed')
         print("Experiment Done")
 
