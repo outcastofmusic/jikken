@@ -2,6 +2,7 @@
 import click
 import numpy as np
 import yaml
+from jikken.monitor import log_value
 from keras import layers
 from keras import models
 from keras import optimizers
@@ -56,6 +57,10 @@ def train(configuration_path):
                         epochs=config['epochs'],
                         batch_size=config['batch_size'],
                         validation_data=(x_val, y_val))
+    for val_loss in history.history['val_loss']:
+        log_value('val_loss', val_loss)
+
+    log_value('final_val_loss', val_loss)
 
 
 if __name__ == '__main__':

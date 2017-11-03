@@ -68,6 +68,13 @@ class DataBase(metaclass=Singleton):
         else:
             raise ValueError("status: {} not correct".format(status))
 
+    def update_monitored(self, experiment_id, key, value):
+        exp = self._database.get(experiment_id)
+        if key not in exp:
+            self._database.update_key(experiment_id, [value], key, mode='set')
+        else:
+            self._database.update_key(experiment_id, [value], key, mode='add')
+
     def delete(self, experiment_id):  # type (int) -> ()
         """Remove a experiment from db with given experiment_id."""
         self._database.delete(experiment_id)

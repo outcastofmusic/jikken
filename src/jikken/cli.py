@@ -45,5 +45,18 @@ def count(tags, query):
     print("number of items: {}".format(count))
 
 
+def abort_if_false(ctx, param, value):
+    if not value:
+        ctx.abort()
+
+
+@jikken_cli.command(help="Clear database of all experiments")
+@click.option('--yes', is_flag=True, callback=abort_if_false,
+              expose_value=False,
+              prompt='Are you sure you want to drop the db?')
+def delete_all():
+    api.delete_all()
+
+
 if __name__ == '__main__':
     jikken_cli()
