@@ -1,9 +1,9 @@
 import os
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
+from .database import setup_database
 from .experiment import Experiment
 from .utils import load_variables_from_filepath
-from .database import setup_database
 
 
 def run(*, configuration_path, script_path, args=None, tags=None, reference_configuration_path=None):
@@ -35,14 +35,17 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
 
 def add(experiment: Experiment):
     if not isinstance(experiment, Experiment):
-        raise TypeError("experiment to be added should be an Experiment Object" )
+        raise TypeError("experiment to be added should be an Experiment Object")
     with setup_database() as db:
         index = db.add(experiment.to_dict())
     return index
 
 
-def get():
-    pass
+def get(_id: int):
+    with setup_database() as db:
+        experiment = db.get(_id)
+    return experiment
+
 
 def list():
     pass

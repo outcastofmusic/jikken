@@ -12,6 +12,7 @@ class Singleton(type):
     def __call__(self, *args, **kwargs):
         if self.__instance is None:
             self.__instance = super(Singleton, self).__call__(*args, **kwargs)
+            return self.__instance
         else:
             return self.__instance
 
@@ -70,10 +71,11 @@ class DataBase(metaclass=Singleton):
 
 @contextmanager
 def setup_database():
+    _database = None
     try:
         config = get_config()
-        database = DataBase(db_path=config.db_path, db_type=config.db_type)
-        yield database
+        _database = DataBase(db_path=config.db_path, db_type=config.db_type)
+        yield _database
     finally:
-        database.stop_db()
-        database = None
+        _database.stop_db()
+        _database = None
