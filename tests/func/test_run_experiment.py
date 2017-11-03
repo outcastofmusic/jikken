@@ -19,7 +19,8 @@ def test_run_experiment_given_script_and_config(file_setup, capsys, jikken_db, m
     run(configuration_path=conf_path, script_path=script_path)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
-    assert out[2:-4] == expected_output
+    assert out[2:-20] == expected_output
+    assert out[-17:] == '\nExperiment Done\n'
 
 
 def test_run_experiment_with_tags(file_setup, capsys, jikken_db, mocker):
@@ -29,7 +30,7 @@ def test_run_experiment_with_tags(file_setup, capsys, jikken_db, mocker):
     run(configuration_path=conf_path, script_path=script_path, tags=tags)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
-    assert out[2:-4] == expected_output
+    assert out[2:-20] == expected_output
 
 
 def test_run_experiment_with_extra_args(file_setup, capsys, jikken_db, mocker):
@@ -39,9 +40,9 @@ def test_run_experiment_with_extra_args(file_setup, capsys, jikken_db, mocker):
     run(configuration_path=conf_path, script_path=script_path, args=extra_args)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
-    assert out[2:-26] == expected_output
-    assert out[-22:-15] == "var1= 1"
-    assert out[-13:-2] == "var2= false"
+    assert out[2:-42] == expected_output
+    assert out[-38:-31] == "var1= 1"
+    assert out[-29:-18] == "var2= false"
 
 
 def test_run_experiment_and_experiment_is_added_to_database(file_setup, jikken_db, capsys, mocker):

@@ -51,8 +51,8 @@ def load_variables_from_dir(experiment_dir):
     for root, dirname, filenames in os.walk(experiment_dir):
         for filename in filenames:
             if filename.endswith("json") or filename.endswith("yaml"):
-                root_key = "_".join(root[len(root_path) + 1:].split("/"))
-                key = filename if root_key == "" else root_key + "_" + filename
+                root_key = "/".join(root[len(root_path) + 1:].split("/"))
+                key = filename if root_key == "" else root_key + "/" + filename
                 all_variables[key] = load_variables_from_filepath(os.path.join(root, filename))
     return all_variables
 

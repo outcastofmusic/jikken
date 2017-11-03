@@ -37,8 +37,8 @@ def test_load_from_dir(config_folder):
     conf_dir, expected_variables, json_file, yaml_file = config_folder
     split_dirs_json = json_file.strpath.split("/")
     split_dirs_yaml = yaml_file.strpath.split("/")
-    expected_variables = {"_".join(split_dirs_json[-2:]): expected_variables,
-                          "_".join(split_dirs_yaml[-3:]): expected_variables
+    expected_variables = {"/".join(split_dirs_json[-2:]): expected_variables,
+                          "/".join(split_dirs_yaml[-3:]): expected_variables
                           }
     variables = utils.load_variables_from_dir(conf_dir.strpath)
     assert variables == expected_variables
