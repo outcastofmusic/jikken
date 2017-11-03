@@ -62,5 +62,6 @@ class Experiment:
             "id": None,
             "stdout": "",
             "stderr": "",
-            "status": "created"
+            "status": "created",
+            "monitored": {}
         }

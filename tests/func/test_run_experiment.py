@@ -31,6 +31,7 @@ def test_run_experiment_with_tags(file_setup, capsys, jikken_db, mocker):
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
     assert out[2:-20] == expected_output
+    assert out[-17:] == '\nExperiment Done\n'
 
 
 def test_run_experiment_with_extra_args(file_setup, capsys, jikken_db, mocker):
@@ -43,6 +44,16 @@ def test_run_experiment_with_extra_args(file_setup, capsys, jikken_db, mocker):
     assert out[2:-42] == expected_output
     assert out[-38:-31] == "var1= 1"
     assert out[-29:-18] == "var2= false"
+    assert out[-17:] == '\nExperiment Done\n'
+
+
+def test_run_experiment_with_error(file_setup, capsys, jikken_db, mocker):
+    mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
+    conf_path, script_path, config_json = file_setup
+    extra_args = ["--error=True"]
+    run(configuration_path=conf_path, script_path=script_path, args=extra_args)
+    out, err = capsys.readouterr()
+    assert out[-19:] == '\nExperiment Failed\n'
 
 
 def test_run_experiment_and_experiment_is_added_to_database(file_setup, jikken_db, capsys, mocker):

@@ -1,6 +1,6 @@
 import click
 import jikken.api as api
-import tabulate
+from jikken import print_experiment
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -24,14 +24,12 @@ def run(script_path, configuration_path, args, tags):
 @click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
 @click.option('--stdout/--no-stdout', default=False)
 @click.option('--stderr/--no-stderr', default=False)
-def list(ids, tags, query, stdout, stderr):
+@click.option('--var/--no-var', default=True)
+@click.option('--git/--no-git', default=True)
+def list(ids, tags, query, stdout, stderr, var, git):
     results = api.list(ids=ids, tags=tags, query_type=query)
     for res in results:
-        if not stdout:
-            del res["stdout"]
-        if not stderr:
-            del res["stderr"]
-    print(tabulate.tabulate(results, headers="keys"))
+        print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git)
 
 
 @jikken_cli.command(help="Return number of experiments in database")

@@ -30,37 +30,34 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
         exp_id = db.add(exp)
         cmd = ["python3", script_path, "-c", configuration_path] + extra_args
         error_found = False
-        with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
-            db.update_status(exp_id, 'running')
-            for line in p.stdout:
-                print_out = line.decode('utf-8')
-                db.update_std(exp_id, print_out, std_type='stdout')
-                print(print_out)
-            for line in p.stderr:
-                print_out = line.decode('utf-8')
-
-                monitored = capture_value(print_out)
-                if monitored is not None:
-                    db.update_monitored(exp_id, monitored[0], monitored[1])
-                else:
-                    db.update_std(exp_id, print_out, std_type='stderr')
+        try:
+            with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+                db.update_status(exp_id, 'running')
+                for line in p.stdout:
+                    print_out = line.decode('utf-8')
+                    db.update_std(exp_id, print_out, std_type='stdout')
                     print(print_out)
-                if 'Error' in print_out:
-                    error_found = True
-                    db.update_status(exp_id, 'error')
-        if not error_found:
-            db.update_status(exp_id, 'completed')
-            print("Experiment Done")
-        else:
-            print("Experiment Failed")
+                for line in p.stderr:
+                    print_out = line.decode('utf-8')
 
-
-def add(experiment: Experiment):
-    if not isinstance(experiment, Experiment):
-        raise TypeError("experiment to be added should be an Experiment Object")
-    with setup_database() as db:
-        index = db.add(experiment.to_dict())
-    return index
+                    monitored = capture_value(print_out)
+                    if monitored is not None:
+                        db.update_monitored(exp_id, monitored[0], monitored[1])
+                    else:
+                        db.update_std(exp_id, print_out, std_type='stderr')
+                        print(print_out)
+                    if 'Error' in print_out:
+                        error_found = True
+                        db.update_status(exp_id, 'error')
+                        print("Experiment Failed")
+        except KeyboardInterrupt:
+            db.update_status(exp_id, 'interrupted')
+            print("Experiment Interrupted")
+            error_found = True
+        finally:
+            if not error_found:
+                db.update_status(exp_id, 'completed')
+                print("Experiment Done")
 
 
 def get(_id: int):

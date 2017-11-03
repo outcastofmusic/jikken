@@ -2,6 +2,32 @@ import tinydb
 from tinydb.operations import add, set
 
 
+def add_inner(fields, n):
+    """
+    Add n to a given field in the document.
+    """
+
+    def transform(doc):
+        for field in fields[:-1]:
+            ref = doc[field]
+        ref[fields[-1]] += n
+
+    return transform
+
+
+def set_inner(fields, n):
+    """
+    Set n from a given field in the document.
+    """
+
+    def transform(doc):
+        for field in fields[:-1]:
+            ref = doc[field]
+        ref[fields[-1]] = n
+
+    return transform
+
+
 class TinyDB:  # noqa : E801
     """Wrapper class for TinyDB.
 
@@ -49,8 +75,12 @@ class TinyDB:  # noqa : E801
         self._db.update(experiment, eids=[experiment_id])
 
     def update_key(self, experiment_id, value, key, mode='set'):
-        if mode == 'set':
+        if mode == 'set' and isinstance(key, list):
+            self._db.update(set_inner(key, value), eids=[experiment_id])
+        elif mode == 'set':
             self._db.update(set(key, value), eids=[experiment_id])
+        elif mode == 'add' and isinstance(key, list):
+            self._db.update(set_inner(key, value), eids=[experiment_id])
         elif mode == 'add':
             self._db.update(add(key, value), eids=[experiment_id])
         else:

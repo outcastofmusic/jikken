@@ -35,7 +35,6 @@ def main(configuration_path,var1,var2):
         print("var1=",var1)
     if var2 is not None:
         print("var2=",var2) 
-    
 if __name__ == '__main__':
     main()
 """

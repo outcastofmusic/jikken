@@ -1,21 +1,5 @@
 import pytest
-from jikken.database import DataBase
 from jikken.experiment import Experiment
-
-
-# @pytest.fixture(scope='session')
-# def jikken_db_session(tmpdir_factory):
-#     """Connect to db before tests, disconnect after."""
-#     temp_dir = tmpdir_factory.mktemp('temp')
-#     test_database = DataBase(db_path=str(temp_dir), db_type='tiny')
-#     yield test_database
-#     test_database.stop_db()
-#
-#
-# @pytest.fixture()
-# def jikken_db(jikken_db_session):
-#     yield jikken_db_session
-#     jikken_db_session.delete_all()
 
 
 @pytest.fixture()
@@ -134,13 +118,63 @@ def test_list_experiments(add_multiple_experiments):
     assert len(experiments) == 2
 
 
-def test_update_std_experiments(add_one_experiment):
+std_options = [
+    # std_type
+    ("stdout"),
+    ("stderr"),
+]
+
+
+@pytest.mark.parametrize("std_type", std_options)
+def test_update_std_experiments(std_type, add_one_experiment):
     # Given a db with one experiment
     db, _id = add_one_experiment
-    # When I update the stdoutput
+    # When I update the stdout or stderr
     new_string = "this is a string"
-    db.update_std(_id, new_string, "stdout")
+    db.update_std(_id, new_string, std_type)
     # And I retrieve the experiment
     exp = db.get(_id)
-    # Then the stdout key is updated
-    assert exp['stdout'] == new_string
+    # Then the stdout or stderr key is updated
+    assert exp[std_type] == new_string
+
+
+def test_update_std_raises(add_one_experiment):
+    # Given a db with one experiment
+    db, _id = add_one_experiment
+    # When I update the std with the wrong stream type
+    new_string = "this is a string"
+    # Then the db raises a Value error
+    with pytest.raises(ValueError):
+        db.update_std(_id, new_string, 'error')
+
+
+status_options = [
+    # status
+    ('created'),
+    ('running'),
+    ('completed'),
+    ('error')
+
+]
+
+
+@pytest.mark.parametrize("status", status_options)
+def test_update_status_experiments(status, add_one_experiment):
+    # Given a db with one experiment
+    db, _id = add_one_experiment
+    # When I update the status
+    db.update_status(_id, status)
+    # And I retrieve the experiment
+    exp = db.get(_id)
+    # Then status is updated
+    assert exp['status'] == status
+
+
+def test_update_status_raises(add_one_experiment):
+    # Given a db with 1 experiment
+    db, _id = add_one_experiment
+    # When I update the status
+    status = "not a status"
+    # Then db raises an error
+    with pytest.raises(ValueError):
+        db.update_status(_id, status)

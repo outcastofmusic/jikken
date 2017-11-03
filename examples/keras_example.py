@@ -6,7 +6,10 @@ from jikken.monitor import log_value
 from keras import layers
 from keras import models
 from keras import optimizers
+from keras.callbacks import LambdaCallback
 from keras.datasets import imdb
+
+jikken_callback = LambdaCallback(on_batch_end=lambda epoch, logs: log_value('loss', logs['loss']))
 
 
 @click.command()
@@ -38,13 +41,10 @@ def train(configuration_path):
     model.add(layers.Dense(16, activation='relu'))
     model.add(layers.Dense(1, activation='sigmoid'))
 
-    model.compile(optimizer='rmsprop',
-                  loss='binary_crossentropy',
-                  metrics=['accuracy'])
-
     model.compile(optimizer=optimizers.RMSprop(lr=config['learning_rate']),
                   loss='binary_crossentropy',
-                  metrics=['accuracy'])
+                  metrics=['accuracy']
+                  )
 
     x_val = x_train[:config['valid_size']]
     partial_x_train = x_train[config['valid_size']:]
@@ -56,7 +56,9 @@ def train(configuration_path):
                         partial_y_train,
                         epochs=config['epochs'],
                         batch_size=config['batch_size'],
-                        validation_data=(x_val, y_val))
+                        validation_data=(x_val, y_val),
+                        callbacks=[jikken_callback]
+                        )
     for val_loss in history.history['val_loss']:
         log_value('val_loss', val_loss)
 
