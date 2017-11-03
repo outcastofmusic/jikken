@@ -101,5 +101,5 @@ def get_best():
     pass
 
 
-def unique_id():
+def resume():
     pass
