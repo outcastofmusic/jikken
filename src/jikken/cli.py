@@ -1,5 +1,7 @@
 import click
 import jikken.api as api
+import tabulate
+
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(version='0.1.0')
@@ -14,6 +16,33 @@ def jikken_cli():
 @click.option('--tags', '-t', multiple=True)
 def run(script_path, configuration_path, args, tags):
     api.run(script_path=script_path, configuration_path=configuration_path, args=args, tags=tags)
+
+
+@jikken_cli.command(help="list experiments")
+@click.option('--ids', '-a', multiple=True)
+@click.option('--tags', '-t', multiple=True)
+@click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
+@click.option('--stdout/--no-stdout', default=False)
+@click.option('--stderr/--no-stderr', default=False)
+def list(ids, tags, query, stdout, stderr):
+    results = api.list(ids=ids, tags=tags, query_type=query)
+    for res in results:
+        if not stdout:
+            del res["stdout"]
+        if not stderr:
+            del res["stderr"]
+    print(tabulate.tabulate(results, headers="keys"))
+
+
+@jikken_cli.command(help="Return number of experiments in database")
+@click.option('--tags', '-t', multiple=True)
+@click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
+def count(tags, query):
+    if len(tags) == 0:
+        count = api.count()
+    else:
+        count = len(api.list(ids=[], tags=tags, query_type=query))
+    print("number of items: {}".format(count))
 
 
 if __name__ == '__main__':

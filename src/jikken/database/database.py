@@ -1,3 +1,4 @@
+import os
 from contextlib import contextmanager
 
 from jikken.experiment import Experiment
@@ -21,6 +22,7 @@ class Singleton(type):
 class DataBase(metaclass=Singleton):
     def __init__(self, db_path, db_type):
         if db_type == 'tiny':
+            os.makedirs(db_path, exist_ok=True)
             from .db_tinydb import TinyDB
             self._database = TinyDB.start_db(db_path)
         elif db_type == 'mongo':
@@ -40,17 +42,17 @@ class DataBase(metaclass=Singleton):
         """Return a experiment dict with matching id."""
         return self._database.get(experiment_id)
 
-    def list_experiments(self, tags=None, query_type="and"):  # type (str) -> list[dict]
+    def list_experiments(self, ids=None, tags=None, query_type="and"):  # type (str) -> list[dict]
         """Return list of experiments."""
-        return self._database.list_experiments(tags, query_type)
+        return self._database.list_experiments(ids, tags, query_type)
 
     def count(self) -> int:  # type () -> int
         """Return number of experiments in db."""
         return self._database.count()
 
-    def update(self, experiment_id, experiment):  # type (int, dict) -> ()
+    def update(self, experiment_id: int, experiment: Experiment) -> None:
         """Modify experiment in db with given experiment_id."""
-        return self._database.update(experiment_id, experiment)
+        return self._database.update(experiment_id, experiment.to_dict())
 
     def update_std(self, experiment_id, string, std_type):
         """Update the std tag with new data"""
@@ -58,6 +60,13 @@ class DataBase(metaclass=Singleton):
             self._database.update_key(experiment_id, string, std_type, mode='add')
         else:
             raise ValueError("std_type was not stdout or stderr")
+
+    def update_status(self, experiment_id: int, status: str):
+        "udpate the status of the experiment"
+        if status in ['created', 'running', 'completed', 'error']:
+            self._database.update_key(experiment_id, status, "status", mode='set')
+        else:
+            raise ValueError("status: {} not correct".format(status))
 
     def delete(self, experiment_id):  # type (int) -> ()
         """Remove a experiment from db with given experiment_id."""

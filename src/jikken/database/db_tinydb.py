@@ -29,10 +29,12 @@ class TinyDB:  # noqa : E801
         """Return a experiment dict with matching id."""
         return self._db.get(eid=experiment_id)
 
-    def list_experiments(self, tags=None, query_type="and"):  # type (str) -> list[dict]
+    def list_experiments(self, ids=None, tags=None, query_type="and"):  # type (str) -> list[dict]
         """Return list of experiments."""
-        if tags is None:
+        if tags is None and ids is None:
             return self._db.all()
+        elif ids is not None:
+            return [self.get(_id) for _id in ids]
         elif query_type == "and":
             return self._db.search(tinydb.Query().tags.all(tags))
         elif query_type == "or":

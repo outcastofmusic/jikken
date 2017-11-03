@@ -29,6 +29,7 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
         exp_id = db.add(exp)
         cmd = ["python3", script_path, "-c", configuration_path] + extra_args
         with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+            db.update_status(exp_id, 'running')
             for line in p.stdout:
                 print_out = line.decode('utf-8')
                 db.update_std(exp_id, print_out, std_type='stdout')
@@ -37,6 +38,8 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
                 print_out = line.decode('utf-8')
                 db.update_std(exp_id, print_out, std_type='stderr')
                 print(print_out)
+        db.update_status(exp_id, 'completed')
+        print("Experiment Done")
 
 
 def add(experiment: Experiment):
@@ -53,8 +56,12 @@ def get(_id: int):
     return experiment
 
 
-def list():
-    pass
+def list(ids: list, tags: list, query_type: str):
+    with setup_database() as db:
+        ids = None if len(ids) == 0 else ids
+        tags = None if len(tags) == 0 else tags
+        results = db.list_experiments(ids=ids, tags=tags, query_type=query_type)
+    return results
 
 
 def update():
