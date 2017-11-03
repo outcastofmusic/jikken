@@ -1,6 +1,5 @@
 import click
 import jikken.cli
-import tabulate
 from click.testing import CliRunner
 
 
@@ -19,13 +18,41 @@ def test_jikken_cli_run(file_setup, mocker):
 
 
 def list_stub(*args, **kwargs):
-    return [{"stdout": "hi", "stderr": "bye", "value": index, "value2": index + 1} for index in range(2)]
+    return [
+        {"stdout": "hi", "stderr": "bye", "variables": {"index": index}, "id": index, "status": "done", "tags": ["hi"]}
+        for index in
+        range(2)]
 
 
 def test_jikken_cli_list(mocker):
     mocker.patch.object(jikken.cli.api, 'list', new=list_stub)
     runner = CliRunner()
-    result = runner.invoke(jikken.cli.jikken_cli, ['list', "--stdout", "--stderr"])
-    assert result.exit_code == 0
-    expected_results = tabulate.tabulate(list_stub(), headers="keys") + "\n"
+    result = runner.invoke(jikken.cli.jikken_cli, ['list', "--stdout", "--stderr", "--no-monitored", "--no-git"])
+    expected_results = \
+"""----------------------------------------------------------------------------------------------------
+id: 0 | status: done | tags ['hi']
+                                             variables                                              
+                                             ----------                                             
+{'index': 0}
+                                               stdout                                               
+                                             ----------                                             
+hi
+                                               stderr                                               
+                                             ----------                                             
+bye
+----------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+id: 1 | status: done | tags ['hi']
+                                             variables                                              
+                                             ----------                                             
+{'index': 1}
+                                               stdout                                               
+                                             ----------                                             
+hi
+                                               stderr                                               
+                                             ----------                                             
+bye
+----------------------------------------------------------------------------------------------------
+"""
     assert result.output == expected_results
+    assert result.exit_code == 0

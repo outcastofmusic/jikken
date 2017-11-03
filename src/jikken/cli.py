@@ -26,10 +26,11 @@ def run(script_path, configuration_path, args, tags):
 @click.option('--stderr/--no-stderr', default=False)
 @click.option('--var/--no-var', default=True)
 @click.option('--git/--no-git', default=True)
-def list(ids, tags, query, stdout, stderr, var, git):
+@click.option('--monitored/--no-monitored', default=True)
+def list(ids, tags, query, stdout, stderr, var, git, monitored):
     results = api.list(ids=ids, tags=tags, query_type=query)
     for res in results:
-        print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git)
+        print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
 
 
 @jikken_cli.command(help="Return number of experiments in database")
