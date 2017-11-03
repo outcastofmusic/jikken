@@ -29,6 +29,7 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
     with setup_database() as db:
         exp_id = db.add(exp)
         cmd = ["python3", script_path, "-c", configuration_path] + extra_args
+        error_found = False
         with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
             db.update_status(exp_id, 'running')
             for line in p.stdout:
@@ -37,14 +38,21 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
                 print(print_out)
             for line in p.stderr:
                 print_out = line.decode('utf-8')
+
                 monitored = capture_value(print_out)
                 if monitored is not None:
                     db.update_monitored(exp_id, monitored[0], monitored[1])
                 else:
                     db.update_std(exp_id, print_out, std_type='stderr')
                     print(print_out)
-        db.update_status(exp_id, 'completed')
-        print("Experiment Done")
+                if 'Error' in print_out:
+                    error_found = True
+                    db.update_status(exp_id, 'error')
+        if not error_found:
+            db.update_status(exp_id, 'completed')
+            print("Experiment Done")
+        else:
+            print("Experiment Failed")
 
 
 def add(experiment: Experiment):
