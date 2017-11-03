@@ -1,5 +1,5 @@
 import tinydb
-from tinydb.operations import add
+from tinydb.operations import add, set
 
 
 class TinyDB:  # noqa : E801
@@ -46,9 +46,13 @@ class TinyDB:  # noqa : E801
         """Modify experiment in db with given experiment_id."""
         self._db.update(experiment, eids=[experiment_id])
 
-    def add_to_key(self, experiment_id, value, key):
-        """Add value to key field of the experiment in db with given experiment_id """
-        self._db.update(add(key, value), eids=[experiment_id])
+    def update_key(self, experiment_id, value, key, mode='set'):
+        if mode == 'set':
+            self._db.update(set(key, value), eids=[experiment_id])
+        elif mode == 'add':
+            self._db.update(add(key, value), eids=[experiment_id])
+        else:
+            raise ValueError("update mode {} not supported ".format(mode))
 
     def delete(self, experiment_id):  # type (int) -> ()
         """Remove a experiment from db with given experiment_id."""

@@ -59,5 +59,8 @@ class Experiment:
             "tags": self.tags,
             "parameter_hash": self.experiment_parameters_hash,
             "schema_hash": self.hash,
-            "id": None
+            "id": None,
+            "stdout": "",
+            "stderr": "",
+            "status": "created"
         }

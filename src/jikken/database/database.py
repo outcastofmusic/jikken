@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 
+from jikken.experiment import Experiment
+
 from .config import get_config
-from .experiment import Experiment
 
 
 class Singleton(type):
@@ -20,8 +21,8 @@ class Singleton(type):
 class DataBase(metaclass=Singleton):
     def __init__(self, db_path, db_type):
         if db_type == 'tiny':
-            import jikken.db_tinydb
-            self._database = jikken.db_tinydb.TinyDB.start_db(db_path)
+            import database.db_tinydb
+            self._database = database.db_tinydb.TinyDB.start_db(db_path)
         elif db_type == 'mongo':
             raise NotImplementedError('mongo not implemented yet')
             # import tasks.tasksdb_pymongo
@@ -30,7 +31,10 @@ class DataBase(metaclass=Singleton):
             raise ValueError("db_type must be a 'tiny' or 'mongo'")
 
     def add(self, experiment: Experiment) -> int:
-        return self._database.add(experiment)
+        if isinstance(experiment, Experiment):
+            return self._database.add(experiment.to_dict())
+        else:
+            raise TypeError("experiment {} was not Experiment".format(type(experiment)))
 
     def get(self, experiment_id: int) -> dict:  # type (int) -> dict
         """Return a experiment dict with matching id."""
@@ -50,7 +54,10 @@ class DataBase(metaclass=Singleton):
 
     def update_std(self, experiment_id, string, std_type):
         """Update the std tag with new data"""
-        self._database.add_to_key(experiment_id, string, std_type)
+        if std_type in ['stdout', 'stderr']:
+            self._database.update_key(experiment_id, string, std_type, mode='add')
+        else:
+            raise ValueError("std_type was not stdout or stderr")
 
     def delete(self, experiment_id):  # type (int) -> ()
         """Remove a experiment from db with given experiment_id."""

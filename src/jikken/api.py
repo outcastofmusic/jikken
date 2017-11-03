@@ -55,16 +55,20 @@ def update():
     pass
 
 
-def delete():
-    pass
+def delete(_id: int):
+    with setup_database() as db:
+        db.delete(_id)
 
 
 def count():
-    pass
+    with setup_database() as db:
+        count = db.count()
+    return count
 
 
 def delete_all():
-    pass
+    with setup_database() as db:
+        db.delete_all()
 
 
 def get_best():
