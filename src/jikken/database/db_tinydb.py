@@ -36,10 +36,6 @@ class TinyDB:  # noqa : E801
 
     """
 
-    @classmethod
-    def start_db(cls, db_path):
-        return cls(db_path)
-
     def __init__(self, db_path):  # type (str) -> ()
         """Connect to db."""
         self._db = tinydb.TinyDB(db_path + '/jikken_db.json')

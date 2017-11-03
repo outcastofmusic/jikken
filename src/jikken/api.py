@@ -7,7 +7,8 @@ from .monitor import capture_value
 from .utils import load_variables_from_filepath
 
 
-def run(*, configuration_path, script_path, args=None, tags=None, reference_configuration_path=None):
+def run(*, configuration_path: str, script_path: str, args: list = None, tags: list = None,
+        reference_configuration_path: str = None) -> None:
     """Runs an experiment script and captures the stdout and stderr
 
     Args:
@@ -20,11 +21,13 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
             the reference_configuration_path defines the experiment and the configuration_path only requires
             the updated variables
     """
+    # TODO add ability to use reference_configuration_path
     variables = load_variables_from_filepath(configuration_path)
     args = [] if args is None else [argument.split("=") for argument in args]
     extra_kwargs = [x for argument in args for x in argument]
     extra_vars = {argument[0]: argument[1] for argument in args}
     variables = {**variables, **extra_vars}
+    # TODO decide if extra_vars can be the same and overwrite the variables or not
     exp = Experiment(variables=variables, code_dir=os.path.dirname(script_path), tags=tags)
     with setup_database() as db:
         exp_id = db.add(exp)
@@ -63,13 +66,33 @@ def run(*, configuration_path, script_path, args=None, tags=None, reference_conf
                 print("Experiment Done")
 
 
-def get(_id: int):
+def get(_id: int) -> dict:
+    """Return the experiment from an id
+
+    Args:
+        _id (int): the id of the experiment
+
+    Returns:
+        dict:  the experiment document retrieved from the database
+
+    """
     with setup_database() as db:
         experiment = db.get(_id)
     return experiment
 
 
-def list(ids: list, tags: list, query_type: str):
+def list(*, ids: list, tags: list, query_type: str) -> list:
+    """return a list of experiment documents either based on ids or based on tags
+
+    Args:
+        ids (list):  a list of ids to retrieve from the database
+        tags (list): al list of tags to retrieve from the database
+        query_type (str): Can be either 'and' or 'or'. If it is and returns matches that match all tags if it is
+            or returns matches that match any tags
+
+    Returns:
+            list: A list of dicts with each dict being an experiment document
+    """
     with setup_database() as db:
         ids = None if len(ids) == 0 else ids
         tags = None if len(tags) == 0 else tags
@@ -78,28 +101,54 @@ def list(ids: list, tags: list, query_type: str):
 
 
 def update():
+    # TODO be able to update the tags of an experiment or add metadata to it
     pass
 
 
-def delete(_id: int):
+def list_tags():
+    # TODO list all tags in db
+    pass
+
+
+def delete(_id: int) -> None:
+    """Delete the document with this id from the database
+
+    Args:
+        _id (int): the document id
+
+    """
     with setup_database() as db:
         db.delete(_id)
 
 
-def count():
+def count() -> int:
+    """Returns the count of all items in the database
+
+    Returns:
+        int: The number of items in the database
+
+    """
     with setup_database() as db:
         count = db.count()
     return count
 
 
-def delete_all():
+def delete_all() -> None:
+    """deletes all items from the database """
     with setup_database() as db:
         db.delete_all()
 
 
 def get_best():
+    # TODO write get best exp document, based on some val_ and metrics
     pass
 
 
 def resume():
+    # TODO think on how to resume an experiment without messing up the database
+    pass
+
+
+def export_config():
+    # TODO export the config dir/file based on an experiment
     pass

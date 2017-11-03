@@ -24,11 +24,13 @@ class DataBase(metaclass=Singleton):
         if db_type == 'tiny':
             os.makedirs(db_path, exist_ok=True)
             from .db_tinydb import TinyDB
-            self._database = TinyDB.start_db(db_path)
+            self._database = TinyDB(db_path)
         elif db_type == 'mongo':
             raise NotImplementedError('mongo not implemented yet')
-            # import tasks.tasksdb_pymongo
-            # _tasksdb = tasks.tasksdb_pymongo.start_tasks_db(db_path)
+            # TODO implement mongo
+        elif db_type == 'es':
+            # TODO implement es
+            raise NotImplementedError('es not implemented yet')
         else:
             raise ValueError("db_type must be a 'tiny' or 'mongo'")
 
