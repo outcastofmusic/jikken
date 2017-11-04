@@ -1,4 +1,7 @@
-# Jikken no Heitangaku  https://travis-ci.org/outcastofmusic/jikken.svg?branch=master
+# Jikken no Heitangaku     <a href="https://travis-ci.org/outcastofmusic/">
+        <img src="https://travis-ci.org/outcastofmusic/jikken.svg?branch=master"
+            alt="build status"></a>
+
 ___Lightweight experiment manager___
 
 ### Features
