@@ -1,6 +1,4 @@
-# Jikken no Heitangaku     <a href="https://travis-ci.org/outcastofmusic/">
-        <img src="https://travis-ci.org/outcastofmusic/jikken.svg?branch=master"
-            alt="build status"></a>
+# Jikken no Heitangaku     ![Status](https://travis-ci.org/outcastofmusic/jikken.svg?branch=master)
 
 ___Lightweight experiment manager___
 
