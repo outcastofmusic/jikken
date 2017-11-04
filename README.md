@@ -1,7 +1,7 @@
 # Jikken no Heitangaku 
 ___Lightweight experiment manager___
 
-###Features
+### Features
 - Python 3 code 
 - Support for TinyDb  ES, Mongo
 - tagging of experiments
@@ -11,3 +11,4 @@ ___Lightweight experiment manager___
 - understands git directories
 
 
+# TODO write readme

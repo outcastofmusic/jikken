@@ -37,6 +37,7 @@ def run(*, configuration_path: str, script_path: str, args: list = None, tags: l
             cmd = ["bash", script_path, configuration_path] + extra_kwargs
         error_found = False
         with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+            # TODO UPDATE STD every few steps instead of every step
             try:
                 db.update_status(exp_id, 'running')
                 for line in p.stdout:

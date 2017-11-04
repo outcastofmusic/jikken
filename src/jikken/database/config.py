@@ -20,6 +20,7 @@ def write_default_config(config_file):
         file_handle.writelines(DEFAULT_FILE)
 
 
+#TODO manage handling of local configs
 def get_config():
     parser = ConfigParser()
     config_file = os.path.expanduser(DEFAULT_PATH)

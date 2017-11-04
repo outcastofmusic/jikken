@@ -38,6 +38,7 @@ def test_jikken_cli_list_tags(mocker):
     for tag in expected_tags:
         assert tag in tags
 
+
 def test_jikken_cli_list(mocker):
     mocker.patch.object(jikken.cli.api, 'list', new=list_stub)
     runner = CliRunner()

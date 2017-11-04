@@ -70,6 +70,9 @@ def abort_if_false(ctx, param, value):
 def delete_all():
     api.delete_all()
 
+def pipeline():
+    # TODO create cli command that allows pipelining steps
+    pass
 
 if __name__ == '__main__':
     jikken_cli()

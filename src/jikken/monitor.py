@@ -13,7 +13,7 @@ logger.addHandler(ch)
 pattern = "JEKKIN_MONITOR\t([\w_]+)\t([\w.]+)"
 matcher = re.compile(pattern=pattern)
 
-
+# TODO convert to class add formating options
 def capture_value(line):
     results = matcher.search(line)
     if results:
