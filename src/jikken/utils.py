@@ -1,10 +1,31 @@
 import ast
 import copy
+import json
 import os
 from hashlib import md5
+from tempfile import TemporaryDirectory
 
 import yaml
 from git import InvalidGitRepositoryError, Repo
+from contextlib import contextmanager
+
+
+@contextmanager
+def prepare_variables(*, reference_directory, update_directory=None):
+    reference_variables = load_variables_from_dir(reference_directory)
+    if update_directory is not None:
+        updated_variables = load_variables_from_dir(update_directory)
+        variables = update_variables(reference_variables, updated_variables)
+        new_dir = TemporaryDirectory()
+        create_directory_from_variables(new_dir.name, variables)
+        config_dir = new_dir.name
+    else:
+        variables = reference_variables
+        config_dir = reference_directory
+    yield variables, config_dir
+
+    if update_directory is not None:
+        new_dir.cleanup()
 
 
 def get_repo_origin(directory):
@@ -119,5 +140,20 @@ def update_variables(reference_dict, update_dict):
             literal_value = ast.literal_eval(keys[-1])
         except ValueError:
             literal_value = keys[-1]
+        except SyntaxError:
+            literal_value = keys[-1]
         ref[keys[-2]] = literal_value
     return new_dict
+
+
+def create_directory_from_variables(root_dir, variables):
+    for key in variables.keys():
+        key_dir = os.path.join(root_dir, key)
+        os.makedirs(os.path.dirname(key_dir), exist_ok=True)
+
+        if key_dir.endswith(".json"):
+            with open(key_dir, 'wt') as file_handle:
+                json.dump(variables[key], file_handle)
+        elif key_dir.endswith(".yaml"):
+            with open(key_dir, 'wt') as file_handle:
+                yaml.dump(variables[key], file_handle)

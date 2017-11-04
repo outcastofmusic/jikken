@@ -1,6 +1,7 @@
 import json
 
 import jikken.utils as utils
+import os
 import pytest
 import yaml
 from git import Repo
@@ -22,28 +23,45 @@ def config_folder(tmpdir):
              }
 
     }
-    json_file = tmpdir.join("experiment.json")
+    config_dir = tmpdir.mkdir('experiment')
+    json_file = config_dir.join("experiment.json")
     with json_file.open('w') as f:
         json.dump(expected_variables, f)
-    subdir = tmpdir.mkdir('subdir')
+    subdir = config_dir.mkdir('subdir')
     yaml_file = subdir.join("experiment.yaml")
     with yaml_file.open('w') as f:
         yaml.dump(expected_variables, f)
 
-    return tmpdir, expected_variables, json_file, yaml_file
+    return config_dir, expected_variables, json_file, yaml_file
 
 
-def test_load_from_dir(config_folder):
+@pytest.fixture()
+def config_directory(config_folder):
     conf_dir, expected_variables, json_file, yaml_file = config_folder
     split_dirs_json = json_file.strpath.split("/")
     split_dirs_yaml = yaml_file.strpath.split("/")
     expected_variables = {"/".join(split_dirs_json[-2:]): expected_variables,
                           "/".join(split_dirs_yaml[-3:]): expected_variables
                           }
-    variables = utils.load_variables_from_dir(conf_dir.strpath)
+    return conf_dir, expected_variables
+
+
+def test_load_from_dir(config_directory):
+    conf_dir, expected_variables = config_directory
+    variables = utils.load_variables_from_dir(str(conf_dir))
     assert variables == expected_variables
-    variables = utils.load_variables_from_filepath(conf_dir.strpath)
+    variables = utils.load_variables_from_filepath(str(conf_dir))
     assert variables == expected_variables
+
+
+def test_create_dir_from_utils(config_directory):
+    """test new directory is given by variables"""
+    conf_dir, expected_variables = config_directory
+    new_dir = conf_dir.mkdir("new_dir")
+    utils.create_directory_from_variables(str(new_dir), expected_variables)
+    new_directory = os.path.join(str(new_dir), str(conf_dir).split("/")[-1])
+    new_variables = utils.load_variables_from_dir(new_directory)
+    assert new_variables == expected_variables
 
 
 def test_load_from_file(config_folder):
@@ -56,6 +74,33 @@ def test_load_from_file(config_folder):
     yaml_variables = {"/".join(str(yaml_file).split("/")[-2:])
                       : expected_variables}
     assert variables == yaml_variables
+
+
+def test_prepare_variables_no_update(config_directory):
+    conf_dir, expected_variables = config_directory
+    with utils.prepare_variables(reference_directory=str(conf_dir)) as variables_path:
+        variables, path = variables_path
+        assert path == str(conf_dir)
+        assert variables == expected_variables
+
+
+def test_prepare_variables_with_update(config_directory, tmpdir):
+    conf_dir, expected_variables = config_directory
+    updated_variables = {
+        "training_parameters":
+            {"batch_size": 200,
+             },
+        "input_parameters":
+            {'batch_size': 8,
+             }
+    }
+    update_dir = tmpdir.mkdir("experiment2")
+    json_file = update_dir.join("experiment.json")
+    with json_file.open('w') as f:
+        json.dump(updated_variables, f)
+    with utils.prepare_variables(reference_directory=str(conf_dir), update_directory=str(update_dir)) as variables_path:
+        variables, path = variables_path
+        assert variables == expected_variables
 
 
 @pytest.fixture()
@@ -152,45 +197,49 @@ def test_get_schema_parameters(config_folder):
 
 def test_update_variables():
     reference_variables = {
-        "global_seed": 5,
-        "training_parameters":
-            {"batch_size": 100,
-             "algorithm": "Seq2Seq",
-             "attention": "multiplicative"
-             },
-        "input_parameters":
-            {'batch_size': 4,
-             "filepath": "/data",
-             "preprocessing": True,
-             "transformations": ["stopwords", "tokenize", "remove_punct"]
-             }
+        "testfolder.py": {
+            "global_seed": 5,
+            "training_parameters":
+                {"batch_size": 100,
+                 "algorithm": "Seq2Seq",
+                 "attention": "multiplicative"
+                 },
+            "input_parameters":
+                {'batch_size': 4,
+                 "filepath": "/data",
+                 "preprocessing": True,
+                 "transformations": ["stopwords", "tokenize", "remove_punct"]
+                 }
+        }
     }
 
     new_variables = {
-        "global_seed": 1,
-        "training_parameters": {
-            "algorithm": "Conv2d"
-        },
-        "input_parameters": {
-            "batch_size": 8
-        }
+        "testfolder.py": {"global_seed": 1,
+                          "training_parameters": {
+                              "algorithm": "Conv2d"
+                          },
+                          "input_parameters": {
+                              "batch_size": 8
+                          }
+                          }
     }
 
     actual_variables = utils.update_variables(reference_dict=reference_variables, update_dict=new_variables)
 
     expected_variables = {
-        "global_seed": 1,
-        "training_parameters":
-            {"batch_size": 100,
-             "algorithm": "Conv2d",
-             "attention": "multiplicative"
-             },
-        "input_parameters":
-            {'batch_size': 8,
-             "filepath": "/data",
-             "preprocessing": True,
-             "transformations": ["stopwords", "tokenize", "remove_punct"]
-             }
+        "testfolder.py": {"global_seed": 1,
+                          "training_parameters":
+                              {"batch_size": 100,
+                               "algorithm": "Conv2d",
+                               "attention": "multiplicative"
+                               },
+                          "input_parameters":
+                              {'batch_size': 8,
+                               "filepath": "/data",
+                               "preprocessing": True,
+                               "transformations": ["stopwords", "tokenize", "remove_punct"]
+                               }
+                          }
     }
 
     assert actual_variables == expected_variables

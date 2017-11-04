@@ -121,7 +121,6 @@ def list_tags() -> set:
     Returns:
             set: A set of all tags found in the db
     """
-
     with setup_database() as db:
         results = db.list_experiments()
     return set({tag for exp in results for tag in exp['tags']})
