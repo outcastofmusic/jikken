@@ -2,7 +2,6 @@ GitPython==2.1.7
 PyYAML==3.12
 click==6.7
 gitdb2==2.0.3
-jikken==0.1.0
 pymongo==3.5.1
 pytest-cov==2.5.1
 pytest-mock==1.6.3
