@@ -6,6 +6,8 @@ from .experiment import Experiment
 from .monitor import capture_value
 from .utils import load_variables_from_filepath
 
+BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database
+
 
 def run(*, configuration_path: str, script_path: str, args: list = None, tags: list = None,
         reference_configuration_path: str = None) -> None:
@@ -37,30 +39,39 @@ def run(*, configuration_path: str, script_path: str, args: list = None, tags: l
             cmd = ["bash", script_path, configuration_path] + extra_kwargs
         error_found = False
         with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
-            # TODO UPDATE STD every few steps instead of every step
             try:
                 db.update_status(exp_id, 'running')
+                line_buffer = ''
                 for line in p.stdout:
                     print_out = line.decode('utf-8')
-                    db.update_std(exp_id, print_out, std_type='stdout')
+                    line_buffer += print_out
                     print(print_out)
+                    if len(line_buffer) > BUFFER_LIMIT:
+                        db.update_std(exp_id, line_buffer, std_type='stdout')
+                        line_buffer = ''
             except KeyboardInterrupt:
                 db.update_status(exp_id, 'interrupted')
                 print("Experiment Interrupted")
                 error_found = True
             finally:
+                if line_buffer != '':
+                    db.update_std(exp_id, line_buffer, std_type='stdout')
+                line_buffer = ''
                 for line in p.stderr:
                     print_out = line.decode('utf-8')
                     monitored = capture_value(print_out)
                     if monitored is not None:
                         db.update_monitored(exp_id, monitored[0], monitored[1])
                     else:
-                        db.update_std(exp_id, print_out, std_type='stderr')
+                        line_buffer += print_out
                         print(print_out)
                     if 'Error' in print_out:
                         error_found = True
                         db.update_status(exp_id, 'error')
                         print("Experiment Failed")
+
+                if line_buffer != '':
+                    db.update_std(exp_id, line_buffer, std_type='stderr')
                 if not error_found:
                     db.update_status(exp_id, 'completed')
                     print("Experiment Done")
