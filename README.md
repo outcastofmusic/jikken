@@ -1,4 +1,5 @@
-# Jikken no Heitangaku 
+# Jikken no Heitangaku     ![Status](https://travis-ci.org/outcastofmusic/jikken.svg?branch=master)
+
 ___Lightweight experiment manager___
 
 ### Features
