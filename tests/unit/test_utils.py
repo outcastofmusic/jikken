@@ -49,9 +49,13 @@ def test_load_from_dir(config_folder):
 def test_load_from_file(config_folder):
     _, expected_variables, json_file, yaml_file = config_folder
     variables = utils.load_variables_from_filepath(json_file.strpath)
-    assert variables == expected_variables
+    json_variables = {"/".join(str(json_file).split("/")[-2:])
+                      : expected_variables}
+    assert variables == json_variables
     variables = utils.load_variables_from_filepath(yaml_file.strpath)
-    assert variables == expected_variables
+    yaml_variables = {"/".join(str(yaml_file).split("/")[-2:])
+                      : expected_variables}
+    assert variables == yaml_variables
 
 
 @pytest.fixture()
@@ -109,7 +113,7 @@ def test_repo_origin(setup_git):
 
 
 expected_schema = \
-        """input_parameters_batch_size_value
+    """input_parameters_batch_size_value
 input_parameters_filepath_value
 input_parameters_preprocessing_value
 input_parameters_transformations_value
@@ -128,7 +132,7 @@ def test_get_schema(config_folder):
 
 
 expected_schema_parameters = \
-        """input_parameters_batch_size_4
+    """input_parameters_batch_size_4
 input_parameters_filepath_/data
 input_parameters_preprocessing_True
 input_parameters_transformations_remove_punct
@@ -138,6 +142,8 @@ training_parameters_algorithm_Seq2Seq
 training_parameters_attention_multiplicative
 training_parameters_batch_size_100
 """
+
+
 def test_get_schema_parameters(config_folder):
     conf_dir, expected_variables, json_file, yaml_file = config_folder
     schema = utils.get_schema(expected_variables, parameters=True)

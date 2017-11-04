@@ -1,6 +1,7 @@
 import pprint
 
 
+# TODO convert to class add formatting options
 def print_experiment(experiment_dict, stdout=False, stderr=False, variables=True, git=True, monitored=True):
     banner = 100 * "-"
     print(banner)

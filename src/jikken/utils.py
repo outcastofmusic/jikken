@@ -53,16 +53,18 @@ def load_variables_from_dir(experiment_dir):
             if filename.endswith("json") or filename.endswith("yaml"):
                 root_key = "/".join(root[len(root_path) + 1:].split("/"))
                 key = filename if root_key == "" else root_key + "/" + filename
-                all_variables[key] = load_variables_from_filepath(os.path.join(root, filename))
+                all_variables[key] = load_variables_from_filepath(os.path.join(root, filename), root=False)
     return all_variables
 
 
-def load_variables_from_filepath(experiment_filepath):
+def load_variables_from_filepath(experiment_filepath, root=True):
     if os.path.isdir(experiment_filepath):
         variables = load_variables_from_dir(experiment_filepath)
     elif experiment_filepath.endswith("yaml") or experiment_filepath.endswith("json"):
         with open(experiment_filepath, 'rt') as file_handle:
-            variables = yaml.load(file_handle)
+            values = yaml.load(file_handle)
+        variables = {"/".join(str(experiment_filepath).split("/")[-2:]): values} if root else values
+
     else:
         raise IOError("only json and yaml files are supported")
     return variables
