@@ -1,28 +1,11 @@
 from typing import Any
-
+from bson import ObjectId
+from bson.errors import InvalidId
 import pymongo
 from pymongo.errors import ConnectionFailure
 import time
+from .helpers import add_mongo, map_experiment, inv_map_experiment, set_mongo
 from .db_abc import DB
-
-
-def replace_dots(experiment: dict):
-    new_experiment = {}
-    for key in experiment['variables'].keys():
-        new_key = key.replace(".", "__")
-        new_experiment[new_key] = experiment['variables'][key]
-    experiment['variables'] = new_experiment
-    return experiment
-
-
-def fix_experiment(experiment: dict):
-    new_experiment = {}
-    for key in experiment['variables'].keys():
-        new_key = key.replace("__", ".")
-        new_experiment[new_key] = experiment['variables'][key]
-    experiment['variables'] = new_experiment
-    experiment['id'] = str(experiment.pop("_id"))
-    return experiment
 
 
 class MongoDB(DB):
@@ -48,7 +31,7 @@ class MongoDB(DB):
 
     def add(self, experiment: dict) -> str:
         exp_db = self._db.experiments
-        experiment = replace_dots(experiment)
+        experiment = map_experiment(experiment)
         exp_id = exp_db.insert_one(experiment).inserted_id
         return str(exp_id)
 
@@ -57,27 +40,33 @@ class MongoDB(DB):
         return exp_db.count()
 
     def delete(self, experiment_id: int):
-        pass
+        try:
+            self._db.experiments.delete_one({"_id": ObjectId(experiment_id)})
+        except InvalidId:
+            raise KeyError("experiment id {} not found".format(experiment_id))
 
     def delete_all(self) -> None:
         """Remove all experiments from db"""
         self._db.experiments.drop()
 
-    def get(self, experiment_id: int):
-        pass
+    def get(self, experiment_id: str):
+        return inv_map_experiment(self._db.experiments.find_one({"_id": ObjectId(experiment_id)}))
 
     def list_experiments(self, ids: list = None, tags: list = None, query_type: str = "and"):
         if tags is None and ids is None:
-            return [fix_experiment(i) for i in self._db.experiments.find()]
+            return [inv_map_experiment(i) for i in self._db.experiments.find()]
         elif ids is not None:
             return [self.get(_id) for _id in ids]
         elif query_type == "and":
-            return self._db.search(tinydb.Query().tags.all(tags))
+            return [inv_map_experiment(i) for i in self._db.experiments.find({"tags": {"$all": tags}})]
         elif query_type == "or":
-            return self._db.search(tinydb.Query().tags.any(tags))
+            return [inv_map_experiment(i) for i in self._db.experiments.find({"tags": {"$in": tags}})]
 
     def update(self, experiment_id: int, experiment: dict):
         pass
 
     def update_key(self, experiment_id: int, value: Any, key: str, mode='set'):
-        pass
+        if mode == 'set':
+            self._db.experiments.update({"_id": ObjectId(experiment_id)}, set_mongo(value, key=key))
+        elif mode == 'add':
+            self._db.experiments.update({"_id": ObjectId(experiment_id)}, add_mongo(value, key=key))

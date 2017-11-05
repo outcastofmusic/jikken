@@ -30,8 +30,9 @@ def test_add_raises(jikken_db_session):
 
 def test_delete_raises_no_id(add_one_experiment):
     jikken_db, _id = add_one_experiment
+    new_id = "hello"
     with pytest.raises(KeyError):
-        jikken_db.delete(_id + 1)
+        jikken_db.delete(new_id)
 
 
 def test_add_and_return_valid_id(jikken_db, file_setup):
@@ -42,7 +43,7 @@ def test_add_and_return_valid_id(jikken_db, file_setup):
     code_dir = file_setup[0]
     new_exp = Experiment(variables={'val1': 'do something'}, code_dir=code_dir)
     _id = jikken_db.add(new_exp)
-    assert isinstance(_id, int)
+    assert isinstance(_id, str)
 
 
 @pytest.mark.smoke
@@ -59,7 +60,7 @@ def test_added_task_has_id_set(jikken_db, file_setup):
     exp_from_db = jikken_db.get(_id)
 
     # THEN experiment_id matches id field
-    assert exp_from_db['id'] == _id
+    assert str(exp_from_db['id']) == _id
 
     # AND contents are equivalent (except for id)
     nex_exp_dict = new_exp.to_dict()
