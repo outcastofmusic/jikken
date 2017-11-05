@@ -7,7 +7,7 @@ from jikken import print_experiment
 @click.version_option(version='0.1.0')
 def jikken_cli():
     """Run the jikken application"""
-
+    # TODO write readme with instructions
 
 @jikken_cli.command(help="run an experiment from a script. e.g. jikken run script.py -c config.yaml")
 @click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
