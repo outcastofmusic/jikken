@@ -5,7 +5,7 @@ import pprint
 def print_experiment(experiment_dict, stdout=False, stderr=False, variables=True, git=True, monitored=True):
     banner = 100 * "-"
     print(banner)
-    db_info = "id: {} | status: {} | tags {} | schema hash: {}, param hash: {}".format(
+    db_info = "id: {} | status: {} | tags {} | schema hash: {} |  param hash: {}".format(
         experiment_dict['id'],
         experiment_dict['status'],
         experiment_dict['tags'],

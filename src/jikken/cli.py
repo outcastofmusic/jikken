@@ -28,7 +28,7 @@ def run(script_path, configuration_path, ref_path, args, tags):
             reference_configuration_path=ref_path,
             )
 
-
+# TODO add options for schema and parameter hash and status
 @jikken_cli.command(help="list experiments in db")
 @click.option('--ids', '-a', multiple=True, help="the ids to print")
 @click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")

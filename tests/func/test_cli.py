@@ -19,7 +19,12 @@ def test_jikken_cli_run(file_setup, mocker):
 
 def list_stub(*args, **kwargs):
     return [
-        {"stdout": "hi", "stderr": "bye", "variables": {"index": index}, "id": index, "status": "done", "tags": ["hi"]}
+        {"stdout": "hi", "stderr": "bye",
+         "variables": {"index": index},
+         "id": index, "status": "done",
+         "parameter_hash": "123",
+         "schema_hash": "456",
+         "tags": ["hi"]}
         for index in
         range(2)]
 
@@ -45,7 +50,7 @@ def test_jikken_cli_list(mocker):
     result = runner.invoke(jikken.cli.jikken_cli, ['list', "--stdout", "--stderr", "--no-monitored", "--no-git"])
     expected_results = \
         """----------------------------------------------------------------------------------------------------
-        id: 0 | status: done | tags ['hi']
+        id: 0 | status: done | tags ['hi'] | schema hash:456 | param hash:123
                                                      variables                                              
                                                      ----------                                             
         {'index': 0}
@@ -57,7 +62,7 @@ def test_jikken_cli_list(mocker):
         bye
         ----------------------------------------------------------------------------------------------------
         ----------------------------------------------------------------------------------------------------
-        id: 1 | status: done | tags ['hi']
+        id: 1 | status: done | tags ['hi'] | schema hash:456 | param hash:123 
                                                      variables                                              
                                                      ----------                                             
         {'index': 1}
