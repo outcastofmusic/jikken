@@ -54,16 +54,23 @@ class MongoDB(DB):
     def get(self, experiment_id: str):
         return inv_map_experiment(self._db.experiments.find_one({"_id": ObjectId(experiment_id)}))
 
-    def list_experiments(self, query: ExperimentQuery=None):
+    def list_experiments(self, query: ExperimentQuery = None):
 
         if query is None:
             return [inv_map_experiment(i) for i in self._db.experiments.find()]
         elif query.ids is not None:
             return [self.get(_id) for _id in query.ids]
-        elif query.query_type == "and":
-            return [inv_map_experiment(i) for i in self._db.experiments.find({"tags": {"$all": query.tags}})]
-        elif query.query_type == "or":
-            return [inv_map_experiment(i) for i in self._db.experiments.find({"tags": {"$in": query.tags}})]
+        else:
+            query_list = []
+            qt = "$all" if query.query_type == 'and' else "$in"
+            if query.tags is not None:
+                query_list.append({"tags": {qt: query.tags}})
+            if query.schema_param_hashes is not None:
+                query_list.append({"parameter_hash": {"$in": query.schema_param_hashes}})
+            if query.schema_hashes is not None:
+                query_list.append({"schema_hash": {"$in": query.schema_hashes}})
+            complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
+            return [inv_map_experiment(i) for i in self._db.experiments.find(complex_query)]
 
     def update(self, experiment_id: int, experiment: dict):
         pass
