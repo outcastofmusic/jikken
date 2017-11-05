@@ -12,17 +12,21 @@ def jikken_cli():
 @jikken_cli.command(help="run an experiment from a script. e.g. jikken run script.py -c config.yaml")
 @click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option('--configuration_path', '-c', required=True, type=click.Path(exists=True, file_okay=True, dir_okay=True),
-              help="A file or a directory with files that hold"
-                   "the variables that define the experiment")
+              help="A file or a directory with files that hold the variables that define the experiment")
+@click.option('--ref_path', '-r', required=False, type=click.Path(exists=True, file_okay=True, dir_okay=True),
+              default=None,
+              help="A file or a directory with files that hold the variables that define the experiment")
 @click.option('--args', '-a', multiple=True,
               help="extra arguments that can be passed to the script multiple can be added,"
                    "e.g. -a a=2 -a batch_size=63 -a early_stopping=False")
 @click.option('--tags', '-t', multiple=True,
               help="tags that can be used to distinguish the experiment inside the database."
                    " Multiple can be added e.g. -t org_name -t small_data -t model_1")
-def run(script_path, configuration_path, args, tags):
+def run(script_path, configuration_path, ref_path, args, tags):
     """Runs an experiment"""
-    api.run(script_path=script_path, configuration_path=configuration_path, args=args, tags=tags)
+    api.run(script_path=script_path, configuration_path=configuration_path, args=args, tags=tags,
+            reference_configuration_path=ref_path,
+            )
 
 
 @jikken_cli.command(help="list experiments in db")
@@ -70,9 +74,11 @@ def abort_if_false(ctx, param, value):
 def delete_all():
     api.delete_all()
 
+
 def pipeline():
     # TODO create cli command that allows pipelining steps
     pass
+
 
 if __name__ == '__main__':
     jikken_cli()

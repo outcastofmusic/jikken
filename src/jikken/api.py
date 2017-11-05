@@ -4,7 +4,7 @@ from subprocess import PIPE, Popen
 from .database import setup_database
 from .experiment import Experiment
 from .monitor import capture_value
-from .utils import load_variables_from_filepath
+from .utils import prepare_variables
 
 BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database
 
@@ -23,58 +23,57 @@ def run(*, configuration_path: str, script_path: str, args: list = None, tags: l
             the reference_configuration_path defines the experiment and the configuration_path only requires
             the updated variables
     """
-    # TODO add ability to use reference_configuration_path
-    variables = load_variables_from_filepath(configuration_path)
-    args = [] if args is None else [argument.split("=") for argument in args]
-    extra_kwargs = [x for argument in args for x in argument]
-    extra_vars = {argument[0]: argument[1] for argument in args}
-    variables = {**variables, **extra_vars}
-    # TODO decide if extra_vars can be the same and overwrite the variables or not
-    exp = Experiment(variables=variables, code_dir=os.path.dirname(script_path), tags=tags)
-    with setup_database() as db:
-        exp_id = db.add(exp)
-        if script_path.endswith(".py"):
-            cmd = ["python3", script_path, "-c", configuration_path] + extra_kwargs
-        elif script_path.endswith(".sh"):
-            cmd = ["bash", script_path, configuration_path] + extra_kwargs
-        error_found = False
-        with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
-            try:
-                db.update_status(exp_id, 'running')
-                line_buffer = ''
-                for line in p.stdout:
-                    print_out = line.decode('utf-8')
-                    line_buffer += print_out
-                    print(print_out)
-                    if len(line_buffer) > BUFFER_LIMIT:
-                        db.update_std(exp_id, line_buffer, std_type='stdout')
-                        line_buffer = ''
-            except KeyboardInterrupt:
-                db.update_status(exp_id, 'interrupted')
-                print("Experiment Interrupted")
-                error_found = True
-            finally:
-                if line_buffer != '':
-                    db.update_std(exp_id, line_buffer, std_type='stdout')
-                line_buffer = ''
-                for line in p.stderr:
-                    print_out = line.decode('utf-8')
-                    monitored = capture_value(print_out)
-                    if monitored is not None:
-                        db.update_monitored(exp_id, monitored[0], monitored[1])
-                    else:
+    with prepare_variables(config_directory=configuration_path, reference_directory=reference_configuration_path) as vr:
+        args = [] if args is None else [argument.split("=") for argument in args]
+        extra_kwargs = [x for argument in args for x in argument]
+        extra_vars = {argument[0]: argument[1] for argument in args}
+        variables, configuration_path = vr
+        variables = {**variables, **extra_vars}
+        exp = Experiment(variables=variables, code_dir=os.path.dirname(script_path), tags=tags)
+        with setup_database() as db:
+            exp_id = db.add(exp)
+            if script_path.endswith(".py"):
+                cmd = ["python3", script_path, "-c", configuration_path] + extra_kwargs
+            elif script_path.endswith(".sh"):
+                cmd = ["bash", script_path, configuration_path] + extra_kwargs
+            error_found = False
+            with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+                try:
+                    db.update_status(exp_id, 'running')
+                    line_buffer = ''
+                    for line in p.stdout:
+                        print_out = line.decode('utf-8')
                         line_buffer += print_out
                         print(print_out)
-                    if 'Error' in print_out:
-                        error_found = True
-                        db.update_status(exp_id, 'error')
-                        print("Experiment Failed")
+                        if len(line_buffer) > BUFFER_LIMIT:
+                            db.update_std(exp_id, line_buffer, std_type='stdout')
+                            line_buffer = ''
+                except KeyboardInterrupt:
+                    db.update_status(exp_id, 'interrupted')
+                    print("Experiment Interrupted")
+                    error_found = True
+                finally:
+                    if line_buffer != '':
+                        db.update_std(exp_id, line_buffer, std_type='stdout')
+                    line_buffer = ''
+                    for line in p.stderr:
+                        print_out = line.decode('utf-8')
+                        monitored = capture_value(print_out)
+                        if monitored is not None:
+                            db.update_monitored(exp_id, monitored[0], monitored[1])
+                        else:
+                            line_buffer += print_out
+                            print(print_out)
+                        if 'Error' in print_out:
+                            error_found = True
+                            db.update_status(exp_id, 'error')
+                            print("Experiment Failed")
 
-                if line_buffer != '':
-                    db.update_std(exp_id, line_buffer, std_type='stderr')
-                if not error_found:
-                    db.update_status(exp_id, 'completed')
-                    print("Experiment Done")
+                    if line_buffer != '':
+                        db.update_std(exp_id, line_buffer, std_type='stderr')
+                    if not error_found:
+                        db.update_status(exp_id, 'completed')
+                        print("Experiment Done")
 
 
 def get(_id: int) -> dict:

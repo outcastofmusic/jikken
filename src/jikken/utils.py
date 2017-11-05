@@ -11,20 +11,23 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def prepare_variables(*, reference_directory, update_directory=None):
-    reference_variables = load_variables_from_dir(reference_directory)
-    if update_directory is not None:
-        updated_variables = load_variables_from_dir(update_directory)
+def prepare_variables(*, config_directory, reference_directory=None):
+    if reference_directory is None:
+        variables = load_variables_from_filepath(config_directory)
+        config_dir = config_directory
+    else:
+        reference_variables = load_variables_from_filepath(reference_directory)
+        updated_variables = load_variables_from_filepath(config_directory)
         variables = update_variables(reference_variables, updated_variables)
         new_dir = TemporaryDirectory()
         create_directory_from_variables(new_dir.name, variables)
-        config_dir = new_dir.name
-    else:
-        variables = reference_variables
-        config_dir = reference_directory
+        if os.path.isfile(config_directory):
+            config_dir = os.path.join(new_dir.name, list(variables.keys())[0])
+        else:
+            config_dir = new_dir.name
     yield variables, config_dir
 
-    if update_directory is not None:
+    if reference_directory is not None:
         new_dir.cleanup()
 
 
@@ -84,7 +87,7 @@ def load_variables_from_filepath(experiment_filepath, root=True):
     elif experiment_filepath.endswith("yaml") or experiment_filepath.endswith("json"):
         with open(experiment_filepath, 'rt') as file_handle:
             values = yaml.load(file_handle)
-        variables = {"/".join(str(experiment_filepath).split("/")[-2:]): values} if root else values
+        variables = {str(experiment_filepath).split("/")[-1]: values} if root else values
 
     else:
         raise IOError("only json and yaml files are supported")

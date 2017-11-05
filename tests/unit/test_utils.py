@@ -1,3 +1,4 @@
+import copy
 import json
 
 import jikken.utils as utils
@@ -23,7 +24,7 @@ def config_folder(tmpdir):
              }
 
     }
-    config_dir = tmpdir.mkdir('experiment')
+    config_dir = tmpdir.mkdir('experiment').mkdir('config')
     json_file = config_dir.join("experiment.json")
     with json_file.open('w') as f:
         json.dump(expected_variables, f)
@@ -47,8 +48,11 @@ def config_directory(config_folder):
 
 
 def test_load_from_dir(config_directory):
+    # GIVEN a config directory
     conf_dir, expected_variables = config_directory
+    # WHEN I load the directory
     variables = utils.load_variables_from_dir(str(conf_dir))
+    # THEN  the variables have been set as a dict with keys the config filepaths
     assert variables == expected_variables
     variables = utils.load_variables_from_filepath(str(conf_dir))
     assert variables == expected_variables
@@ -56,35 +60,57 @@ def test_load_from_dir(config_directory):
 
 def test_create_dir_from_utils(config_directory):
     """test new directory is given by variables"""
+    # GIVEN a a dict of variables  loaded from a config_directory
     conf_dir, expected_variables = config_directory
     new_dir = conf_dir.mkdir("new_dir")
+    # WHEN I pass them to create_directory_from_variables
     utils.create_directory_from_variables(str(new_dir), expected_variables)
+    # THEN I create a new config dir that mirrors the config_directory
     new_directory = os.path.join(str(new_dir), str(conf_dir).split("/")[-1])
     new_variables = utils.load_variables_from_dir(new_directory)
     assert new_variables == expected_variables
 
 
 def test_load_from_file(config_folder):
-    _, expected_variables, json_file, yaml_file = config_folder
-    variables = utils.load_variables_from_filepath(json_file.strpath)
-    json_variables = {"/".join(str(json_file).split("/")[-2:])
-                      : expected_variables}
-    assert variables == json_variables
-    variables = utils.load_variables_from_filepath(yaml_file.strpath)
-    yaml_variables = {"/".join(str(yaml_file).split("/")[-2:])
-                      : expected_variables}
-    assert variables == yaml_variables
+    # Given a config_folder with two files
+    config_path, expected_variables, json_file, yaml_file = config_folder
+    json_variables = {str(json_file).split("/")[-1]: expected_variables}
+    yaml_variables = {str(yaml_file).split("/")[-1]: expected_variables}
+
+    # WHEN I load the json_file
+    actual_json_variables = utils.load_variables_from_filepath(json_file.strpath)
+    # AND when I load the yaml file
+    actual_yaml_variables = utils.load_variables_from_filepath(yaml_file.strpath)
+    # THEN the files get loaded in a dict with their filepaths as a key
+    assert actual_json_variables == json_variables
+    assert actual_yaml_variables == yaml_variables
+
+
+def test_load_from_wrong_file_raise(config_folder):
+    # GIVEN a config_folder with a text file
+    config_path, *_ = config_folder
+    txt_file = config_path.join("test.txt")
+    with txt_file.open('w') as file_handle:
+        file_handle.write("this is a test text file")
+    # WHEN I try to load the file
+    # THEN an IOError is raised
+    with pytest.raises(IOError):
+        variables = utils.load_variables_from_filepath(str(txt_file))
 
 
 def test_prepare_variables_no_update(config_directory):
+    # GIVEN a config_dir only
     conf_dir, expected_variables = config_directory
-    with utils.prepare_variables(reference_directory=str(conf_dir)) as variables_path:
+    # WHEN I prepare variables
+    with utils.prepare_variables(config_directory=str(conf_dir)) as variables_path:
         variables, path = variables_path
+        # THEN the path and variables are the config_dir and the variables inside it respectively
         assert path == str(conf_dir)
         assert variables == expected_variables
 
 
-def test_prepare_variables_with_update(config_directory, tmpdir):
+def test_prepare_variables_with_update_dir(config_directory, tmpdir):
+    # GIVEN a conf dir and an update_dir
     conf_dir, expected_variables = config_directory
     updated_variables = {
         "training_parameters":
@@ -94,13 +120,48 @@ def test_prepare_variables_with_update(config_directory, tmpdir):
             {'batch_size': 8,
              }
     }
-    update_dir = tmpdir.mkdir("experiment2")
+    update_dir = tmpdir.mkdir("experiment2").mkdir("config")
     json_file = update_dir.join("experiment.json")
     with json_file.open('w') as f:
         json.dump(updated_variables, f)
-    with utils.prepare_variables(reference_directory=str(conf_dir), update_directory=str(update_dir)) as variables_path:
+    # WHEN I pass them to the prepare_variables class
+    with utils.prepare_variables(reference_directory=str(conf_dir), config_directory=str(update_dir)) as variables_path:
         variables, path = variables_path
-        assert variables == expected_variables
+        # THEN a new temporary path is created with new files with the combined updated config files
+        assert path != str(conf_dir)
+        assert path != str(update_dir)
+        assert variables != expected_variables
+    expected_variables['config/experiment.json']['training_parameters']['batch_size'] = 200
+    expected_variables['config/experiment.json']['input_parameters']['batch_size'] = 8
+    assert variables['config/experiment.json'] == expected_variables['config/experiment.json']
+
+
+def test_prepare_variables_with_update_file(config_folder):
+    # GIVEN a conf file and an update_file
+    config_path, expected_variables, json_file, yaml_file = config_folder
+    expected_variables = {str(json_file).split("/")[-1]: expected_variables}
+    updated_variables = {
+        "training_parameters":
+            {"batch_size": 200,
+             },
+        "input_parameters":
+            {'batch_size': 8,
+             }
+    }
+    root_dir = config_path.parts()[-2]
+    update_dir = root_dir.mkdir("config2")
+    json_file_2 = update_dir.join("experiment.json")
+    with json_file_2.open('w') as f:
+        json.dump(updated_variables, f)
+    # WHEN I pass them to the prepare_variables class
+    with utils.prepare_variables(reference_directory=str(json_file),
+                                 config_directory=str(json_file_2)) as variables_path:
+        variables, path = variables_path
+        # THEN a new temporary path is created with new files with the combined updated config files
+        assert variables != expected_variables
+    expected_variables['experiment.json']['training_parameters']['batch_size'] = 200
+    expected_variables['experiment.json']['input_parameters']['batch_size'] = 8
+    assert variables == expected_variables
 
 
 @pytest.fixture()
