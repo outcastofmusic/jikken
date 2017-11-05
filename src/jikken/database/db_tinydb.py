@@ -1,4 +1,5 @@
 import tinydb
+from .database import ExperimentQuery
 from traitlets import Any
 
 from .helpers import set_inner, add_inner
@@ -33,16 +34,16 @@ class TinyDB(DB):  # noqa : E801
         """Return a experiment dict with matching id."""
         return self._db.get(eid=int(experiment_id))
 
-    def list_experiments(self, ids=None, tags=None, query_type="and") -> list:
+    def list_experiments(self, query: ExperimentQuery=None) -> list:
         """Return list of experiments."""
-        if tags is None and ids is None:
+        if query is None:
             return self._db.all()
-        elif ids is not None:
-            return [self.get(_id) for _id in ids]
-        elif query_type == "and":
-            return self._db.search(tinydb.Query().tags.all(tags))
-        elif query_type == "or":
-            return self._db.search(tinydb.Query().tags.any(tags))
+        elif query.ids is not None:
+            return [self.get(_id) for _id in query.ids]
+        elif query.query_type == "and":
+            return self._db.search(tinydb.Query().tags.all(query.tags))
+        elif query.query_type == "or":
+            return self._db.search(tinydb.Query().tags.any(query.tags))
 
     def count(self) -> int:
         """Return number of experiments in db."""

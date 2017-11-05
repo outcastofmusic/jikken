@@ -28,19 +28,28 @@ def run(script_path, configuration_path, ref_path, args, tags):
             reference_configuration_path=ref_path,
             )
 
+
 # TODO add options for schema and parameter hash and status
 @jikken_cli.command(help="list experiments in db")
 @click.option('--ids', '-a', multiple=True, help="the ids to print")
 @click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")
+@click.option('--schema', '-s', multiple=True)
+@click.option('--param_schema', '-p', multiple=True)
 @click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
 @click.option('--stdout/--no-stdout', default=False)
 @click.option('--stderr/--no-stderr', default=False)
 @click.option('--var/--no-var', default=True)
 @click.option('--git/--no-git', default=True)
 @click.option('--monitored/--no-monitored', default=True)
-def list(ids, tags, query, stdout, stderr, var, git, monitored):
+def list(ids, query, tags, schema, param_schema, stdout, stderr, var, git, monitored):
     assert (len(ids) == 0) or (len(tags) == 0), "cannot provide both tags and ids"
-    results = api.list(ids=ids, tags=tags, query_type=query)
+    query = api.ExperimentQuery(tags=tags,
+                                ids=ids,
+                                schema_hashes=schema,
+                                schema_param_hashes=param_schema,
+                                query_type=query
+                                )
+    results = api.list(query=query)
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
 
@@ -58,7 +67,8 @@ def count(tags, query):
     if len(tags) == 0:
         count = api.count()
     else:
-        count = len(api.list(ids=[], tags=tags, query_type=query))
+        query = api.ExperimentQuery(ids=[], tags=tags, query_type=query)
+        count = len(api.list(query=query))
     print("number of items: {}".format(count))
 
 

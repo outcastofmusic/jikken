@@ -1,13 +1,13 @@
 import os
 from subprocess import PIPE, Popen
 
-from .database import setup_database
+from .database import setup_database, ExperimentQuery
 from .experiment import Experiment
 from .monitor import capture_value
 from .utils import prepare_variables
+from collections import namedtuple
 
 BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database
-
 
 def run(*, configuration_path: str, script_path: str, args: list = None, tags: list = None,
         reference_configuration_path: str = None) -> None:
@@ -91,22 +91,23 @@ def get(_id: int) -> dict:
     return experiment
 
 
-def list(*, ids: list, tags: list, query_type: str) -> list:
+def list(*, query: ExperimentQuery) -> list:
     """return a list of experiment documents either based on ids or based on tags
 
     Args:
+        query: ExperimentQuery with ids, tags, query_type schema and parma_schema
         ids (list):  a list of ids to retrieve from the database
         tags (list): al list of tags to retrieve from the database
         query_type (str): Can be either 'and' or 'or'. If it is and returns matches that match all tags if it is
             or returns matches that match any tags
+        schema(str): a list of schema hashes to query the db
+        param_schema(str): a list of parameter schema hashes to query the db
 
     Returns:
             list: A list of dicts with each dict being an experiment document
     """
     with setup_database() as db:
-        ids = None if len(ids) == 0 else ids
-        tags = None if len(tags) == 0 else tags
-        results = db.list_experiments(ids=ids, tags=tags, query_type=query_type)
+        results = db.list_experiments(query=query)
     return results
 
 

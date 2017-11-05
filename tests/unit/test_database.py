@@ -1,4 +1,5 @@
 import pytest
+from jikken.database import ExperimentQuery
 from jikken.experiment import Experiment
 
 
@@ -111,11 +112,13 @@ def test_list_experiments(add_multiple_experiments):
     assert len(experiments) == 4
 
     # And if we query with tags <and> we should get 1 experiment
-    experiments = db.list_experiments(tags=["tag_1", "tag_2"])
+    query = ExperimentQuery(tags=["tag_1", "tag_2"])
+    experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
 
     # And if we query with tags <or> we should get 2 experiments
-    experiments = db.list_experiments(tags=["tag_1", "tag_2"], query_type='or')
+    query = ExperimentQuery(tags=["tag_1", "tag_2"], query_type="or")
+    experiments = db.list_experiments(query=query)
     assert len(experiments) == 2
 
 

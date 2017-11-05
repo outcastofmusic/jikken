@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any
 
+from .database import ExperimentQuery
+
 
 class DB(metaclass=ABCMeta):
     @abstractmethod
@@ -16,7 +18,7 @@ class DB(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def list_experiments(self, ids: list = None, tags: list = None, query_type: str = "and") -> dict:
+    def list_experiments(self, query: ExperimentQuery) -> dict:
         pass
 
     @abstractmethod

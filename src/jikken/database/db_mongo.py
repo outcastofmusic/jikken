@@ -1,7 +1,9 @@
 from typing import Any
+
 from bson import ObjectId
 from bson.errors import InvalidId
 import pymongo
+from .database import ExperimentQuery
 from pymongo.errors import ConnectionFailure
 import time
 from .helpers import add_mongo, map_experiment, inv_map_experiment, set_mongo
@@ -52,15 +54,16 @@ class MongoDB(DB):
     def get(self, experiment_id: str):
         return inv_map_experiment(self._db.experiments.find_one({"_id": ObjectId(experiment_id)}))
 
-    def list_experiments(self, ids: list = None, tags: list = None, query_type: str = "and"):
-        if tags is None and ids is None:
+    def list_experiments(self, query: ExperimentQuery=None):
+
+        if query is None:
             return [inv_map_experiment(i) for i in self._db.experiments.find()]
-        elif ids is not None:
-            return [self.get(_id) for _id in ids]
-        elif query_type == "and":
-            return [inv_map_experiment(i) for i in self._db.experiments.find({"tags": {"$all": tags}})]
-        elif query_type == "or":
-            return [inv_map_experiment(i) for i in self._db.experiments.find({"tags": {"$in": tags}})]
+        elif query.ids is not None:
+            return [self.get(_id) for _id in query.ids]
+        elif query.query_type == "and":
+            return [inv_map_experiment(i) for i in self._db.experiments.find({"tags": {"$all": query.tags}})]
+        elif query.query_type == "or":
+            return [inv_map_experiment(i) for i in self._db.experiments.find({"tags": {"$in": query.tags}})]
 
     def update(self, experiment_id: int, experiment: dict):
         pass
