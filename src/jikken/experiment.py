@@ -32,20 +32,20 @@ class Experiment:
         return self._tags
 
     @property
-    def experiment_schema_hash(self):
+    def schema_hash(self):
         if self._schema_hash == '':
             self._schema_hash = get_hash(self.schema)
         return self._schema_hash
 
     @property
-    def experiment_parameters_hash(self):
+    def parameters_hash(self):
         if self._parameters_schema_hash == '':
             self._parameters_schema_hash = get_hash(self.parameters_schema)
         return self._parameters_schema_hash
 
     @property
     def hash(self):
-        return self.experiment_parameters_hash
+        return self.parameters_hash
 
     def __repr__(self):
         return json.dumps(self._variables)
@@ -57,8 +57,8 @@ class Experiment:
             "dirty": self.commit_status,
             "repo": self.git_repo_origin,
             "tags": self.tags,
-            "parameter_hash": self.experiment_parameters_hash,
-            "schema_hash": self.hash,
+            "parameter_hash": self.parameters_hash,
+            "schema_hash": self.schema_hash,
             "id": None,
             "stdout": "",
             "stderr": "",

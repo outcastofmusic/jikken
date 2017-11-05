@@ -80,8 +80,6 @@ def test_add_increases_count(add_multiple_experiments):
 
     # THEN the count increases by 1
     assert db.count() == 4
-
-
 def test_delete_experiments(add_multiple_experiments):
     """Test Database.delete and delete_all affect on database.count()"""
     # GIVEN a db with 3 experiments
@@ -99,6 +97,18 @@ def test_delete_experiments(add_multiple_experiments):
     assert db.count() == 0
 
 
+def test_multiple_experiments_have_same_schema(add_multiple_experiments):
+    expected_schema ='647e7906405ce04c5f1b86b055051c9a'
+    # GIVEN multiple experiments with the same variables
+    db, file_setup = add_multiple_experiments
+    #  WHEN I check the schema hash
+    experiments = db.list_experiments()
+    # THEN all schemas should be the same
+    for exp in experiments:
+        assert exp['schema_hash'] == expected_schema
+
+
+@pytest.mark.test_listing
 def test_list_experiments(add_multiple_experiments):
     """Test  DataBase.add() affects list_experiments"""
     # GIVEN a db with 3 experiments
@@ -106,13 +116,12 @@ def test_list_experiments(add_multiple_experiments):
     db, file_setup = add_multiple_experiments
     code_dir = file_setup[0]
     db.add(Experiment(variables={"index": 4}, code_dir=code_dir, tags=["tag_4"]))
-
     #  THEN list_experiments should return 4 experiments
     experiments = db.list_experiments()
     assert len(experiments) == 4
 
     # And if we query with tags <and> we should get 1 experiment
-    query = ExperimentQuery(tags=["tag_1", "tag_2"])
+    query = ExperimentQuery(tags=["tag_1", "tag_2"],query_type="and")
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
 
@@ -120,6 +129,21 @@ def test_list_experiments(add_multiple_experiments):
     query = ExperimentQuery(tags=["tag_1", "tag_2"], query_type="or")
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 2
+    # And if I query with parameter hashes <or> I should get 2 experiments
+    schema_parameter_hashes = ['ab72f9b029e84cd8c14cf5ef75451ca2', '8d7f1f3f01f1169e134940adb86f600b']
+    query = ExperimentQuery(tags=["tag_1", "tag_2"], schema_param_hashes=schema_parameter_hashes, query_type="or")
+    experiments = db.list_experiments(query=query)
+    assert len(experiments) == 2
+
+    # And if I query with parameter hashes <and> I should get 1 experiments
+    query = ExperimentQuery(tags=["tag_1", "tag_2"], schema_param_hashes=schema_parameter_hashes, query_type="and")
+    experiments = db.list_experiments(query=query)
+    assert len(experiments) == 1
+
+    query = ExperimentQuery(tags=["tag_3"], schema_param_hashes=schema_parameter_hashes, query_type="or")
+    experiments = db.list_experiments(query=query)
+    assert len(experiments) == 0
+
 
 
 std_options = [

@@ -1,3 +1,4 @@
+from functools import reduce
 import tinydb
 from .database import ExperimentQuery
 from traitlets import Any
@@ -34,16 +35,27 @@ class TinyDB(DB):  # noqa : E801
         """Return a experiment dict with matching id."""
         return self._db.get(eid=int(experiment_id))
 
-    def list_experiments(self, query: ExperimentQuery=None) -> list:
+    def list_experiments(self, query: ExperimentQuery = None) -> list:
         """Return list of experiments."""
         if query is None:
             return self._db.all()
         elif query.ids is not None:
             return [self.get(_id) for _id in query.ids]
-        elif query.query_type == "and":
-            return self._db.search(tinydb.Query().tags.all(query.tags))
-        elif query.query_type == "or":
-            return self._db.search(tinydb.Query().tags.any(query.tags))
+        else:
+            eq = tinydb.Query()
+            query_list = []
+            if query.tags is not None and query.query_type == "and":
+                query_list.append(eq.tags.all(query.tags))
+            elif query.tags is not None and query.query_type == "or":
+                query_list.append(eq.tags.any(query.tags))
+            if query.schema_hashes is not None and query.query_type == "and":
+                pattern = "(" + ")|(".join(query.schema_hashes) +")"
+                query_list.append(eq.schema_hash.matches(pattern))
+            if query.schema_param_hashes is not None:
+                pattern = "(" + ")|(".join(query.schema_param_hashes) +")"
+                query_list.append(eq.parameter_hash.matches(pattern))
+            and_query = reduce(lambda x,y: (x) & (y), query_list)
+            return self._db.search(and_query)
 
     def count(self) -> int:
         """Return number of experiments in db."""
