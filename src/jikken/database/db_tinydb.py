@@ -1,5 +1,6 @@
 import tinydb
 from tinydb.operations import add, set
+from .db_abc import DB
 
 
 def add_inner(fields, n):
@@ -28,7 +29,7 @@ def set_inner(fields, n):
     return transform
 
 
-class TinyDB:  # noqa : E801
+class TinyDB(DB):  # noqa : E801
     """Wrapper class for TinyDB.
 
     The methods in this class need to match
@@ -39,6 +40,10 @@ class TinyDB:  # noqa : E801
     def __init__(self, db_path):  # type (str) -> ()
         """Connect to db."""
         self._db = tinydb.TinyDB(db_path + '/jikken_db.json')
+
+    def stop_db(self):
+        """Disconnect from DB."""
+        pass
 
     def add(self, experiment):  # type (dict) -> int
         """Add an experiment dict to db."""
@@ -89,7 +94,3 @@ class TinyDB:  # noqa : E801
     def delete_all(self):
         """Remove all experiments from db."""
         self._db.purge()
-
-    def stop_db(self):
-        """Disconnect from DB."""
-        pass

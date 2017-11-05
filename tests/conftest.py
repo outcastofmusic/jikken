@@ -22,7 +22,7 @@ TEST_CONFIG_JSON = {
 }
 
 TEST_SCRIPT = \
-"""
+ """
 import click
 import json
 @click.command()
@@ -50,16 +50,31 @@ def file_setup(tmpdir):
     return conf_file.strpath, script_file.strpath, TEST_CONFIG_JSON
 
 
-@pytest.fixture(scope='module')
-def jikken_db_session(tmpdir_factory):
+database_types = ("tiny",
+                  "mongo"
+                  )
+
+
+@pytest.fixture(params=database_types)
+def db_config(tmpdir, request):
+    if request.param == 'tiny':
+        db_path = str(tmpdir.mkdir("temp"))
+    elif request.param == 'mongo':
+        db_path = "mongodb://localhost:27019"
+    return db_path, request.param
+
+
+@pytest.fixture()
+def jikken_db_session(db_config):
     """Connect to db before tests, disconnect after."""
-    temp_dir = tmpdir_factory.mktemp('temp')
-    test_database = DataBase(db_path=str(temp_dir), db_type='tiny')
+    test_database = DataBase(db_path=db_config[0], db_type=db_config[1])
     yield test_database
     test_database.stop_db()
+    del test_database
 
 
 @pytest.fixture()
 def jikken_db(jikken_db_session):
     yield jikken_db_session
     jikken_db_session.delete_all()
+    del jikken_db_session

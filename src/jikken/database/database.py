@@ -8,25 +8,30 @@ from .config import get_config
 
 class Singleton(type):
     def __init__(self, *args, **kwargs):
-        self.__instance = None
+        self._instance = None
         super(Singleton, self).__init__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
-        if self.__instance is None:
-            self.__instance = super(Singleton, self).__call__(*args, **kwargs)
-            return self.__instance
+        if self._instance is None:
+            self._instance = super(Singleton, self).__call__(*args, **kwargs)
+            return self._instance
+        elif self._instance.db != kwargs['db_type']:
+            self._instance = super(Singleton, self).__call__(*args, **kwargs)
+            return self._instance
         else:
-            return self.__instance
+            return self._instance
 
 
 class DataBase(metaclass=Singleton):
     def __init__(self, db_path, db_type):
+        self.db = db_type
         if db_type == 'tiny':
             os.makedirs(db_path, exist_ok=True)
             from .db_tinydb import TinyDB
             self._database = TinyDB(db_path)
         elif db_type == 'mongo':
-            raise NotImplementedError('mongo not implemented yet')
+            from .db_mongo import MongoDB
+            self._database = MongoDB(db_path)
             # TODO implement mongo
         elif db_type == 'es':
             # TODO implement es
