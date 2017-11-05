@@ -29,7 +29,6 @@ def run(script_path, configuration_path, ref_path, args, tags):
             )
 
 
-# TODO add options for schema and parameter hash and status
 @jikken_cli.command(help="list experiments in db")
 @click.option('--ids', '-a', multiple=True, help="the ids to print")
 @click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")
@@ -53,7 +52,6 @@ def list(ids, query, tags, schema, param_schema, status, stdout, stderr, var, gi
                                 )
     if len(ids) == len(tags) == len(param_schema) == len(schema) == len(status) == 0:
         query = None
-    print(query)
     results = api.list(query=query)
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
