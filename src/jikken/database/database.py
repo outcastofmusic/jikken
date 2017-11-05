@@ -6,9 +6,9 @@ from jikken.experiment import Experiment
 
 from .config import get_config
 
-ExperimentQuery = namedtuple("ExperimentQuery", ["tags", "ids", "schema_hashes", "schema_param_hashes", "query_type"])
-ExperimentQuery.__new__.__defaults__ = (None, None, None, None, "and")
-
+ExperimentQuery = namedtuple("ExperimentQuery",
+                             ["tags", "ids", "schema_hashes", "status", "schema_param_hashes", "query_type"])
+ExperimentQuery.__new__.__defaults__ = (None, None, None, None, None, "and")
 
 
 class Singleton(type):
@@ -53,7 +53,7 @@ class DataBase(metaclass=Singleton):
         """Return a experiment dict with matching id."""
         return self._database.get(experiment_id)
 
-    def list_experiments(self, query: ExperimentQuery=None):  # type (str) -> list[dict]
+    def list_experiments(self, query: ExperimentQuery = None):  # type (str) -> list[dict]
         """Return list of experiments."""
         return self._database.list_experiments(query=query)
 

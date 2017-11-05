@@ -34,6 +34,7 @@ def run(script_path, configuration_path, ref_path, args, tags):
 @click.option('--ids', '-a', multiple=True, help="the ids to print")
 @click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")
 @click.option('--schema', '-s', multiple=True)
+@click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True)
 @click.option('--param_schema', '-p', multiple=True)
 @click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
 @click.option('--stdout/--no-stdout', default=False)
@@ -41,14 +42,18 @@ def run(script_path, configuration_path, ref_path, args, tags):
 @click.option('--var/--no-var', default=True)
 @click.option('--git/--no-git', default=True)
 @click.option('--monitored/--no-monitored', default=True)
-def list(ids, query, tags, schema, param_schema, stdout, stderr, var, git, monitored):
+def list(ids, query, tags, schema, param_schema, status, stdout, stderr, var, git, monitored):
     assert (len(ids) == 0) or (len(tags) == 0), "cannot provide both tags and ids"
     query = api.ExperimentQuery(tags=tags,
                                 ids=ids,
                                 schema_hashes=schema,
                                 schema_param_hashes=param_schema,
-                                query_type=query
+                                query_type=query,
+                                status=status
                                 )
+    if len(ids) == len(tags) == len(param_schema) == len(schema) == len(status) == 0:
+        query = None
+    print(query)
     results = api.list(query=query)
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)

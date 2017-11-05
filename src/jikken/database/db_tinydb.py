@@ -44,17 +44,21 @@ class TinyDB(DB):  # noqa : E801
         else:
             eq = tinydb.Query()
             query_list = []
-            if query.tags is not None and query.query_type == "and":
-                query_list.append(eq.tags.all(query.tags))
-            elif query.tags is not None and query.query_type == "or":
-                query_list.append(eq.tags.any(query.tags))
-            if query.schema_hashes is not None and query.query_type == "and":
-                pattern = "(" + ")|(".join(query.schema_hashes) +")"
+            if query.tags is not None and len(query.tags) > 0:
+                if query.query_type == "and":
+                    query_list.append(eq.tags.all(query.tags))
+                else:
+                    query_list.append(eq.tags.any(query.tags))
+            if query.schema_hashes is not None and len(query.schema_hashes) > 0:
+                pattern = "(" + ")|(".join(query.schema_hashes) + ")"
                 query_list.append(eq.schema_hash.matches(pattern))
-            if query.schema_param_hashes is not None:
-                pattern = "(" + ")|(".join(query.schema_param_hashes) +")"
+            if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
+                pattern = "(" + ")|(".join(query.schema_param_hashes) + ")"
                 query_list.append(eq.parameter_hash.matches(pattern))
-            and_query = reduce(lambda x,y: (x) & (y), query_list)
+            if query.status is not None and len(query.status) > 0:
+                pattern = "(" + ")|(".join(query.status) + ")"
+                query_list.append(eq.status.matches(pattern))
+            and_query = reduce(lambda x, y: (x) & (y), query_list)
             return self._db.search(and_query)
 
     def count(self) -> int:

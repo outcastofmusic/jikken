@@ -58,17 +58,19 @@ class MongoDB(DB):
 
         if query is None:
             return [inv_map_experiment(i) for i in self._db.experiments.find()]
-        elif query.ids is not None:
+        elif query.ids is not None and len(query.ids) > 0:
             return [self.get(_id) for _id in query.ids]
         else:
             query_list = []
             qt = "$all" if query.query_type == 'and' else "$in"
-            if query.tags is not None:
+            if query.tags is not None and len(query.tags) > 0:
                 query_list.append({"tags": {qt: query.tags}})
-            if query.schema_param_hashes is not None:
+            if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
                 query_list.append({"parameter_hash": {"$in": query.schema_param_hashes}})
-            if query.schema_hashes is not None:
+            if query.schema_hashes is not None and len(query.schema_hashes) > 0:
                 query_list.append({"schema_hash": {"$in": query.schema_hashes}})
+            if query.status is not None and len(query.status) > 0:
+                query_list.append({"status": {"$in": query.status}})
             complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
             return [inv_map_experiment(i) for i in self._db.experiments.find(complex_query)]
 
