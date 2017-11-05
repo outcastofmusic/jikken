@@ -14,19 +14,23 @@ DEFAULT_FILE = \
 DEFAULT_PATH = '~/.jikken/config'
 
 
-def write_default_config(config_file):
+def write_default_config():
+    config_file = os.path.expanduser(DEFAULT_PATH)
     os.makedirs(os.path.dirname(config_file), exist_ok=True)
     with open(config_file, 'w') as file_handle:
         file_handle.writelines(DEFAULT_FILE)
+    return config_file
 
 
-#TODO manage handling of local configs
-def get_config():
+def read_config(config_file):
     parser = ConfigParser()
-    config_file = os.path.expanduser(DEFAULT_PATH)
-    if not os.path.exists(config_file):
-        write_default_config(config_file=config_file)
     parser.read(config_file)
     db_path = os.path.expanduser(parser['db']['path'])
     db_type = parser['db']['type']
     return JikkenConfig(db_type=db_type, db_path=db_path)
+
+
+def get_config(config_file=None):
+    if config_file is None or not os.path.exists(config_file):
+        config_file = write_default_config(config_file=config_file)
+    return read_config(config_file)
