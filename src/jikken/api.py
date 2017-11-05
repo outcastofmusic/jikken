@@ -9,6 +9,7 @@ from collections import namedtuple
 
 BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database
 
+
 def run(*, configuration_path: str, script_path: str, args: list = None, tags: list = None,
         reference_configuration_path: str = None) -> None:
     """Runs an experiment script and captures the stdout and stderr
@@ -33,7 +34,7 @@ def run(*, configuration_path: str, script_path: str, args: list = None, tags: l
         with setup_database() as db:
             exp_id = db.add(exp)
             if script_path.endswith(".py"):
-                cmd = ["python3", script_path, "-c", configuration_path] + extra_kwargs
+                cmd = ["python3", script_path, configuration_path] + extra_kwargs
             elif script_path.endswith(".sh"):
                 cmd = ["bash", script_path, configuration_path] + extra_kwargs
             error_found = False

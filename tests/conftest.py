@@ -26,7 +26,7 @@ TEST_SCRIPT = \
 import click
 import json
 @click.command()
-@click.option('--configuration_path','-c', required=True, type=click.Path(exists=True, file_okay=True, dir_okay=True))
+@click.argument('configuration_path', type=click.Path(exists=True, file_okay=True, dir_okay=True))
 @click.option('--var1',default=None)
 @click.option('--var2', default=None)
 def main(configuration_path,var1,var2):

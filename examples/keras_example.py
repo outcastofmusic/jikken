@@ -14,14 +14,16 @@ jikken_callback = LambdaCallback(on_epoch_end=lambda epoch, logs: log_value('val
 
 
 @click.command()
-@click.option('--configuration_path', '-c', required=True, type=click.Path(exists=True, file_okay=True))
-def train(configuration_path):
+@click.argument('configuration_path', type=click.Path(exists=True, file_okay=True))
+@click.option('--data_size', type=int, default=-1)
+def train(configuration_path, data_size):
     with open(configuration_path) as file_handle:
         config = yaml.load(file_handle)
 
-    (train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=config['dataset_size'])
+    data_size = data_size if data_size > 0 else config['dataset_size']
+    (train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=data_size)
 
-    def vectorize_sequences(sequences, dimension=config['dataset_size']):
+    def vectorize_sequences(sequences, dimension=data_size):
         # Create an all-zero matrix of shape (len(sequences), dimension)
         results = np.zeros((len(sequences), dimension))
         for i, sequence in enumerate(sequences):
@@ -38,7 +40,7 @@ def train(configuration_path):
     y_test = np.asarray(test_labels).astype('float32')
 
     model = models.Sequential()
-    model.add(layers.Dense(16, activation='relu', input_shape=(config['dataset_size'],)))
+    model.add(layers.Dense(16, activation='relu', input_shape=(data_size,)))
     model.add(layers.Dense(16, activation='relu'))
     model.add(layers.Dense(1, activation='sigmoid'))
 
