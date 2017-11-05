@@ -96,10 +96,12 @@ class DataBase(metaclass=Singleton):
 
 
 @contextmanager
-def setup_database(config_path=None):
+def setup_database():
+    config_path = os.path.join(os.getcwd(), ".jikken", "config")
     _database = None
     try:
         config = get_config(config_path)
+        print(config)
         _database = DataBase(db_path=config.db_path, db_type=config.db_type)
         yield _database
     finally:
