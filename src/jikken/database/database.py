@@ -32,10 +32,9 @@ class DataBase(metaclass=Singleton):
         elif db_type == 'mongo':
             from .db_mongo import MongoDB
             self._database = MongoDB(db_path)
-            # TODO implement mongo
         elif db_type == 'es':
             # TODO implement es
-            raise NotImplementedError('es not implemented yet')
+            raise NotImplementedError('ES not implemented yet')
         else:
             raise ValueError("db_type must be a 'tiny' or 'mongo'")
 
