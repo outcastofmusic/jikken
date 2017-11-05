@@ -32,5 +32,5 @@ def read_config(config_file):
 
 def get_config(config_file=None):
     if config_file is None or not os.path.exists(config_file):
-        config_file = write_default_config(config_file=config_file)
+        config_file = write_default_config()
     return read_config(config_file)

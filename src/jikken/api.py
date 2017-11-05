@@ -30,7 +30,8 @@ def run(*, configuration_path: str, script_path: str, args: list = None, tags: l
         variables, configuration_path = vr
         variables = {**variables, **extra_vars}
         exp = Experiment(variables=variables, code_dir=os.path.dirname(script_path), tags=tags)
-        with setup_database() as db:
+        local_config_path = os.path.join(os.getcwd(), ".jikken", "config")
+        with setup_database(local_config_path) as db:
             exp_id = db.add(exp)
             if script_path.endswith(".py"):
                 cmd = ["python3", script_path, "-c", configuration_path] + extra_kwargs

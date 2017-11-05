@@ -91,10 +91,10 @@ class DataBase(metaclass=Singleton):
 
 
 @contextmanager
-def setup_database():
+def setup_database(config_path=None):
     _database = None
     try:
-        config = get_config()
+        config = get_config(config_path)
         _database = DataBase(db_path=config.db_path, db_type=config.db_type)
         yield _database
     finally:
