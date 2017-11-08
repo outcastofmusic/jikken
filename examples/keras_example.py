@@ -1,4 +1,8 @@
-# example taken from keras book
+"""
+Example taken from [Deep Learning with Python](https://www.manning.com/books/deep-learning-with-python)
+Based on this notebook:
+https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/3.5-classifying-movie-reviews.ipynb
+"""
 import click
 import numpy as np
 import yaml
