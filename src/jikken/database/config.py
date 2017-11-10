@@ -1,14 +1,16 @@
 import os
 from collections import namedtuple
 from configparser import ConfigParser
-#TODO add db_name to config
-JikkenConfig = namedtuple("JikkenConfig", ['db_path', 'db_type'])
+
+JikkenConfig = namedtuple("JikkenConfig", ['db_path', 'db_type', 'db_name'])
+JikkenConfig.__new__.__defaults__ = ("~/.jikken/jikken_db", "tiny", "jikken")
 
 DEFAULT_FILE = \
     """
     [db]
     path = ~/.jikken/jikken_db/
     type = tiny
+    name = jikken
     """
 
 DEFAULT_PATH = '~/.jikken/config'

@@ -16,9 +16,10 @@ class TinyDB(DB):  # noqa : E801
 
     """
 
-    def __init__(self, db_path):  # type (str) -> ()
+    def __init__(self, db_path: str, db_name: str):
         """Connect to db."""
-        self._db = tinydb.TinyDB(db_path + '/jikken_db.json')
+        db = tinydb.TinyDB(db_path + '/jikken_db.json')
+        self._db = db.table(db_name)
 
     def stop_db(self):
         """Disconnect from DB."""

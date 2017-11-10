@@ -4,7 +4,7 @@ from collections import namedtuple
 
 from jikken.experiment import Experiment
 
-from .config import get_config
+from .config import get_config, JikkenConfig
 
 ExperimentQuery = namedtuple("ExperimentQuery",
                              ["tags", "ids", "schema_hashes", "status", "schema_param_hashes", "query_type"])
@@ -20,7 +20,7 @@ class Singleton(type):
         if self._instance is None:
             self._instance = super(Singleton, self).__call__(*args, **kwargs)
             return self._instance
-        elif self._instance.db != kwargs['db_type']:
+        elif self._instance.db != kwargs['config'].db_type:
             self._instance = super(Singleton, self).__call__(*args, **kwargs)
             return self._instance
         else:
@@ -28,16 +28,16 @@ class Singleton(type):
 
 
 class DataBase(metaclass=Singleton):
-    def __init__(self, db_path, db_type):
-        self.db = db_type
-        if db_type == 'tiny':
-            os.makedirs(db_path, exist_ok=True)
+    def __init__(self, config: JikkenConfig):
+        self.db = config.db_type
+        if config.db_type == 'tiny':
+            os.makedirs(config.db_path, exist_ok=True)
             from .db_tinydb import TinyDB
-            self._database = TinyDB(db_path)
-        elif db_type == 'mongo':
+            self._database = TinyDB(config.db_path, config.db_name)
+        elif config.db_type == 'mongo':
             from .db_mongo import MongoDB
-            self._database = MongoDB(db_path)
-        elif db_type == 'es':
+            self._database = MongoDB(config.db_path, config.db_name)
+        elif config.db_type == 'es':
             # TODO implement es
             raise NotImplementedError('ES not implemented yet')
         else:
@@ -106,7 +106,7 @@ def setup_database():
     try:
         config = get_config(config_path)
         print(config)
-        _database = DataBase(db_path=config.db_path, db_type=config.db_type)
+        _database = DataBase(config)
         yield _database
     finally:
         _database.stop_db()

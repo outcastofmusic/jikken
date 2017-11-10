@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from jikken.database.config import JikkenConfig
 from jikken.database import DataBase
 
 TEST_CONFIG_JSON = {
@@ -61,13 +62,13 @@ def db_config(tmpdir, request):
         db_path = str(tmpdir.mkdir("temp"))
     elif request.param == 'mongo':
         db_path = "mongodb://localhost:27019"
-    return db_path, request.param
+    return JikkenConfig(db_path=db_path, db_name=request.param)
 
 
 @pytest.fixture()
 def jikken_db_session(db_config):
     """Connect to db before tests, disconnect after."""
-    test_database = DataBase(db_path=db_config[0], db_type=db_config[1])
+    test_database = DataBase(config=db_config)
     yield test_database
     test_database.stop_db()
     del test_database

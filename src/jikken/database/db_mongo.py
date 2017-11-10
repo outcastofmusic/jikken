@@ -14,18 +14,18 @@ class MongoDB(DB):
     """Wrapper class for MongoDB.
     """
 
-    def __init__(self, db_path):
+    def __init__(self, db_path: str, db_name: str):
         self._client = None
-        self._db = self._connect(db_path)
+        self._db = self._connect(db_path, db_name)
 
-    def _connect(self, db_path):
+    def _connect(self, db_path, db_name):
         for index in range(3):
             try:
                 self._client = pymongo.MongoClient(db_path)
             except ConnectionFailure:
                 time.sleep(3)
                 index += 1
-        return self._client.jikken_db if self._client else None
+        return self._client[db_name] if self._client else None
 
     def stop_db(self):
         """Disconnect from DB."""

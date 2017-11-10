@@ -18,7 +18,7 @@ def test_default_config_created(home_dir):
 def test_read_default_config_file(home_dir):
     config_file = write_default_config()
     config = read_config(config_file)
-    expected_config = JikkenConfig(db_type='tiny', db_path=os.path.join(str(home_dir), ".jikken", "jikken_db/"))
+    expected_config = JikkenConfig(db_type='tiny', db_path=os.path.join(str(home_dir), ".jikken", "jikken_db/"), db_name="jikken")
     assert config == expected_config
 
 
