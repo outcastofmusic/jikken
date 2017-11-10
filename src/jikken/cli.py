@@ -1,6 +1,6 @@
 import click
 import jikken.api as api
-from jikken import print_experiment
+from .data_formater import print_experiment
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -8,6 +8,7 @@ from jikken import print_experiment
 def jikken_cli():
     """Run the jikken application"""
     # TODO write readme with instructions
+
 
 @jikken_cli.command(help="run an experiment from a script. e.g. jikken run script.py -c config.yaml")
 @click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
