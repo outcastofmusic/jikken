@@ -2,9 +2,10 @@ import json
 
 import pytest
 from jikken.database.config import JikkenConfig
+from jikken.utils import check_mongo
 from jikken.database import DataBase
 
-from .helpers import check_mongo
+
 
 TEST_CONFIG_JSON = {
     "input_parameters": {

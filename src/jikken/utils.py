@@ -160,3 +160,16 @@ def create_directory_from_variables(root_dir, variables):
         elif key_dir.endswith(".yaml"):
             with open(key_dir, 'wt') as file_handle:
                 yaml.dump(variables[key], file_handle)
+
+
+def check_mongo(uri=None):
+    from pymongo import MongoClient
+    from pymongo.errors import ServerSelectionTimeoutError
+    uri = "mongodb://localhost:27019" if uri is None else uri
+    client = MongoClient(uri, serverSelectionTimeoutMS=300)
+    try:
+        client.server_info()
+        found_database = True
+    except ServerSelectionTimeoutError:
+        found_database = False
+    return found_database
