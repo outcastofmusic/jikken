@@ -4,6 +4,8 @@ import pytest
 from jikken.database.config import JikkenConfig
 from jikken.database import DataBase
 
+from .helpers import check_mongo
+
 TEST_CONFIG_JSON = {
     "input_parameters": {
         "filepath": "/data",
@@ -23,22 +25,22 @@ TEST_CONFIG_JSON = {
 }
 
 TEST_SCRIPT = \
- """
-import click
-import json
-@click.command()
-@click.argument('configuration_path', type=click.Path(exists=True, file_okay=True, dir_okay=True))
-@click.option('--var1',default=None)
-@click.option('--var2', default=None)
-def main(configuration_path,var1,var2):
-    print(open(configuration_path).readlines())
-    if var1 is not None:
-        print("var1=",var1)
-    if var2 is not None:
-        print("var2=",var2) 
-if __name__ == '__main__':
-    main()
-"""
+    """
+   import click
+   import json
+   @click.command()
+   @click.argument('configuration_path', type=click.Path(exists=True, file_okay=True, dir_okay=True))
+   @click.option('--var1',default=None)
+   @click.option('--var2', default=None)
+   def main(configuration_path,var1,var2):
+       print(open(configuration_path).readlines())
+       if var1 is not None:
+           print("var1=",var1)
+       if var2 is not None:
+           print("var2=",var2) 
+   if __name__ == '__main__':
+       main()
+   """
 
 
 @pytest.fixture()
@@ -47,7 +49,8 @@ def file_setup(tmpdir):
     conf_file.write(json.dumps(TEST_CONFIG_JSON))
 
     script_file = tmpdir.join('script.py')
-    script_file.write(TEST_SCRIPT)
+    code = "\n".join([line[3:] for line in TEST_SCRIPT.split("\n")])
+    script_file.write(code)
     return conf_file.strpath, script_file.strpath, TEST_CONFIG_JSON
 
 
@@ -61,12 +64,15 @@ def db_config(tmpdir, request):
     if request.param == 'tiny':
         db_path = str(tmpdir.mkdir("temp"))
     elif request.param == 'mongo':
+
         db_path = "mongodb://localhost:27019"
-    return JikkenConfig(db_path=db_path, db_name=request.param)
+        if not check_mongo(uri=db_path):
+            pytest.skip("mongo db not available")
+    return JikkenConfig(db_path=db_path, db_type=request.param)
 
 
 @pytest.fixture()
-def jikken_db_session(db_config):
+def jikken_db_session(db_config, mocker):
     """Connect to db before tests, disconnect after."""
     test_database = DataBase(config=db_config)
     yield test_database

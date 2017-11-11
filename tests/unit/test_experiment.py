@@ -5,7 +5,7 @@ from jikken.api import Experiment
 
 
 @pytest.fixture(autouse=True, scope='module')
-def jikken_experiment(tmpdir_factory):
+def experiment_setup(tmpdir_factory):
     expected_variables = {
         "training_parameters":
             {"batch_size": 100,
@@ -22,7 +22,28 @@ def jikken_experiment(tmpdir_factory):
     }
     tags = ['test', 'simple']
     tmpdir = tmpdir_factory.mktemp('mydir')
-    exp = Experiment(variables=expected_variables, code_dir=tmpdir.strpath, tags=tags)
+    return expected_variables, tags, tmpdir
+
+
+def test_experiment_equality(experiment_setup):
+    expected_variables, tags, tmpdir = experiment_setup
+    exp1 = Experiment(variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    exp2 = Experiment(variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    assert exp1 == exp2
+    tags3 = tags + ["third tag"]
+    exp3 = Experiment(variables=expected_variables, code_dir=str(tmpdir), tags=tags3)
+    assert exp1 == exp3
+
+    new_variables = copy.deepcopy(expected_variables)
+    new_variables["training_parameters"]["batch_size"] = 5
+    exp4 = Experiment(variables=new_variables, code_dir=str(tmpdir), tags=tags)
+    assert exp1 != exp4
+
+
+@pytest.fixture(autouse=True)
+def jikken_experiment(experiment_setup):
+    expected_variables, tags, tmpdir = experiment_setup
+    exp = Experiment(variables=expected_variables, code_dir=str(tmpdir), tags=tags)
     return exp, expected_variables, tags, tmpdir
 
 

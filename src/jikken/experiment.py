@@ -13,15 +13,27 @@ class Experiment:
             code_dir (str): A github directory that holds the code to be run
             tags (list, None): An optional list of tags that describe the experiment
         """
-        self._variables = variables
-        self.commit_id = get_commit_id(code_dir)
-        self.git_repo_origin = get_repo_origin(code_dir)
-        self.commit_status = get_commit_status(code_dir)
-        self.schema = get_schema(variables)
-        self.parameters_schema = get_schema(variables, parameters=True)
+        self._variables = dict(variables)
+        self._commit_id = get_commit_id(code_dir)
+        self._git_repo_origin = get_repo_origin(code_dir)
+        self._commit_status = get_commit_status(code_dir)
+        self._schema = get_schema(variables)
+        self._parameters_schema = get_schema(variables, parameters=True)
         self._schema_hash = ''
         self._parameters_schema_hash = ''
         self._tags = tags
+
+    @property
+    def commit_id(self):
+        return self._commit_id
+
+    @property
+    def git_repo(self):
+        return self._git_repo_origin
+
+    @property
+    def commit_status(self):
+        return self._commit_status
 
     @property
     def variables(self):
@@ -34,18 +46,21 @@ class Experiment:
     @property
     def schema_hash(self):
         if self._schema_hash == '':
-            self._schema_hash = get_hash(self.schema)
+            self._schema_hash = get_hash(self._schema)
         return self._schema_hash
 
     @property
     def parameters_hash(self):
         if self._parameters_schema_hash == '':
-            self._parameters_schema_hash = get_hash(self.parameters_schema)
+            self._parameters_schema_hash = get_hash(self._parameters_schema)
         return self._parameters_schema_hash
 
     @property
     def hash(self):
         return self.parameters_hash
+
+    def __hash__(self):
+        return hash(self.hash)
 
     def __repr__(self):
         return json.dumps(self._variables)
@@ -53,9 +68,9 @@ class Experiment:
     def to_dict(self):
         return {
             "variables": self._variables,
-            "commit_id": self.commit_id,
-            "dirty": self.commit_status,
-            "repo": self.git_repo_origin,
+            "commit_id": self._commit_id,
+            "dirty": self._commit_status,
+            "repo": self._git_repo_origin,
             "tags": self.tags,
             "parameter_hash": self.parameters_hash,
             "schema_hash": self.schema_hash,
@@ -65,3 +80,6 @@ class Experiment:
             "status": "created",
             "monitored": {}
         }
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)

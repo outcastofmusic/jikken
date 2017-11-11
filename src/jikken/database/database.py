@@ -43,6 +43,9 @@ class DataBase(metaclass=Singleton):
         else:
             raise ValueError("db_type must be a 'tiny' or 'mongo'")
 
+        if self._database is None:
+            raise ConnectionError("could not connect to database")
+
     def add(self, experiment: Experiment) -> int:
         if isinstance(experiment, Experiment):
             return self._database.add(experiment.to_dict())
