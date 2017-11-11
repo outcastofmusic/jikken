@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any
 
-from jikken import Experiment, Pipeline
 from .database import ExperimentQuery
 
 
@@ -11,11 +10,11 @@ class DB(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def add(self, experiment: (Experiment, Pipeline)) -> int:
+    def add(self, doc: dict) -> int:
         pass
 
     @abstractmethod
-    def get(self, experiment_id: int) -> dict:
+    def get(self, doc_id: int, collection: str) -> dict:
         pass
 
     @abstractmethod

@@ -24,6 +24,7 @@ def one_pipeline(multiple_experiments):
     pipeline = Pipeline(name="testname")
     last_step_hash = ""
     for index, experiment in enumerate(multiple_experiments):
+        experiment._id = index + 1
         pipeline.add(experiment, step_name="step_{}".format(index), last_step_hash=last_step_hash)
         last_step_hash = pipeline.hash()
     return pipeline

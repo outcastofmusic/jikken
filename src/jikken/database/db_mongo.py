@@ -33,27 +33,20 @@ class MongoDB(DB):
         """Disconnect from DB."""
         self._client = None
 
-    def _add(self, data_object: dict, collection: str):
-        col = self._db[collection]
-        _id = col.insert_one(data_object).inserted_id
+    def add(self, doc: dict):
+        if doc["type"] == "experiment":
+            doc = map_experiment(doc)
+            col = self._db["experiments"]
+        else:
+            col = self._db["pipelines"]
+        _id = col.insert_one(doc).inserted_id
         return str(_id)
 
-    def add(self, data_object: (Experiment, Pipeline)) -> str:
-        if isinstance(data_object, Experiment):
-            data_object = map_experiment(data_object.to_dict())
-            return self._add(data_object, "experiments")
-        elif isinstance(data_object, Pipeline):
-            pipeline_dict = data_object.to_dict()
-            for step, exp in data_object:
-                exp_dict = map_experiment(exp.to_dict())
-                _id = self._add(exp_dict, "experiments")
-                step_index = data_object.step_index(step)
-                pipeline_dict['experiments'][step_index] = _id
-            return self._add(pipeline_dict, "pipelines")
-
     def count(self) -> int:
-        exp_db = self._db.experiments
-        return exp_db.count()
+        count = 0
+        for collection in self._db.collection_names(include_system_collections=False):
+            count += self._db[collection].count()
+        return count
 
     def delete(self, experiment_id: int):
         try:
@@ -63,10 +56,16 @@ class MongoDB(DB):
 
     def delete_all(self) -> None:
         """Remove all experiments from db"""
-        self._db.experiments.drop()
+        for collection in self._db.collection_names(include_system_collections=False):
+            self._db[collection].drop()
 
-    def get(self, experiment_id: str):
-        return inv_map_experiment(self._db.experiments.find_one({"_id": ObjectId(experiment_id)}))
+    def get(self, _id: str, collection: str = "experiments"):
+        doc = self._db[collection].find_one({"_id": ObjectId(_id)})
+        if doc["type"] == "experiment":
+            return inv_map_experiment(doc)
+        else:
+            doc['id'] = doc.pop('_id')
+            return doc
 
     def list_experiments(self, query: ExperimentQuery = None):
 

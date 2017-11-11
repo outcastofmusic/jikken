@@ -12,6 +12,7 @@ class Pipeline:
         self._name = name
         self._experiments = OrderedDict()
         self._hashes = {}
+        self._id = None
 
     def __repr__(self):
         return "Pipeline {name}:{hash} with steps: {steps}".format(
@@ -76,5 +77,11 @@ class Pipeline:
         return {
             "name": self._name,
             "hash": self.hash(),
-            "experiments": [{key: item.to_dict()} for key, item in self._experiments.items()]
+            "experiments": [(key, item.to_dict()) for key, item in self._experiments.items()],
+            "type": "pipeline",
+            "id": self._id
         }
+
+    @property
+    def doc_id(self):
+        return self._id

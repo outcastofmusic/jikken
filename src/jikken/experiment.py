@@ -22,6 +22,11 @@ class Experiment:
         self._schema_hash = ''
         self._parameters_schema_hash = ''
         self._tags = tags
+        self._id = None
+
+    @property
+    def doc_id(self):
+        return self._id
 
     @property
     def commit_id(self):
@@ -74,11 +79,13 @@ class Experiment:
             "tags": self.tags,
             "parameter_hash": self.parameters_hash,
             "schema_hash": self.schema_hash,
-            "id": None,
+            "id": self._id,
             "stdout": "",
             "stderr": "",
             "status": "created",
-            "monitored": {}
+            "monitored": {},
+            "type": "experiment"
+
         }
 
     def __eq__(self, other):

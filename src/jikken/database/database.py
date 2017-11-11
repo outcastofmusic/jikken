@@ -47,15 +47,30 @@ class DataBase(metaclass=Singleton):
         if self._database is None:
             raise ConnectionError("could not connect to database")
 
-    def add(self, experiment: (Experiment, Pipeline)) -> int:
-        if isinstance(experiment, (Experiment, Pipeline)):
-            return self._database.add(experiment)
+    def add(self, data_object: (Experiment, Pipeline)) -> int:
+        if isinstance(data_object, Experiment):
+            """Add an experiment dict to db."""
+            return self._database.add(data_object.to_dict())
+        elif isinstance(data_object, Pipeline):
+            pipeline_dict = data_object.to_dict()
+            for step, exp in data_object:
+                _id = self._database.add(exp.to_dict())
+                step_index = data_object.step_index(step)
+                pipeline_dict['experiments'][step_index] = (step, _id)
+            return self._database.add(pipeline_dict)
+        # if isinstance(experiment, (Experiment, Pipeline)):
+        #     return self._database.add(experiment)
         else:
-            raise TypeError("experiment {} was not Experiment|Pipeline".format(type(experiment)))
+            raise TypeError("experiment {} was not Experiment|Pipeline".format(type(data_object)))
 
-    def get(self, experiment_id: int) -> dict:  # type (int) -> dict
+    def get(self, doc_id: int, doc_type: str) -> dict:  # type (int) -> dict
         """Return a experiment dict with matching id."""
-        return self._database.get(experiment_id)
+        doc = self._database.get(doc_id, doc_type)
+        if doc["type"] == "pipeline":
+            for index, (step, exp_id) in enumerate(doc["experiments"]):
+                exp = self._database.get(exp_id, "experiments")
+                doc["experiments"][index]= (step, exp)
+        return doc
 
     def list_experiments(self, query: ExperimentQuery = None):  # type (str) -> list[dict]
         """Return list of experiments."""

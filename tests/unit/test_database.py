@@ -34,9 +34,9 @@ def all(request, one_experiment, one_pipeline):
     maybe one day it will be added to pytest see: https://github.com/pytest-dev/pytest/issues/349
     """
     if request.param == 'experiment':
-        return one_experiment
+        return one_experiment, "experiments"
     else:
-        return one_pipeline
+        return one_pipeline, "pipelines"
 
 
 def test_add_raises(jikken_db_session):
@@ -58,28 +58,39 @@ def test_add_and_return_valid_id(jikken_db, all):
     # GIVEN an initialized jikken db
     # WHEN a new jikken is added
     # THEN returned task_id is of type int
-    _id = jikken_db.add(all)
+    doc, _ = all
+    _id = jikken_db.add(doc)
     assert isinstance(_id, str)
 
 
-def test_added_experiment_has_id_set(jikken_db, one_experiment):
+def test_added_doc_has_id_set(jikken_db, all):
     """Make sure the id field is set by DataBase.add()."""
-    # GIVEN an initialized tasks db
-    #   AND a new task is added
+    # GIVEN an initialized db
+    # AND a new  doc is added
+    doc, doc_type = all
+    _id = jikken_db.add(doc)
 
-    _id = jikken_db.add(one_experiment)
+    # WHEN doc is retrieved
+    doc_from_db = jikken_db.get(_id, doc_type)
 
-    # WHEN experiment is retrieved
-    exp_from_db = jikken_db.get(_id)
-
-    # THEN experiment_id matches id field
-    assert str(exp_from_db['id']) == _id
+    # THEN doc_id matches id field
+    assert str(doc_from_db['id']) == _id
 
     # AND contents are equivalent (except for id)
-    nex_exp_dict = one_experiment.to_dict()
-    nex_exp_dict.pop('id')
-    exp_from_db.pop('id')
-    assert exp_from_db == nex_exp_dict
+    doc, doc_type = all
+    exp_doc_dict = doc.to_dict()
+    exp_doc_dict.pop('id')
+    doc_from_db.pop('id')
+    for key in doc_from_db:
+        if key != "experiments":
+            assert doc_from_db[key] == exp_doc_dict[key]
+        else:
+            for experiment, expected_experiment in zip(doc_from_db["experiments"], exp_doc_dict["experiments"]):
+                _id = experiment[1].pop("id")
+                expected_experiment[1].pop("id")
+                # And the id has been changed from None to a hex string
+                assert isinstance(_id, str)
+                assert experiment == expected_experiment
 
 
 def test_add_increases_count(db_multiple_experiments, tmpdir):
@@ -176,7 +187,7 @@ def test_update_std_experiments(std_type, db_one_experiment):
     new_string = "this is a string"
     db.update_std(_id, new_string, std_type)
     # And I retrieve the experiment
-    exp = db.get(_id)
+    exp = db.get(_id, "experiments")
     # Then the stdout or stderr key is updated
     assert exp[std_type] == new_string
 
@@ -208,7 +219,7 @@ def test_update_status_experiments(status, db_one_experiment):
     # When I update the status
     db.update_status(_id, status)
     # And I retrieve the experiment
-    exp = db.get(_id)
+    exp = db.get(_id, "experiments")
     # Then status is updated
     assert exp['status'] == status
 

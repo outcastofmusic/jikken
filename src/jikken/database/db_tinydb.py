@@ -26,27 +26,15 @@ class TinyDB(DB):  # noqa : E801
         """Disconnect from DB."""
         pass
 
-    def _add(self, data: dict) -> int:
-        _id = self._db.insert(data)
-        data['id'] = _id
-        self._db.update(data, eids=[_id])
+    def add(self, doc: dict) -> str:
+        _id = self._db.insert(doc)
+        doc['id'] = str(_id)
+        self._db.update(doc, eids=[_id])
         return str(_id)
 
-    def add(self, data_object: (Experiment, Pipeline)) -> int:
-        if isinstance(data_object, Experiment):
-            """Add an experiment dict to db."""
-            return self._add(data_object.to_dict())
-        elif isinstance(data_object, Pipeline):
-            pipeline_dict = data_object.to_dict()
-            for step, exp in data_object:
-                _id = self._add(exp.to_dict())
-                step_index = data_object.step_index(step)
-                pipeline_dict['experiments'][step_index] = _id
-            return self._add(pipeline_dict)
-
-    def get(self, experiment_id: str) -> int:
+    def get(self, doc_id: str, collection:str) -> int:
         """Return a experiment dict with matching id."""
-        return self._db.get(eid=int(experiment_id))
+        return self._db.get(eid=int(doc_id))
 
     def list_experiments(self, query: ExperimentQuery = None) -> list:
         """Return list of experiments."""
