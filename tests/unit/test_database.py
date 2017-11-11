@@ -26,6 +26,19 @@ def db_three_experiments(jikken_db, multiple_experiments):
     yield jikken_db
 
 
+@pytest.fixture(params=['experiment', 'pipeline'])
+def all(request, one_experiment, one_pipeline):
+    """
+    This is a workaround to create params out of fixtures
+    see https://stackoverflow.com/questions/24340681/how-to-concatenate-several-parametrized-fixtures-into-a-new-fixture-in-py-test
+    maybe one day it will be added to pytest see: https://github.com/pytest-dev/pytest/issues/349
+    """
+    if request.param == 'experiment':
+        return one_experiment
+    else:
+        return one_pipeline
+
+
 def test_add_raises(jikken_db_session):
     """add should raise an error if object is not Experiment"""
     with pytest.raises(TypeError):
@@ -33,22 +46,23 @@ def test_add_raises(jikken_db_session):
 
 
 def test_delete_raises_no_id(db_one_experiment):
+    """add should raise an error if we delete an id that doesn't exist"""
     db, _id = db_one_experiment
     new_id = "hello"
     with pytest.raises(KeyError):
         db.delete(new_id)
 
 
-def test_add_and_return_valid_id(jikken_db, one_experiment):
+def test_add_and_return_valid_id(jikken_db, all):
     """DataBase.add(<valid exp>) should return an integer."""
     # GIVEN an initialized jikken db
     # WHEN a new jikken is added
     # THEN returned task_id is of type int
-    _id = jikken_db.add(one_experiment)
+    _id = jikken_db.add(all)
     assert isinstance(_id, str)
 
 
-def test_added_task_has_id_set(jikken_db, one_experiment):
+def test_added_experiment_has_id_set(jikken_db, one_experiment):
     """Make sure the id field is set by DataBase.add()."""
     # GIVEN an initialized tasks db
     #   AND a new task is added

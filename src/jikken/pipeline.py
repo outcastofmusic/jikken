@@ -16,7 +16,8 @@ class Pipeline:
     def __repr__(self):
         return "Pipeline {name}:{hash} with steps: {steps}".format(
             name=self._name,
-            steps=[{key: value} for key, value in self._experiments]
+            hash=self.hash(),
+            steps=[{key: value} for key, value in self._experiments.items()]
         )
 
     def add(self, experiment: Experiment, step_name: str, last_step_hash: str) -> str:
@@ -33,6 +34,13 @@ class Pipeline:
     @property
     def last_step(self) -> str:
         return next(reversed(self._experiments))
+
+    def step_index(self, step):
+        for index, step_name in enumerate(self._experiments.keys()):
+            if step_name == step:
+                return index
+        else:
+            return -1
 
     def step_hash_key(self, step):
         hash_key = hash(self._name)
@@ -68,5 +76,5 @@ class Pipeline:
         return {
             "name": self._name,
             "hash": self.hash(),
-            "experiments": [{key: item.to_dict()} for key, item in self._experiments]
+            "experiments": [{key: item.to_dict()} for key, item in self._experiments.items()]
         }

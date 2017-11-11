@@ -3,6 +3,7 @@ import tinydb
 from .database import ExperimentQuery
 from traitlets import Any
 
+from jikken import Experiment, Pipeline
 from .helpers import set_inner, add_inner
 from tinydb.operations import add, set
 from .db_abc import DB
@@ -25,12 +26,23 @@ class TinyDB(DB):  # noqa : E801
         """Disconnect from DB."""
         pass
 
-    def add(self, experiment: str) -> int:
-        """Add an experiment dict to db."""
-        experiment_id = self._db.insert(experiment)
-        experiment['id'] = experiment_id
-        self._db.update(experiment, eids=[experiment_id])
-        return str(experiment_id)
+    def _add(self, data: dict) -> int:
+        _id = self._db.insert(data)
+        data['id'] = _id
+        self._db.update(data, eids=[_id])
+        return str(_id)
+
+    def add(self, data_object: (Experiment, Pipeline)) -> int:
+        if isinstance(data_object, Experiment):
+            """Add an experiment dict to db."""
+            return self._add(data_object.to_dict())
+        elif isinstance(data_object, Pipeline):
+            pipeline_dict = data_object.to_dict()
+            for step, exp in data_object:
+                _id = self._add(exp.to_dict())
+                step_index = data_object.step_index(step)
+                pipeline_dict['experiments'][step_index] = _id
+            return self._add(pipeline_dict)
 
     def get(self, experiment_id: str) -> int:
         """Return a experiment dict with matching id."""

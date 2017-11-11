@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from collections import namedtuple
 
 from jikken.experiment import Experiment
+from jikken.pipeline import Pipeline
 
 from .config import get_config, JikkenConfig
 
@@ -46,11 +47,11 @@ class DataBase(metaclass=Singleton):
         if self._database is None:
             raise ConnectionError("could not connect to database")
 
-    def add(self, experiment: Experiment) -> int:
-        if isinstance(experiment, Experiment):
-            return self._database.add(experiment.to_dict())
+    def add(self, experiment: (Experiment, Pipeline)) -> int:
+        if isinstance(experiment, (Experiment, Pipeline)):
+            return self._database.add(experiment)
         else:
-            raise TypeError("experiment {} was not Experiment".format(type(experiment)))
+            raise TypeError("experiment {} was not Experiment|Pipeline".format(type(experiment)))
 
     def get(self, experiment_id: int) -> dict:  # type (int) -> dict
         """Return a experiment dict with matching id."""

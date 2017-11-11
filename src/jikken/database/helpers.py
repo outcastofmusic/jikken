@@ -1,5 +1,10 @@
 from functools import singledispatch
 
+
+def map_pipeline(pipeline):
+    return pipeline
+
+
 def map_experiment(experiment: dict):
     new_experiment = {}
     for key in experiment['variables'].keys():

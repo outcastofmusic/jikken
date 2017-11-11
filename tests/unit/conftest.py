@@ -1,6 +1,6 @@
 import pytest
 from jikken.experiment import Experiment
-
+from jikken.pipeline import Pipeline
 
 @pytest.fixture
 def one_experiment(tmpdir):
@@ -18,3 +18,12 @@ def multiple_experiments(tmpdir):
         tags = ["tag_{}".format(tag) for tag in range(index)]
         results.append(Experiment(variables=variables, code_dir=str(new_dir), tags=tags))
     return results
+
+@pytest.fixture
+def one_pipeline(multiple_experiments):
+    pipeline = Pipeline(name="testname")
+    last_step_hash = ""
+    for index, experiment in enumerate(multiple_experiments):
+        pipeline.add(experiment, step_name="step_{}".format(index), last_step_hash=last_step_hash)
+        last_step_hash = pipeline.hash()
+    return pipeline

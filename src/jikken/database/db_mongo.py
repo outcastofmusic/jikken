@@ -3,9 +3,11 @@ from typing import Any
 from bson import ObjectId
 from bson.errors import InvalidId
 import pymongo
+
 from .database import ExperimentQuery
 from pymongo.errors import ConnectionFailure
-import time
+
+from jikken import Experiment, Pipeline
 from .helpers import add_mongo, map_experiment, inv_map_experiment, set_mongo
 from .db_abc import DB
 
@@ -31,11 +33,23 @@ class MongoDB(DB):
         """Disconnect from DB."""
         self._client = None
 
-    def add(self, experiment: dict) -> str:
-        exp_db = self._db.experiments
-        experiment = map_experiment(experiment)
-        exp_id = exp_db.insert_one(experiment).inserted_id
-        return str(exp_id)
+    def _add(self, data_object: dict, collection: str):
+        col = self._db[collection]
+        _id = col.insert_one(data_object).inserted_id
+        return str(_id)
+
+    def add(self, data_object: (Experiment, Pipeline)) -> str:
+        if isinstance(data_object, Experiment):
+            data_object = map_experiment(data_object.to_dict())
+            return self._add(data_object, "experiments")
+        elif isinstance(data_object, Pipeline):
+            pipeline_dict = data_object.to_dict()
+            for step, exp in data_object:
+                exp_dict = map_experiment(exp.to_dict())
+                _id = self._add(exp_dict, "experiments")
+                step_index = data_object.step_index(step)
+                pipeline_dict['experiments'][step_index] = _id
+            return self._add(pipeline_dict, "pipelines")
 
     def count(self) -> int:
         exp_db = self._db.experiments
