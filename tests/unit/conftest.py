@@ -24,7 +24,6 @@ def one_multistage(multiple_experiments):
     multistage = MultiStageExperiment(name="testname")
     last_step_hash = ""
     for index, experiment in enumerate(multiple_experiments):
-        experiment._id = index + 1
-        multistage.add(experiment, step_name="step_{}".format(index), last_step_hash=last_step_hash)
+        multistage.add(experiment, stage_name="step_{}".format(index), last_step_hash=last_step_hash)
         last_step_hash = multistage.hash()
     return multistage

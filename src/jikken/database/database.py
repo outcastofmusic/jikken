@@ -54,7 +54,13 @@ class DataBase(metaclass=Singleton):
         elif isinstance(data_object, MultiStageExperiment):
             multistage_dict = data_object.to_dict()
             for step, exp in data_object:
-                _id = self._database.add(exp.to_dict())
+                exp_dict = None
+                if exp.doc_id is not None:
+                    exp_dict = self._database.get(exp.doc_id, "experiments")
+                if exp_dict is None:
+                    _id = self._database.add(exp.to_dict())
+                else:
+                    _id = exp.doc_id
                 step_index = data_object.step_index(step)
                 multistage_dict['experiments'][step_index] = (step, _id)
             return self._database.add(multistage_dict)
@@ -65,11 +71,12 @@ class DataBase(metaclass=Singleton):
 
     def get(self, doc_id: int, doc_type: str) -> dict:  # type (int) -> dict
         """Return a experiment dict with matching id."""
+        assert doc_type in self._database.collections, "doc_type {} not in db"
         doc = self._database.get(doc_id, doc_type)
         if doc["type"] == "multistage":
             for index, (step, exp_id) in enumerate(doc["experiments"]):
                 exp = self._database.get(exp_id, "experiments")
-                doc["experiments"][index]= (step, exp)
+                doc["experiments"][index] = (step, exp)
         return doc
 
     def list_experiments(self, query: ExperimentQuery = None):  # type (str) -> list[dict]

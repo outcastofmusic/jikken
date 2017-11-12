@@ -6,10 +6,41 @@ import os
 from .experiment import Experiment
 from .utils import get_hash
 
-STAGE_METADATA_FILEPATH = ".jikken_stage_metadata.json"
+STAGE_METADATA = ".jikken_stage_metadata.json"
+
+
+def load_stage_metadata(path: str) -> dict:
+    """Load the stage metadata from file"""
+    assert isinstance(path, str), "path {} is not string".format(path)
+    assert os.path.exists(os.path.dirname(path)), "path {} does not exist".format(path)
+    file_path = path if path.endswith(STAGE_METADATA) else os.path.join(path, STAGE_METADATA)
+    with open(file_path) as file_handle:
+        metadata = json.load(file_handle)
+    return metadata
+
+
+def save_stage_metadata(path: str, metadata: dict) -> None:
+    """Save stage metadata to file"""
+    file_path = path if path.endswith(STAGE_METADATA) else os.path.join(path, STAGE_METADATA)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(file_path, "w") as file_handle:
+        json.dump(metadata, file_handle)
 
 
 class MultiStageExperiment:
+    @classmethod
+    def from_dict(cls, doc):
+
+        mse = cls(name=doc['name'])
+        mse._experiments = OrderedDict()
+        last_step_hash = ''
+        for (key, value) in doc["experiments"]:
+            last_step_hash = mse.add(Experiment.from_dict(value),
+                                     stage_name=key,
+                                     last_step_hash=last_step_hash)
+        mse._id = doc['id']
+        return mse
+
     def __init__(self, name: str):
         self._name = name
         self._experiments = OrderedDict()
@@ -23,11 +54,11 @@ class MultiStageExperiment:
             steps=[{key: value} for key, value in self._experiments.items()]
         )
 
-    def add(self, experiment: Experiment, step_name: str, last_step_hash: str) -> str:
+    def add(self, experiment: Experiment, stage_name: str, last_step_hash: str = '') -> str:
         if len(self._experiments) > 0 and last_step_hash != self.hash():
             raise ValueError("last step hash was: {} instead of {}".format(self.hash(), last_step_hash))
-        self._experiments[step_name] = experiment
-        self._hashes[step_name] = self.step_hash_key(step_name)
+        self._experiments[stage_name] = experiment
+        self._hashes[stage_name] = self.step_hash_key(stage_name)
         return self.hash()
 
     def __iter__(self):
@@ -35,7 +66,11 @@ class MultiStageExperiment:
             yield key, item
 
     @property
-    def last_step(self) -> str:
+    def stages(self):
+        return [key for key in self._experiments.keys()]
+
+    @property
+    def last_stage(self) -> str:
         return next(reversed(self._experiments))
 
     def step_index(self, step):
@@ -55,25 +90,25 @@ class MultiStageExperiment:
 
     def hash(self, step=None):
         if step is None:
-            return get_hash(self._hashes[self.last_step])
+            return get_hash(self._hashes[self.last_stage])
         elif step in self._experiments.keys():
             return get_hash(self._hashes[step])
         else:
             raise ValueError("step {} is not in multistage".format(step))
 
     def __hash__(self):
-        return self._hashes[self.last_step]
+        return self._hashes[self.last_stage]
 
     def __eq__(self, other):
         return hash(self) == hash(other)
 
     def export_metadata(self, directory):
-        assert os.path.isdir(directory)
-        with open(os.path.join(directory, ".jikken_config.json")) as file_handle:
-            metadata = {"multistage_name": self._name,
-                        "steps": [key for key in self._experiments.keys()],
-                        "hash": self.hash()}
-            json.dump(metadata, file_handle)
+        """Export metadata to file"""
+        metadata = {"multistage_name": self._name,
+                    "steps": [key for key in self._experiments.keys()],
+                    "id": self._id,
+                    "hash": self.hash()}
+        save_stage_metadata(directory, metadata=metadata)
 
     def to_dict(self):
         return {

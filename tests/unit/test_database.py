@@ -1,4 +1,5 @@
 import pytest
+from jikken import MultiStageExperiment
 from jikken.database import ExperimentQuery
 from jikken.experiment import Experiment
 
@@ -36,7 +37,7 @@ def all(request, one_experiment, one_multistage):
     if request.param == 'experiment':
         return one_experiment, "experiments"
     else:
-        return one_multistage, "multistages"
+        return one_multistage, "ms_experiments"
 
 
 def test_add_raises(jikken_db_session):
@@ -76,8 +77,17 @@ def test_added_doc_has_id_set(jikken_db, all):
     # THEN doc_id matches id field
     assert str(doc_from_db['id']) == _id
 
-    # AND contents are equivalent (except for id)
+
+def test_added_doc_is_the_same(jikken_db, all):
+    """make sure the restored document is the same except the doc_id"""
+    # GIVEN an initialized db
+    # AND a new  doc is added
     doc, doc_type = all
+    _id = jikken_db.add(doc)
+
+    # WHEN doc is retrieved
+    doc_from_db = jikken_db.get(_id, doc_type)
+    # AND contents are equivalent (except for id)
     exp_doc_dict = doc.to_dict()
     exp_doc_dict.pop('id')
     doc_from_db.pop('id')
@@ -93,6 +103,30 @@ def test_added_doc_has_id_set(jikken_db, all):
                 assert experiment == expected_experiment
 
 
+def test_exp_retrieved_from_db_same(jikken_db, one_experiment):
+    """When I restore a document it is the same from the db"""
+    _id = jikken_db.add(one_experiment)
+
+    # WHEN doc is retrieved
+    doc_from_db = jikken_db.get(_id, "experiments")
+
+    # Then they are equivalent
+    new_exp = Experiment.from_dict(doc_from_db)
+    assert one_experiment == new_exp
+
+
+def test_mse_retrieved_from_db_same(jikken_db, one_multistage):
+    """When I restore a document it is the same from the db"""
+    _id = jikken_db.add(one_multistage)
+
+    # WHEN doc is retrieved
+    doc_from_db = jikken_db.get(_id, "ms_experiments")
+
+    # Then they are equivalent
+    new_mse = MultiStageExperiment.from_dict(doc_from_db)
+    assert one_multistage == new_mse
+
+
 def test_add_increases_count(db_multiple_experiments, tmpdir):
     """Test DataBase.add() affect on DataBase.count()."""
     # GIVEN a db with 9 experiments
@@ -100,7 +134,7 @@ def test_add_increases_count(db_multiple_experiments, tmpdir):
     db = db_multiple_experiments
     current_count = db.count()
     code_dir = tmpdir.mkdir("new_exp")
-    db.add(Experiment(name="exp_4",variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
+    db.add(Experiment(name="exp_4", variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
 
     # THEN the count increases by 1
     assert db.count() == current_count + 1
@@ -113,7 +147,7 @@ def test_delete_experiments(db_three_experiments, tmpdir):
     experiment_count = db.count()
     # When we add one
     code_dir = tmpdir.mkdir("new_experiment")
-    _id = db.add(Experiment(name="exp_4",variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
+    _id = db.add(Experiment(name="exp_4", variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
     # AND we delete it
     db.delete(_id)
     # THEN the count remains 3
@@ -122,6 +156,19 @@ def test_delete_experiments(db_three_experiments, tmpdir):
     db.delete_all()
     # THEN the count goes to zero:
     assert db.count() == 0
+
+
+def test_add_experiment_to_mse_already_in_db(jikken_db, one_experiment, one_multistage):
+    doc_id = jikken_db.add(one_multistage)
+    count = jikken_db.count()
+    assert count == 10
+    multistage = jikken_db.get(doc_id=doc_id, doc_type="ms_experiments")
+    new_multistage = MultiStageExperiment.from_dict(multistage)
+    new_multistage.add(one_experiment, "stage_9", one_multistage.hash())
+    mse_id = jikken_db.add(new_multistage)
+    new_count = jikken_db.count()
+    assert new_count == count + 2
+    # db_mse = jikken_db.get(mse_id)
 
 
 def test_multiple_experiments_have_same_schema(db_multiple_experiments):
@@ -142,7 +189,7 @@ def test_list_experiments(db_three_experiments, tmpdir):
     # When another experiment is added
     db = db_three_experiments
     code_dir = tmpdir.mkdir("new_experiment")
-    db.add(Experiment(name="exp_4",variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
+    db.add(Experiment(name="exp_4", variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
     #  THEN list_experiments should return 4 experiments
     experiments = db.list_experiments()
     assert len(experiments) == 4

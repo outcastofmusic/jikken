@@ -1,6 +1,7 @@
 from subprocess import PIPE, Popen
 
 from jikken import MultiStageExperiment
+from .multistage import load_stage_metadata
 
 from .database import setup_database, ExperimentQuery
 from .setups import ExperimentSetup, MultiStageExperimentSetup
@@ -51,9 +52,16 @@ def run_multistage(*, setup: MultiStageExperimentSetup) -> None:
                          variables=variables,
                          code_dir=os.path.dirname(setup.script_path),
                          tags=setup.tags)
-        # multistage = MultiStageExperiment()
         with setup_database() as db:
-            exp_id = db.add(exp)
+            if setup.input_path is not None:
+                multistage_id = load_stage_metadata(setup.input_path)["id"]
+                multi_stage = db.get(multistage_id, collection="msexperiments")
+            else:
+                multistage = MultiStageExperiment(name=setup.name)
+                exp_id = db.add(exp)
+                multistage.add(exp, stage_name=setup.stage_name)
+                db.add(multistage)
+                multistage.export_metadata(setup.output_path)
             run_experiment(db=db, exp_id=exp_id, cmd=cmd)
 
 

@@ -1,6 +1,5 @@
 import pytest
-
-
+from jikken import MultiStageExperiment
 
 
 def test_multistage_append_experiments(one_multistage, multiple_experiments):
@@ -20,14 +19,14 @@ def test_multistage_append_experiments(one_multistage, multiple_experiments):
 def test_multistage_add_one_experiment(one_multistage, one_experiment):
     # Given a multistage with multiple experiments
     hash = one_multistage.hash()
-    current_step = one_multistage.last_step
+    current_step = one_multistage.last_stage
     # When I add a new experiment
     one_multistage.add(one_experiment, 'last_experiment', hash)
     # Then the new hash changes
     new_hash = one_multistage.hash()
     assert hash != new_hash
     # And the last step changes
-    assert current_step != one_multistage.last_step
+    assert current_step != one_multistage.last_stage
     # And the previous hash can be recovered by the hash name
     assert hash == one_multistage.hash(current_step)
 
@@ -41,3 +40,8 @@ def test_add_one_experiment_with_wrong_last_hash(one_multistage, one_experiment)
     with pytest.raises(ValueError):
         # Then I raise a ValueError
         one_multistage.add(one_experiment, 'last_experiment', hash)
+
+
+def test_multistage_from_dict(one_multistage):
+    new_multistage = MultiStageExperiment.from_dict(one_multistage.to_dict())
+    assert new_multistage == one_multistage

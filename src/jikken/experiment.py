@@ -5,6 +5,21 @@ from .utils import get_commit_id, get_commit_status, get_hash, get_repo_origin, 
 
 
 class Experiment:
+    @classmethod
+    def from_dict(cls, doc):
+        code_dir = doc.get("code_dir", "")
+        exp = cls(name=doc['name'],
+                  variables=doc['variables'],
+                  code_dir=code_dir,
+                  tags=doc['tags']
+                  )
+        exp._id = doc['id']
+        if code_dir == "":
+            exp._commit_id = doc['commit_id']
+            exp._git_repo_origin = doc['repo']
+            exp._commit_status = doc['dirty']
+        return exp
+
     def __init__(self, name: str, variables: dict, code_dir: str, tags: list = None):
         """The Experiment object encapsulates a possible experiment
 
@@ -68,10 +83,10 @@ class Experiment:
 
     @property
     def hash(self):
+        hash_key = hash(self.parameters_hash) ^ hash(self._name)
         if self.commit_id is not None:
-            return get_hash(hash(self.parameters_hash) ^ hash(self.commit_id))
-        else:
-            return self.parameters_hash
+            hash_key = hash_key ^ hash(self.commit_id)
+        return get_hash(hash_key)
 
     def __hash__(self):
         return hash(self.hash)

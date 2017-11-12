@@ -32,7 +32,7 @@ class TinyDB(DB):  # noqa : E801
         self._db.update(doc, eids=[_id])
         return str(_id)
 
-    def get(self, doc_id: str, collection:str) -> int:
+    def get(self, doc_id: str, collection: str) -> int:
         """Return a experiment dict with matching id."""
         return self._db.get(eid=int(doc_id))
 
@@ -93,3 +93,7 @@ class TinyDB(DB):  # noqa : E801
     def delete_all(self) -> None:
         """Remove all experiments from db."""
         self._db.purge()
+
+    @property
+    def collections(self):
+        return ["experiments", "ms_experiments"]

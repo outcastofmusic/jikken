@@ -4,6 +4,7 @@ import pytest
 from jikken.api import Experiment
 import git
 
+
 @pytest.fixture(autouse=True, scope='module')
 def experiment_setup(tmpdir_factory):
     expected_variables = {
@@ -34,7 +35,7 @@ def test_experiment_equality(experiment_setup):
     exp3 = Experiment("exp1", variables=expected_variables, code_dir=str(tmpdir), tags=tags3)
     assert exp1 == exp3
     exp5 = Experiment("exp2", variables=expected_variables, code_dir=str(tmpdir), tags=tags)
-    assert exp1 == exp5
+    assert exp1 != exp5
     new_variables = copy.deepcopy(expected_variables)
     new_variables["training_parameters"]["batch_size"] = 5
     exp4 = Experiment("exp1", variables=new_variables, code_dir=str(tmpdir), tags=tags)
@@ -120,7 +121,21 @@ def text_experiment_different_hash(jikken_experiment):
 
 def test_experiment_different_tags_hash(jikken_experiment):
     exp, expected_variables, _, tmpdir = jikken_experiment
-    exp_diff_tags = Experiment(name="exp1", variables=expected_variables, code_dir=tmpdir.strpath, tags='test2')
+    exp_diff_tags = Experiment(name="exp", variables=expected_variables, code_dir=tmpdir.strpath, tags='test2')
     assert exp.schema_hash == exp_diff_tags.schema_hash
     assert exp.parameters_hash == exp_diff_tags.parameters_hash
     assert exp.hash == exp_diff_tags.hash
+
+
+def test_experiment_different_names(jikken_experiment):
+    exp, expected_variables, _, tmpdir = jikken_experiment
+    exp_diff_tags = Experiment(name="exp1", variables=expected_variables, code_dir=tmpdir.strpath, tags='test2')
+    assert exp.schema_hash == exp_diff_tags.schema_hash
+    assert exp.parameters_hash == exp_diff_tags.parameters_hash
+    assert exp.hash != exp_diff_tags.hash
+
+
+def test_experiment_from_dict_is_same(jikken_experiment):
+    exp, expected_variables, _, tmpdir = jikken_experiment
+    new_exp = Experiment.from_dict(exp.to_dict())
+    assert new_exp == exp

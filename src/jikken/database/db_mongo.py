@@ -38,7 +38,7 @@ class MongoDB(DB):
             doc = map_experiment(doc)
             col = self._db["experiments"]
         else:
-            col = self._db["multistages"]
+            col = self._db["ms_experiments"]
         _id = col.insert_one(doc).inserted_id
         return str(_id)
 
@@ -61,7 +61,9 @@ class MongoDB(DB):
 
     def get(self, _id: str, collection: str = "experiments"):
         doc = self._db[collection].find_one({"_id": ObjectId(_id)})
-        if doc["type"] == "experiment":
+        if doc is None:
+            return
+        elif doc["type"] == "experiment":
             return inv_map_experiment(doc)
         else:
             doc['id'] = doc.pop('_id')
@@ -95,3 +97,7 @@ class MongoDB(DB):
             self._db.experiments.update({"_id": ObjectId(experiment_id)}, set_mongo(value, key=key))
         elif mode == 'add':
             self._db.experiments.update({"_id": ObjectId(experiment_id)}, add_mongo(value, key=key))
+
+    @property
+    def collections(self):
+        return self._db.collection_names(include_system_collections=False)
