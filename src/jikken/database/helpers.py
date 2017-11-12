@@ -1,8 +1,8 @@
 from functools import singledispatch
 
 
-def map_pipeline(pipeline):
-    return pipeline
+def map_multistage(multistage):
+    return multistage
 
 
 def map_experiment(experiment: dict):

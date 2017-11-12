@@ -89,7 +89,7 @@ def delete_all():
     api.delete_all()
 
 
-def pipeline():
+def multistage():
     # TODO create cli command that allows pipelining steps
     pass
 

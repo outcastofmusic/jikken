@@ -169,3 +169,7 @@ def resume():
 def export_config():
     # TODO export the config dir/file based on an experiment
     pass
+
+
+def run_multistage(*args, **kwargs):
+    pass

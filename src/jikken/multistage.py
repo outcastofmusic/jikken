@@ -7,7 +7,7 @@ from .experiment import Experiment
 from .utils import get_hash
 
 
-class Pipeline:
+class MultiStageExperiment:
     def __init__(self, name: str):
         self._name = name
         self._experiments = OrderedDict()
@@ -15,7 +15,7 @@ class Pipeline:
         self._id = None
 
     def __repr__(self):
-        return "Pipeline {name}:{hash} with steps: {steps}".format(
+        return "MultiStage {name}:{hash} with steps: {steps}".format(
             name=self._name,
             hash=self.hash(),
             steps=[{key: value} for key, value in self._experiments.items()]
@@ -57,7 +57,7 @@ class Pipeline:
         elif step in self._experiments.keys():
             return get_hash(str(self._hashes[step]))
         else:
-            raise ValueError("step {} is not in Pipeline".format(step))
+            raise ValueError("step {} is not in multistage".format(step))
 
     def __hash__(self):
         return self._hashes[self.last_step]
@@ -68,7 +68,7 @@ class Pipeline:
     def export_metadata(self, directory):
         assert os.path.isdir(directory)
         with open(os.path.join(directory, ".jikken_config.json")) as file_handle:
-            metadata = {"pipeline_name": self._name,
+            metadata = {"multistage_name": self._name,
                         "steps": [key for key in self._experiments.keys()],
                         "hash": self.hash()}
             json.dump(metadata, file_handle)
@@ -78,7 +78,7 @@ class Pipeline:
             "name": self._name,
             "hash": self.hash(),
             "experiments": [(key, item.to_dict()) for key, item in self._experiments.items()],
-            "type": "pipeline",
+            "type": "multistage",
             "id": self._id
         }
 

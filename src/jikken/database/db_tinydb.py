@@ -3,7 +3,7 @@ import tinydb
 from .database import ExperimentQuery
 from traitlets import Any
 
-from jikken import Experiment, Pipeline
+from jikken import Experiment, MultiStageExperiment
 from .helpers import set_inner, add_inner
 from tinydb.operations import add, set
 from .db_abc import DB

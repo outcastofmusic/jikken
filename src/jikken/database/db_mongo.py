@@ -7,7 +7,7 @@ import pymongo
 from .database import ExperimentQuery
 from pymongo.errors import ConnectionFailure
 
-from jikken import Experiment, Pipeline
+from jikken import Experiment, MultiStageExperiment
 from .helpers import add_mongo, map_experiment, inv_map_experiment, set_mongo
 from .db_abc import DB
 
@@ -38,7 +38,7 @@ class MongoDB(DB):
             doc = map_experiment(doc)
             col = self._db["experiments"]
         else:
-            col = self._db["pipelines"]
+            col = self._db["multistages"]
         _id = col.insert_one(doc).inserted_id
         return str(_id)
 

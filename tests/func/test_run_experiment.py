@@ -9,7 +9,6 @@ def setup_database_stub(db):
     @contextmanager
     def db_stub():
         yield db
-
     return db_stub()
 
 

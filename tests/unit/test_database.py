@@ -26,8 +26,8 @@ def db_three_experiments(jikken_db, multiple_experiments):
     yield jikken_db
 
 
-@pytest.fixture(params=['experiment', 'pipeline'])
-def all(request, one_experiment, one_pipeline):
+@pytest.fixture(params=['experiment', 'multistage'])
+def all(request, one_experiment, one_multistage):
     """
     This is a workaround to create params out of fixtures
     see https://stackoverflow.com/questions/24340681/how-to-concatenate-several-parametrized-fixtures-into-a-new-fixture-in-py-test
@@ -36,7 +36,7 @@ def all(request, one_experiment, one_pipeline):
     if request.param == 'experiment':
         return one_experiment, "experiments"
     else:
-        return one_pipeline, "pipelines"
+        return one_multistage, "multistages"
 
 
 def test_add_raises(jikken_db_session):
