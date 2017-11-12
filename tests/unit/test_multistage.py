@@ -43,5 +43,8 @@ def test_add_one_experiment_with_wrong_last_hash(one_multistage, one_experiment)
 
 
 def test_multistage_from_dict(one_multistage):
+    # Given a multistage experiment
+    # When I convert it to dict and recreate if rom the dict
     new_multistage = MultiStageExperiment.from_dict(one_multistage.to_dict())
+    # Then It is the same as before
     assert new_multistage == one_multistage

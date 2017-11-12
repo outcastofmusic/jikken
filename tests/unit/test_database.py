@@ -111,6 +111,7 @@ def test_doc_retrieved_from_db_same(jikken_db, all):
     doc_from_db = jikken_db.get(_id, doc_type)
 
     # Then they are equivalent
+    new_doc = None
     if doc_type == "experiments":
         new_doc = Experiment.from_dict(doc_from_db)
     elif doc_type == "ms_experiments":

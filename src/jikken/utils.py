@@ -171,13 +171,22 @@ def create_directory_from_variables(root_dir, variables):
                 yaml.dump(variables[key], file_handle)
 
 
-def prepare_command(script_path, configuration_path, args):
+def prepare_command(configuration_path, setup):
     """Prepare a cmd command to run  a script"""
-    extra_kwargs = [x for argument in args for x in argument]
-    if script_path.endswith(".py"):
-        cmd = ["python3", script_path, configuration_path] + extra_kwargs
-    elif script_path.endswith(".sh"):
-        cmd = ["bash", script_path, configuration_path] + extra_kwargs
+    # TODO think of a way to enable more generic inputs to scripts
+    # in the arguments we add the input path and the output path as positional arguments
+
+    extra_kwargs = [x for argument in setup.args for x in argument]
+    input_path = getattr(setup, "input_path", None)
+    output_path = getattr(setup, "output_path", None)
+    if output_path is not None:
+        extra_kwargs = [output_path] + extra_kwargs
+    if input_path is not None:
+        extra_kwargs = [input_path] + extra_kwargs
+    if setup.script_path.endswith(".py"):
+        cmd = ["python3", setup.script_path, configuration_path] + extra_kwargs
+    elif setup.script_path.endswith(".sh"):
+        cmd = ["bash", setup.script_path, configuration_path] + extra_kwargs
     return cmd
 
 

@@ -31,7 +31,7 @@ def run(*, setup: ExperimentSetup) -> None:
         variables, configuration_path = vr
         extra_vars = {argument[0]: argument[1] for argument in setup.args}
         variables = {**variables, **extra_vars}
-        cmd = prepare_command(setup.script_path, configuration_path, setup.args)
+        cmd = prepare_command(configuration_path=configuration_path, setup=setup)
         exp = Experiment(name=setup.name,
                          variables=variables,
                          code_dir=os.path.dirname(setup.script_path),
@@ -47,21 +47,25 @@ def run_multistage(*, setup: MultiStageExperimentSetup) -> None:
         variables, configuration_path = vr
         extra_vars = {argument[0]: argument[1] for argument in setup.args}
         variables = {**variables, **extra_vars}
-        cmd = prepare_command(setup.script_path, configuration_path, setup.args)
+        cmd = prepare_command(configuration_path=configuration_path, setup=setup)
         exp = Experiment(name=setup.stage_name,
                          variables=variables,
                          code_dir=os.path.dirname(setup.script_path),
                          tags=setup.tags)
         with setup_database() as db:
+            exp_id = db.add(exp)
             if setup.input_path is not None:
                 multistage_id = load_stage_metadata(setup.input_path)["id"]
-                multi_stage = db.get(multistage_id, collection="msexperiments")
+                multi_stage_doc = db.get(multistage_id, doc_type="ms_experiments")
+                multistage = MultiStageExperiment.from_dict(multi_stage_doc)
+                hash_key = multistage.hash()
             else:
                 multistage = MultiStageExperiment(name=setup.name)
-                exp_id = db.add(exp)
-                multistage.add(exp, stage_name=setup.stage_name)
-                db.add(multistage)
-                multistage.export_metadata(setup.output_path)
+                hash_key = ""
+            multistage.add(exp, stage_name=setup.stage_name, last_step_hash=hash_key)
+            ml_id = db.add(multistage)
+            multistage._id = ml_id
+            multistage.export_metadata(setup.output_path)
             run_experiment(db=db, exp_id=exp_id, cmd=cmd)
 
 

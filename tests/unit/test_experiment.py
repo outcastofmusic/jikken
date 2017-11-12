@@ -27,18 +27,35 @@ def experiment_setup(tmpdir_factory):
 
 
 def test_experiment_equality(experiment_setup):
+    # Given some variables and tags
     expected_variables, tags, tmpdir = experiment_setup
+    # When I  create an experiment
     exp1 = Experiment("exp1", variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    # And another one with teh same inputs
     exp2 = Experiment("exp1", variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    # Then they are equal
     assert exp1 == exp2
+    # And when i create a third one with an extra tag
     tags3 = tags + ["third tag"]
     exp3 = Experiment("exp1", variables=expected_variables, code_dir=str(tmpdir), tags=tags3)
+    # Then that is also equal
     assert exp1 == exp3
+
+
+def test_experiment_not_equality(experiment_setup):
+    # Given some variables and tags
+    expected_variables, tags, tmpdir = experiment_setup
+    # When I  create an experiment
+    exp1 = Experiment("exp1", variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    # And whe I create one with a different name
     exp5 = Experiment("exp2", variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    # Then it is not equal
     assert exp1 != exp5
+    # And when I create one with different variables
     new_variables = copy.deepcopy(expected_variables)
     new_variables["training_parameters"]["batch_size"] = 5
     exp4 = Experiment("exp1", variables=new_variables, code_dir=str(tmpdir), tags=tags)
+    # Then it is not equal
     assert exp1 != exp4
 
 
