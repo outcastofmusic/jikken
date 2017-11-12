@@ -6,6 +6,8 @@ import os
 from .experiment import Experiment
 from .utils import get_hash
 
+STAGE_METADATA_FILEPATH = ".jikken_stage_metadata.json"
+
 
 class MultiStageExperiment:
     def __init__(self, name: str):
@@ -53,9 +55,9 @@ class MultiStageExperiment:
 
     def hash(self, step=None):
         if step is None:
-            return get_hash(str(self._hashes[self.last_step]))
+            return get_hash(self._hashes[self.last_step])
         elif step in self._experiments.keys():
-            return get_hash(str(self._hashes[step]))
+            return get_hash(self._hashes[step])
         else:
             raise ValueError("step {} is not in multistage".format(step))
 

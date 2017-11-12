@@ -1,17 +1,18 @@
-import os
 from subprocess import PIPE, Popen
 
+from jikken import MultiStageExperiment
+
 from .database import setup_database, ExperimentQuery
+from .setups import ExperimentSetup, MultiStageExperimentSetup
 from .experiment import Experiment
 from .monitor import capture_value
-from .utils import prepare_variables
-from collections import namedtuple
+from .utils import prepare_variables, prepare_command
+import os
 
 BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database
 
 
-def run(*, configuration_path: str, script_path: str, args: list = None, tags: list = None,
-        reference_configuration_path: str = None) -> None:
+def run(*, setup: ExperimentSetup) -> None:
     """Runs an experiment script and captures the stdout and stderr
 
     Args:
@@ -24,57 +25,77 @@ def run(*, configuration_path: str, script_path: str, args: list = None, tags: l
             the reference_configuration_path defines the experiment and the configuration_path only requires
             the updated variables
     """
-    with prepare_variables(config_directory=configuration_path, reference_directory=reference_configuration_path) as vr:
-        args = [] if args is None else [argument.split("=") for argument in args]
-        extra_kwargs = [x for argument in args for x in argument]
-        extra_vars = {argument[0]: argument[1] for argument in args}
+    with prepare_variables(config_directory=setup.configuration_path,
+                           reference_directory=setup.reference_configuration_path) as vr:
         variables, configuration_path = vr
+        extra_vars = {argument[0]: argument[1] for argument in setup.args}
         variables = {**variables, **extra_vars}
-        exp = Experiment(variables=variables, code_dir=os.path.dirname(script_path), tags=tags)
+        cmd = prepare_command(setup.script_path, configuration_path, setup.args)
+        exp = Experiment(name=setup.name,
+                         variables=variables,
+                         code_dir=os.path.dirname(setup.script_path),
+                         tags=setup.tags)
         with setup_database() as db:
             exp_id = db.add(exp)
-            if script_path.endswith(".py"):
-                cmd = ["python3", script_path, configuration_path] + extra_kwargs
-            elif script_path.endswith(".sh"):
-                cmd = ["bash", script_path, configuration_path] + extra_kwargs
-            error_found = False
-            with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
-                try:
-                    db.update_status(exp_id, 'running')
-                    line_buffer = ''
-                    for line in p.stdout:
-                        print_out = line.decode('utf-8')
-                        line_buffer += print_out
-                        print(print_out)
-                        if len(line_buffer) > BUFFER_LIMIT:
-                            db.update_std(exp_id, line_buffer, std_type='stdout')
-                            line_buffer = ''
-                except KeyboardInterrupt:
-                    db.update_status(exp_id, 'interrupted')
-                    print("Experiment Interrupted")
-                    error_found = True
-                finally:
-                    if line_buffer != '':
-                        db.update_std(exp_id, line_buffer, std_type='stdout')
-                    line_buffer = ''
-                    for line in p.stderr:
-                        print_out = line.decode('utf-8')
-                        monitored = capture_value(print_out)
-                        if monitored is not None:
-                            db.update_monitored(exp_id, monitored[0], monitored[1])
-                        else:
-                            line_buffer += print_out
-                            print(print_out)
-                        if 'Error' in print_out:
-                            error_found = True
-                            db.update_status(exp_id, 'error')
-                            print("Experiment Failed")
+            run_experiment(db=db, exp_id=exp_id, cmd=cmd)
 
-                    if line_buffer != '':
-                        db.update_std(exp_id, line_buffer, std_type='stderr')
-                    if not error_found:
-                        db.update_status(exp_id, 'completed')
-                        print("Experiment Done")
+
+def run_multistage(*, setup: MultiStageExperimentSetup) -> None:
+    with prepare_variables(config_directory=setup.configuration_path,
+                           reference_directory=setup.reference_configuration_path) as vr:
+        variables, configuration_path = vr
+        extra_vars = {argument[0]: argument[1] for argument in setup.args}
+        variables = {**variables, **extra_vars}
+        cmd = prepare_command(setup.script_path, configuration_path, setup.args)
+        exp = Experiment(name=setup.stage_name,
+                         variables=variables,
+                         code_dir=os.path.dirname(setup.script_path),
+                         tags=setup.tags)
+        # multistage = MultiStageExperiment()
+        with setup_database() as db:
+            exp_id = db.add(exp)
+            run_experiment(db=db, exp_id=exp_id, cmd=cmd)
+
+
+def run_experiment(*, db, exp_id, cmd):
+    error_found = False
+    with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+        try:
+            db.update_status(exp_id, 'running')
+            line_buffer = ''
+            for line in p.stdout:
+                print_out = line.decode('utf-8')
+                line_buffer += print_out
+                print(print_out)
+                if len(line_buffer) > BUFFER_LIMIT:
+                    db.update_std(exp_id, line_buffer, std_type='stdout')
+                    line_buffer = ''
+        except KeyboardInterrupt:
+            db.update_status(exp_id, 'interrupted')
+            print("Experiment Interrupted")
+            error_found = True
+        finally:
+            if line_buffer != '':
+                db.update_std(exp_id, line_buffer, std_type='stdout')
+            line_buffer = ''
+            for line in p.stderr:
+                print_out = line.decode('utf-8')
+                monitored = capture_value(print_out)
+                if monitored is not None:
+                    db.update_monitored(exp_id, monitored[0], monitored[1])
+                else:
+                    line_buffer += print_out
+                    print(print_out)
+                if 'Error' in print_out:
+                    error_found = True
+                    db.update_status(exp_id, 'error')
+                    print("Experiment Failed")
+
+            if line_buffer != '':
+                db.update_std(exp_id, line_buffer, std_type='stderr')
+            if not error_found:
+                db.update_status(exp_id, 'completed')
+                print("Experiment Done")
 
 
 def get(_id: int) -> dict:
@@ -96,7 +117,7 @@ def list(*, query: ExperimentQuery) -> list:
     """return a list of experiment documents either based on ids or based on tags
 
     Args:
-        query: ExperimentQuery with ids, tags, query_type schema and parma_schema
+        query: ExperimentQuery with ids, tags, query_type schema and params_schema
         ids (list):  a list of ids to retrieve from the database
         tags (list): al list of tags to retrieve from the database
         query_type (str): Can be either 'and' or 'or'. If it is and returns matches that match all tags if it is
@@ -168,8 +189,4 @@ def resume():
 
 def export_config():
     # TODO export the config dir/file based on an experiment
-    pass
-
-
-def run_multistage(*args, **kwargs):
     pass

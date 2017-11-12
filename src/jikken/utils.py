@@ -12,6 +12,7 @@ from contextlib import contextmanager
 
 @contextmanager
 def prepare_variables(*, config_directory, reference_directory=None):
+    """create a new updated config given a reference_dire and a config_dir"""
     if reference_directory is None:
         variables = load_variables_from_filepath(config_directory)
         config_dir = config_directory
@@ -32,6 +33,7 @@ def prepare_variables(*, config_directory, reference_directory=None):
 
 
 def get_repo_origin(directory):
+    """Get the url of the git origin of a repo """
     url = None
     try:
         repo = Repo(directory)
@@ -43,6 +45,7 @@ def get_repo_origin(directory):
 
 
 def get_commit_status(directory):
+    """Get the commit status of a repo (dirty or not)"""
     status = None
     try:
         repo = Repo(directory)
@@ -70,6 +73,7 @@ def get_commit_id(directory):
 
 
 def load_variables_from_dir(experiment_dir):
+    """Load variables dict from a directory path"""
     all_variables = {}
     root_path = os.path.dirname(experiment_dir)
     for root, dirname, filenames in os.walk(experiment_dir):
@@ -82,6 +86,7 @@ def load_variables_from_dir(experiment_dir):
 
 
 def load_variables_from_filepath(experiment_filepath, root=True):
+    """Load variables dict from a config path (directory or file)"""
     if os.path.isdir(experiment_filepath):
         variables = load_variables_from_dir(experiment_filepath)
     elif experiment_filepath.endswith("yaml") or experiment_filepath.endswith("json"):
@@ -95,6 +100,7 @@ def load_variables_from_filepath(experiment_filepath, root=True):
 
 
 def get_schema(dictionary, parameters=False, delimiter="_"):
+    """Get a schema of the config of the dictionary"""
     global_definition = ""
 
     def get_key_schema(dl, definition=None):
@@ -118,20 +124,22 @@ def get_schema(dictionary, parameters=False, delimiter="_"):
     return global_definition
 
 
-def get_hash(input_string: str):
+def get_hash(input_string: (str, int)):
     """ Return the md5 has of the input
 
     Args:
-        input_string (str): A string that will be hash
+        input_string (str, int): A string that will be hash
 
     Returns:
         str: The md5 hash
 
     """
+    input_string = str(input_string)
     return md5(input_string.encode()).hexdigest()
 
 
 def update_variables(reference_dict, update_dict):
+    """Update variables in a reference dict from an update dict"""
     new_dict = copy.copy(reference_dict)
     update_schema = get_schema(update_dict, parameters=True, delimiter="\t")
     for row in update_schema.split("\n")[:-1]:
@@ -150,6 +158,7 @@ def update_variables(reference_dict, update_dict):
 
 
 def create_directory_from_variables(root_dir, variables):
+    """Create a new config dir from a variables dict"""
     for key in variables.keys():
         key_dir = os.path.join(root_dir, key)
         os.makedirs(os.path.dirname(key_dir), exist_ok=True)
@@ -162,7 +171,18 @@ def create_directory_from_variables(root_dir, variables):
                 yaml.dump(variables[key], file_handle)
 
 
+def prepare_command(script_path, configuration_path, args):
+    """Prepare a cmd command to run  a script"""
+    extra_kwargs = [x for argument in args for x in argument]
+    if script_path.endswith(".py"):
+        cmd = ["python3", script_path, configuration_path] + extra_kwargs
+    elif script_path.endswith(".sh"):
+        cmd = ["bash", script_path, configuration_path] + extra_kwargs
+    return cmd
+
+
 def check_mongo(uri=None):
+    """Check if mongo db is available in the uri provided"""
     from pymongo import MongoClient
     from pymongo.errors import ServerSelectionTimeoutError
     uri = "mongodb://localhost:27019" if uri is None else uri

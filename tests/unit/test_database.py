@@ -100,7 +100,7 @@ def test_add_increases_count(db_multiple_experiments, tmpdir):
     db = db_multiple_experiments
     current_count = db.count()
     code_dir = tmpdir.mkdir("new_exp")
-    db.add(Experiment(variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
+    db.add(Experiment(name="exp_4",variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
 
     # THEN the count increases by 1
     assert db.count() == current_count + 1
@@ -113,7 +113,7 @@ def test_delete_experiments(db_three_experiments, tmpdir):
     experiment_count = db.count()
     # When we add one
     code_dir = tmpdir.mkdir("new_experiment")
-    _id = db.add(Experiment(variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
+    _id = db.add(Experiment(name="exp_4",variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
     # AND we delete it
     db.delete(_id)
     # THEN the count remains 3
@@ -142,7 +142,7 @@ def test_list_experiments(db_three_experiments, tmpdir):
     # When another experiment is added
     db = db_three_experiments
     code_dir = tmpdir.mkdir("new_experiment")
-    db.add(Experiment(variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
+    db.add(Experiment(name="exp_4",variables={"index": 4}, code_dir=str(code_dir), tags=["tag_4"]))
     #  THEN list_experiments should return 4 experiments
     experiments = db.list_experiments()
     assert len(experiments) == 4

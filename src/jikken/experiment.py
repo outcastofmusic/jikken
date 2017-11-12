@@ -5,14 +5,16 @@ from .utils import get_commit_id, get_commit_status, get_hash, get_repo_origin, 
 
 
 class Experiment:
-    def __init__(self, variables: dict, code_dir: str, tags: list = None):
+    def __init__(self, name: str, variables: dict, code_dir: str, tags: list = None):
         """The Experiment object encapsulates a possible experiment
 
         Args:
+            name (str): The name of the experiment
             variables (dict): A  possibly nested dictionary with all variables that define the experiment
             code_dir (str): A github directory that holds the code to be run
             tags (list, None): An optional list of tags that describe the experiment
         """
+        self._name = name
         self._variables = dict(variables)
         self._commit_id = get_commit_id(code_dir)
         self._git_repo_origin = get_repo_origin(code_dir)
@@ -23,6 +25,10 @@ class Experiment:
         self._parameters_schema_hash = ''
         self._tags = tags
         self._id = None
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def doc_id(self):
@@ -62,7 +68,10 @@ class Experiment:
 
     @property
     def hash(self):
-        return self.parameters_hash
+        if self.commit_id is not None:
+            return get_hash(hash(self.parameters_hash) ^ hash(self.commit_id))
+        else:
+            return self.parameters_hash
 
     def __hash__(self):
         return hash(self.hash)
@@ -72,6 +81,7 @@ class Experiment:
 
     def to_dict(self):
         return {
+            "name": self._name,
             "variables": self._variables,
             "commit_id": self._commit_id,
             "dirty": self._commit_status,

@@ -2,7 +2,7 @@ import json
 from contextlib import contextmanager
 
 import jikken
-from jikken.api import run
+from jikken.api import run, ExperimentSetup
 
 
 def setup_database_stub(db):
@@ -15,7 +15,8 @@ def setup_database_stub(db):
 def test_run_experiment_given_script_and_config(file_setup, capsys, jikken_db, mocker):
     mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
     conf_path, script_path, config_json = file_setup
-    run(configuration_path=conf_path, script_path=script_path)
+    setup = ExperimentSetup(name="test",configuration_path=conf_path, script_path=script_path)
+    run(setup=setup)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
     assert out[2:246] == expected_output
@@ -26,7 +27,8 @@ def test_run_experiment_with_tags(file_setup, capsys, jikken_db, mocker):
     mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
     conf_path, script_path, config_json = file_setup
     tags = ["test", 'hi']
-    run(configuration_path=conf_path, script_path=script_path, tags=tags)
+    setup = ExperimentSetup(name="test",configuration_path=conf_path, script_path=script_path, tags=tags)
+    run(setup=setup)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
     assert out[2:246] == expected_output
@@ -37,7 +39,8 @@ def test_run_experiment_with_extra_args(file_setup, capsys, jikken_db, mocker):
     mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
     conf_path, script_path, config_json = file_setup
     extra_args = ["--var1=1", "--var2=false"]
-    run(configuration_path=conf_path, script_path=script_path, args=extra_args)
+    setup = ExperimentSetup(name="test",configuration_path=conf_path, script_path=script_path, args=extra_args)
+    run(setup=setup)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
     assert out[2:246] == expected_output
@@ -50,7 +53,8 @@ def test_run_experiment_with_error(file_setup, capsys, jikken_db, mocker):
     mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
     conf_path, script_path, config_json = file_setup
     extra_args = ["--error=True"]
-    run(configuration_path=conf_path, script_path=script_path, args=extra_args)
+    setup = ExperimentSetup(name="test",configuration_path=conf_path, script_path=script_path, args=extra_args)
+    run(setup=setup)
     out, err = capsys.readouterr()
     assert out[-19:] == '\nExperiment Failed\n'
 
@@ -61,7 +65,8 @@ def test_run_experiment_and_experiment_is_added_to_database(file_setup, jikken_d
     tags = ["test", 'hi']
     mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
     # WHEN I run an experiment
-    run(configuration_path=conf_path, script_path=script_path, tags=tags)
+    setup = ExperimentSetup(name="test",configuration_path=conf_path, script_path=script_path, tags=tags)
+    run(setup=setup)
     # THEN the experiment gets added to the database
     assert jikken_db.count() == 1
     # And the stdout should have added the captured expected_output

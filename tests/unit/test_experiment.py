@@ -2,7 +2,7 @@ import os
 import copy
 import pytest
 from jikken.api import Experiment
-
+import git
 
 @pytest.fixture(autouse=True, scope='module')
 def experiment_setup(tmpdir_factory):
@@ -27,23 +27,31 @@ def experiment_setup(tmpdir_factory):
 
 def test_experiment_equality(experiment_setup):
     expected_variables, tags, tmpdir = experiment_setup
-    exp1 = Experiment(variables=expected_variables, code_dir=str(tmpdir), tags=tags)
-    exp2 = Experiment(variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    exp1 = Experiment("exp1", variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    exp2 = Experiment("exp1", variables=expected_variables, code_dir=str(tmpdir), tags=tags)
     assert exp1 == exp2
     tags3 = tags + ["third tag"]
-    exp3 = Experiment(variables=expected_variables, code_dir=str(tmpdir), tags=tags3)
+    exp3 = Experiment("exp1", variables=expected_variables, code_dir=str(tmpdir), tags=tags3)
     assert exp1 == exp3
-
+    exp5 = Experiment("exp2", variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    assert exp1 == exp5
     new_variables = copy.deepcopy(expected_variables)
     new_variables["training_parameters"]["batch_size"] = 5
-    exp4 = Experiment(variables=new_variables, code_dir=str(tmpdir), tags=tags)
+    exp4 = Experiment("exp1", variables=new_variables, code_dir=str(tmpdir), tags=tags)
     assert exp1 != exp4
 
 
 @pytest.fixture(autouse=True)
 def jikken_experiment(experiment_setup):
     expected_variables, tags, tmpdir = experiment_setup
-    exp = Experiment(variables=expected_variables, code_dir=str(tmpdir), tags=tags)
+    repo_dir = str(tmpdir)
+    file_name = os.path.join(repo_dir, 'new-file')
+    r = git.Repo.init(repo_dir)
+    # This function just creates an empty file ...
+    open(file_name, 'wb').close()
+    r.index.add([file_name])
+    r.index.commit("initial commit")
+    exp = Experiment(name="exp", variables=expected_variables, code_dir=repo_dir, tags=tags)
     return exp, expected_variables, tags, tmpdir
 
 
@@ -68,7 +76,7 @@ def test_experiment_schema(jikken_experiment):
     exp, expected_variables, _, tmpdir = jikken_experiment
     expected_hash = '40a3f5106cf9426bd4b13b168717e7bf'
     assert exp.schema_hash == expected_hash
-    exp_2 = Experiment(variables=expected_variables, code_dir=tmpdir.strpath)
+    exp_2 = Experiment(name="exp1", variables=expected_variables, code_dir=tmpdir.strpath)
     assert exp_2.schema_hash == exp.schema_hash
 
 
@@ -83,7 +91,7 @@ def test_experiment_parameters_schema_comparison(jikken_experiment):
     exp, expected_variables, _, tmpdir = jikken_experiment
     diff_variables = copy.deepcopy(expected_variables)
     diff_variables['training_parameters']['batch_size'] = 200
-    exp_2 = Experiment(variables=diff_variables, code_dir=tmpdir.strpath)
+    exp_2 = Experiment(name="exp2", variables=diff_variables, code_dir=tmpdir.strpath)
     assert exp_2.schema_hash == exp.schema_hash
     assert exp.parameters_hash != exp_2.parameters_hash
 
@@ -104,7 +112,7 @@ def text_experiment_different_hash(jikken_experiment):
     assert exp_diff_dir.hash != exp.hash
     diff_variables = copy.deepcopy(expected_variables)
     diff_variables['training_parameters']['batch_size'] = 200
-    exp_diff_variables = Experiment(variables=diff_variables, code_dir=tmpdir.strpath)
+    exp_diff_variables = Experiment(name="exp1", variables=diff_variables, code_dir=tmpdir.strpath)
     assert exp.parameters_hash != exp_diff_dir.parameters_hash
     assert exp.schema_hash == exp_diff_dir.schema_hash
     assert exp_diff_variables.hash != exp.hash
@@ -112,7 +120,7 @@ def text_experiment_different_hash(jikken_experiment):
 
 def test_experiment_different_tags_hash(jikken_experiment):
     exp, expected_variables, _, tmpdir = jikken_experiment
-    exp_diff_tags = Experiment(variables=expected_variables, code_dir=tmpdir.strpath, tags='test2')
+    exp_diff_tags = Experiment(name="exp1", variables=expected_variables, code_dir=tmpdir.strpath, tags='test2')
     assert exp.schema_hash == exp_diff_tags.schema_hash
     assert exp.parameters_hash == exp_diff_tags.parameters_hash
     assert exp.hash == exp_diff_tags.hash
