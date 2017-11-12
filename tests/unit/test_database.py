@@ -103,28 +103,19 @@ def test_added_doc_is_the_same(jikken_db, all):
                 assert experiment == expected_experiment
 
 
-def test_exp_retrieved_from_db_same(jikken_db, one_experiment):
+def test_doc_retrieved_from_db_same(jikken_db, all):
     """When I restore a document it is the same from the db"""
-    _id = jikken_db.add(one_experiment)
-
+    doc, doc_type = all
+    _id = jikken_db.add(doc)
     # WHEN doc is retrieved
-    doc_from_db = jikken_db.get(_id, "experiments")
+    doc_from_db = jikken_db.get(_id, doc_type)
 
     # Then they are equivalent
-    new_exp = Experiment.from_dict(doc_from_db)
-    assert one_experiment == new_exp
-
-
-def test_mse_retrieved_from_db_same(jikken_db, one_multistage):
-    """When I restore a document it is the same from the db"""
-    _id = jikken_db.add(one_multistage)
-
-    # WHEN doc is retrieved
-    doc_from_db = jikken_db.get(_id, "ms_experiments")
-
-    # Then they are equivalent
-    new_mse = MultiStageExperiment.from_dict(doc_from_db)
-    assert one_multistage == new_mse
+    if doc_type == "experiments":
+        new_doc = Experiment.from_dict(doc_from_db)
+    elif doc_type == "ms_experiments":
+        new_doc = MultiStageExperiment.from_dict(doc_from_db)
+    assert doc == new_doc
 
 
 def test_add_increases_count(db_multiple_experiments, tmpdir):
