@@ -6,7 +6,7 @@ import json
 from contextlib import contextmanager
 
 import jikken
-from jikken.api import run_multistage
+from jikken.api import run_stage
 from jikken.setups import MultiStageExperimentSetup
 from jikken.multistage import STAGE_METADATA
 
@@ -32,7 +32,7 @@ def test_run_multistage_given_script_and_config(tmpdir, file_setup, capsys, jikk
         output_path=str(stage_one_output_path),
         stage_name="stage_one"
     )
-    run_multistage(setup=setup)
+    run_stage(setup=setup)
     out, err = capsys.readouterr()
     expected_output = json.dumps(config_json)
     assert os.path.exists(os.path.join(str(stage_one_output_path), STAGE_METADATA))
@@ -53,7 +53,7 @@ def test_run_multistage_given_script_and_config(tmpdir, file_setup, capsys, jikk
     output_path=str(stage_one_output_path),
     stage_name="stage_one"
     )
-    run_multistage(setup=setup)
+    run_stage(setup=setup)
     mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
 
     setup = MultiStageExperimentSetup(
@@ -64,7 +64,7 @@ def test_run_multistage_given_script_and_config(tmpdir, file_setup, capsys, jikk
         output_path=str(stage_two_output_path),
         stage_name="stage_two"
     )
-    run_multistage(setup=setup)
+    run_stage(setup=setup)
     mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
     setup = MultiStageExperimentSetup(
         name="multistage_test",
@@ -74,7 +74,7 @@ def test_run_multistage_given_script_and_config(tmpdir, file_setup, capsys, jikk
         output_path=str(stage_three_output_path),
         stage_name="stage_three"
     )
-    run_multistage(setup=setup)
+    run_stage(setup=setup)
     out, err = capsys.readouterr()
     assert os.path.exists(os.path.join(str(stage_one_output_path), STAGE_METADATA))
     assert os.path.exists(os.path.join(str(stage_two_output_path), STAGE_METADATA))

@@ -1,5 +1,6 @@
 import click
 import jikken.api as api
+from .setups import ExperimentSetup, MultiStageExperimentSetup
 from .data_formater import print_experiment
 
 
@@ -10,10 +11,11 @@ def jikken_cli():
     # TODO write readme with instructions
 
 
-@jikken_cli.command(help="run an experiment from a script. e.g. jikken run script.py -c config.yaml")
+@jikken_cli.command(help="run a single stage experiment from a script. e.g. jikken run script.py -c config.yaml")
 @click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option('--configuration_path', '-c', required=True, type=click.Path(exists=True, file_okay=True, dir_okay=True),
               help="A file or a directory with files that hold the variables that define the experiment")
+@click.option('--name', '-n', required=True, type=str, help="the experiment name")
 @click.option('--ref_path', '-r', required=False, type=click.Path(exists=True, file_okay=True, dir_okay=True),
               default=None,
               help="A file or a directory with files that hold the variables that define the experiment")
@@ -23,11 +25,49 @@ def jikken_cli():
 @click.option('--tags', '-t', multiple=True,
               help="tags that can be used to distinguish the experiment inside the database."
                    " Multiple can be added e.g. -t org_name -t small_data -t model_1")
-def run(script_path, configuration_path, ref_path, args, tags):
+def run(script_path, configuration_path, ref_path, args, tags, name):
     """Runs an experiment"""
-    api.run(script_path=script_path, configuration_path=configuration_path, args=args, tags=tags,
-            reference_configuration_path=ref_path,
-            )
+    setup = ExperimentSetup(
+        name=name,
+        script_path=script_path,
+        configuration_path=configuration_path,
+        args=args,
+        tags=tags,
+        reference_configuration_path=ref_path
+    )
+    api.run(setup=setup)
+
+
+@jikken_cli.command(help="run a stage of a multistage experiment from a script. e.g. jikken run script.py -c config.yaml")
+@click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
+@click.option('--input_dir', '-i', required=False, type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@click.option('--output_dir', '-o', required=True, type=click.Path(exists=False, file_okay=False, dir_okay=True))
+@click.option('--configuration_path', '-c', required=True, type=click.Path(exists=True, file_okay=True, dir_okay=True),
+              help="A file or a directory with files that hold the variables that define the experiment")
+@click.option('--name', '-n', required=True, type=str, help="the experiment name")
+@click.option('--stage_name', '-s', required=True, type=str, help="the stage name")
+@click.option('--ref_path', '-r', required=False, type=click.Path(exists=True, file_okay=True, dir_okay=True),
+              default=None,
+              help="A file or a directory with files that hold the variables that define the experiment")
+@click.option('--args', '-a', multiple=True,
+              help="extra arguments that can be passed to the script multiple can be added,"
+                   "e.g. -a a=2 -a batch_size=63 -a early_stopping=False")
+@click.option('--tags', '-t', multiple=True,
+              help="tags that can be used to distinguish the experiment inside the database."
+                   " Multiple can be added e.g. -t org_name -t small_data -t model_1")
+def stage(script_path, input_dir, output_dir, configuration_path, ref_path, args, tags, name, stage_name):
+    # TODO create cli command that allows multistage steps
+    setup = MultiStageExperimentSetup(script_path=script_path,
+                                      input_path=input_dir,
+                                      output_path=output_dir,
+                                      configuration_path=configuration_path,
+                                      reference_configuration_path=ref_path,
+                                      args=args,
+                                      tags=tags,
+                                      name=name,
+                                      stage_name=stage_name
+                                      )
+    api.run_stage(setup=setup)
 
 
 @jikken_cli.command(help="list experiments in db")
@@ -87,11 +127,6 @@ def abort_if_false(ctx, param, value):
               prompt='Are you sure you want to drop the db?')
 def delete_all():
     api.delete_all()
-
-
-def multistage():
-    # TODO create cli command that allows pipelining steps
-    pass
 
 
 if __name__ == '__main__':

@@ -41,7 +41,7 @@ def run(*, setup: ExperimentSetup) -> None:
             run_experiment(db=db, exp_id=exp_id, cmd=cmd)
 
 
-def run_multistage(*, setup: MultiStageExperimentSetup) -> None:
+def run_stage(*, setup: MultiStageExperimentSetup) -> None:
     with prepare_variables(config_directory=setup.configuration_path,
                            reference_directory=setup.reference_configuration_path) as vr:
         variables, configuration_path = vr

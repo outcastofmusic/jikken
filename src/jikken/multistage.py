@@ -22,7 +22,7 @@ def load_stage_metadata(path: str) -> dict:
 def save_stage_metadata(path: str, metadata: dict) -> None:
     """Save stage metadata to file"""
     file_path = path if path.endswith(STAGE_METADATA) else os.path.join(path, STAGE_METADATA)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "w") as file_handle:
         json.dump(metadata, file_handle)
 

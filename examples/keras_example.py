@@ -12,6 +12,7 @@ from keras import models
 from keras import optimizers
 from keras.callbacks import LambdaCallback
 from keras.datasets import imdb
+import os
 
 # add a callback to jikken for val_loss using LambdaCallback
 jikken_callback = LambdaCallback(on_epoch_end=lambda epoch, logs: log_value('val_loss', logs.get('val_loss', np.nan)))
@@ -19,8 +20,11 @@ jikken_callback = LambdaCallback(on_epoch_end=lambda epoch, logs: log_value('val
 
 @click.command()
 @click.argument('configuration_path', type=click.Path(exists=True, file_okay=True))
+@click.option('-i', '--input_dir', type=click.Path(exists=False, file_okay=False, dir_okay=True))
+@click.option('-o', '--output_dir', required=True, type=click.Path(exists=False, file_okay=False, dir_okay=True))
 @click.option('--data_size', type=int, default=-1)
-def train(configuration_path, data_size):
+def train(configuration_path, input_dir, output_dir, data_size):
+    print(output_dir)
     with open(configuration_path) as file_handle:
         config = yaml.load(file_handle)
 
@@ -42,16 +46,20 @@ def train(configuration_path, data_size):
     # Our vectorized labels
     y_train = np.asarray(train_labels).astype('float32')
     y_test = np.asarray(test_labels).astype('float32')
+    if input_dir is not None and os.path.exists(input_dir):
+        model = models.load_model(os.path.join(input_dir, "model.h5"))
+        print("model loaded")
+    else:
+        print("model created")
+        model = models.Sequential()
+        model.add(layers.Dense(16, activation='relu', input_shape=(data_size,)))
+        model.add(layers.Dense(16, activation='relu'))
+        model.add(layers.Dense(1, activation='sigmoid'))
 
-    model = models.Sequential()
-    model.add(layers.Dense(16, activation='relu', input_shape=(data_size,)))
-    model.add(layers.Dense(16, activation='relu'))
-    model.add(layers.Dense(1, activation='sigmoid'))
-
-    model.compile(optimizer=optimizers.RMSprop(lr=config['learning_rate']),
-                  loss='binary_crossentropy',
-                  metrics=['accuracy']
-                  )
+        model.compile(optimizer=optimizers.RMSprop(lr=config['learning_rate']),
+                      loss='binary_crossentropy',
+                      metrics=['accuracy']
+                      )
 
     x_val = x_train[:config['valid_size']]
     partial_x_train = x_train[config['valid_size']:]
@@ -67,6 +75,8 @@ def train(configuration_path, data_size):
                         callbacks=[jikken_callback]
                         )
     log_value('final_val_loss', history.history['val_loss'][-1])
+    if output_dir is not None:
+        model.save(os.path.join(output_dir, "model.h5"))
 
 
 if __name__ == '__main__':

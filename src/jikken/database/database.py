@@ -106,7 +106,7 @@ class DataBase(metaclass=Singleton):
             raise ValueError("status: {} not correct".format(status))
 
     def update_monitored(self, experiment_id, key, value):
-        exp = self._database.get(experiment_id)
+        exp = self._database.get(experiment_id, collection="experiments")
         if key not in exp['monitored']:
             self._database.update_key(experiment_id, value=[value], key=['monitored', key], mode='set')
         else:

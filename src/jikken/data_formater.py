@@ -3,33 +3,34 @@ import pprint
 
 # TODO convert to class add formatting options
 def print_experiment(experiment_dict, stdout=False, stderr=False, variables=True, git=True, monitored=True):
-    banner = 100 * "-"
-    print(banner)
-    db_info = "id: {} | status: {} | tags {} | schema hash: {} |  param hash: {}".format(
-        experiment_dict['id'],
-        experiment_dict['status'],
-        experiment_dict['tags'],
-        experiment_dict['schema_hash'],
-        experiment_dict['parameter_hash']
-    )
-
-    print(db_info)
-    if git and experiment_dict['commit_id'] is not None:
-        git_info = "commit_id: {} | dirty: {} | repo: {}".format(
-            experiment_dict["commit_id"],
-            experiment_dict["dirty"],
-            experiment_dict["repo"],
+    if experiment_dict['type'] == 'experiment':
+        banner = 100 * "-"
+        print(banner)
+        db_info = "id: {} | status: {} | tags {} | schema hash: {} |  param hash: {}".format(
+            experiment_dict['id'],
+            experiment_dict['status'],
+            experiment_dict['tags'],
+            experiment_dict['schema_hash'],
+            experiment_dict['parameter_hash']
         )
-        print(git_info)
-    mini_banner = "-" * 10
-    if monitored and len(experiment_dict['monitored']) > 0:
-        print("monitored".center(100), mini_banner.center(100), sep="\n")
-        pprint.pprint(experiment_dict['monitored'])
-    if variables:
-        print("variables".center(100), mini_banner.center(100), sep="\n")
-        pprint.pprint(experiment_dict['variables'])
-    if stdout:
-        print("stdout".center(100), mini_banner.center(100), experiment_dict['stdout'], sep="\n")
-    if stderr:
-        print("stderr".center(100), mini_banner.center(100), experiment_dict['stderr'], sep="\n")
-    print(banner)
+
+        print(db_info)
+        if git and experiment_dict['commit_id'] is not None:
+            git_info = "commit_id: {} | dirty: {} | repo: {}".format(
+                experiment_dict["commit_id"],
+                experiment_dict["dirty"],
+                experiment_dict["repo"],
+            )
+            print(git_info)
+        mini_banner = "-" * 10
+        if monitored and len(experiment_dict['monitored']) > 0:
+            print("monitored".center(100), mini_banner.center(100), sep="\n")
+            pprint.pprint(experiment_dict['monitored'])
+        if variables:
+            print("variables".center(100), mini_banner.center(100), sep="\n")
+            pprint.pprint(experiment_dict['variables'])
+        if stdout:
+            print("stdout".center(100), mini_banner.center(100), experiment_dict['stdout'], sep="\n")
+        if stderr:
+            print("stderr".center(100), mini_banner.center(100), experiment_dict['stderr'], sep="\n")
+        print(banner)
