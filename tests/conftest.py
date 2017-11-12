@@ -31,8 +31,8 @@ TEST_SCRIPT = \
    import json
    @click.command()
    @click.argument('configuration_path', type=click.Path(exists=True, file_okay=True, dir_okay=True))
-   @click.argument('input_path',required=False ,type=click.Path(exists=True, file_okay=True, dir_okay=True))
-   @click.argument('output_path',required=False ,type=click.Path(exists=True, file_okay=True, dir_okay=True))
+   @click.option('-i', '--input_path',required=False ,type=click.Path(exists=True, file_okay=True, dir_okay=True))
+   @click.option('-o', '-output_path',required=False ,type=click.Path(exists=True, file_okay=True, dir_okay=True))
    @click.option('--var1',default=None)
    @click.option('--var2', default=None)
    def main(configuration_path,input_path, output_path,var1,var2):

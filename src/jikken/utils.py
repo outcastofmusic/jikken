@@ -187,7 +187,6 @@ def prepare_command(configuration_path, setup):
         cmd = ["python3", setup.script_path, configuration_path] + extra_kwargs
     elif setup.script_path.endswith(".sh"):
         cmd = ["bash", setup.script_path, configuration_path] + extra_kwargs
-    print("command to run is: {}".format(" " .join(cmd)))
     return cmd
 
 
