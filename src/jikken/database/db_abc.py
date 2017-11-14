@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any
 
-from .database import ExperimentQuery
+from .database import ExperimentQuery, MultiStageExperimentQuery
 
 
 class DB(metaclass=ABCMeta):
@@ -21,6 +21,9 @@ class DB(metaclass=ABCMeta):
     def list_experiments(self, query: ExperimentQuery) -> dict:
         pass
 
+    @abstractmethod
+    def list_ms_experiments(self, query: MultiStageExperimentQuery) -> dict:
+        pass
     @abstractmethod
     def count(self) -> int:
         pass

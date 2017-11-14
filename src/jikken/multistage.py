@@ -115,6 +115,7 @@ class MultiStageExperiment:
             "name": self._name,
             "hash": self.hash(),
             "experiments": [(key, item.to_dict()) for key, item in self._experiments.items()],
+            "steps":[key for key in self._experiments.keys()],
             "type": "multistage",
             "id": self._id
         }

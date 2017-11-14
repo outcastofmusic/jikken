@@ -8,8 +8,12 @@ from jikken.multistage import MultiStageExperiment
 from .config import get_config, JikkenConfig
 
 ExperimentQuery = namedtuple("ExperimentQuery",
-                             ["tags", "ids", "schema_hashes", "status", "schema_param_hashes", "query_type", "names"])
-ExperimentQuery.__new__.__defaults__ = (None, None, None, None, None, "and", None)
+                             ["tags", "ids", "schema_hashes", "status", "schema_param_hashes", "names", "query_type"])
+ExperimentQuery.__new__.__defaults__ = (None, None, None, None, None, None, "and")
+
+MultiStageExperimentQuery = namedtuple("MultiStageExperimentQuery",
+                                       ["tags", "ids", "names", "steps", "hashes", "query_type"])
+MultiStageExperimentQuery.__new__.__defaults__ = (None, None, None, None, None, "and")
 
 
 class Singleton(type):
@@ -77,9 +81,12 @@ class DataBase(metaclass=Singleton):
                 doc["experiments"][index] = (step, exp)
         return doc
 
-    def list_experiments(self, query: ExperimentQuery = None):  # type (str) -> list[dict]
+    def list_experiments(self, query: ExperimentQuery = None) -> list:  # type (str) -> list[dict]
         """Return list of experiments."""
         return self._database.list_experiments(query=query)
+
+    def list_ms_experiments(self, query: MultiStageExperimentQuery = None) -> list:
+        return self._database.list_ms_experiments(query=query)
 
     def count(self) -> int:  # type () -> int
         """Return number of experiments in db."""

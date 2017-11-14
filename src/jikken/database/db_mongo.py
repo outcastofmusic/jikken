@@ -4,14 +4,14 @@ from bson import ObjectId
 from bson.errors import InvalidId
 import pymongo
 
-from .database import ExperimentQuery
+from .database import ExperimentQuery, MultiStageExperimentQuery
 from pymongo.errors import ConnectionFailure
 
 from .helpers import add_mongo, map_experiment, inv_map_experiment, set_mongo
 from .db_abc import DB
 
 
-def create_mongodb_query(query: ExperimentQuery):
+def create_mongodb_exp_query(query: ExperimentQuery):
     """Create a complex mongodb query from an ExperimentQuery Object"""
     query_list = []
     qt = "$all" if query.query_type == 'and' else "$in"
@@ -29,6 +29,22 @@ def create_mongodb_query(query: ExperimentQuery):
     complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
     return complex_query
 
+
+def create_mongodb_mse_query(query: MultiStageExperimentQuery):
+    """Create a complex mongodb query from an MultiStageExperimentQuery Object"""
+    query_list = []
+    qt = "$all" if query.query_type == 'and' else "$in"
+    if query.names is not None and len(query.names) > 0:
+        name_query = {"$text": {"$search": ' '.join([name for name in query.names])}}
+        query_list.append(name_query)
+    if query.tags is not None and len(query.tags) > 0:
+        query_list.append({"tags": {qt: query.tags}})
+    if query.hashes is not None and len(query.hashes) > 0:
+        query_list.append({"hash": {"$in": query.hashes}})
+    if query.steps is not None and len(query.steps) > 0:
+        query_list.append({"steps": {qt: query.steps}})
+    complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
+    return complex_query
 
 class MongoDB(DB):
     """Wrapper class for MongoDB.
@@ -98,10 +114,20 @@ class MongoDB(DB):
             return [self.get(_id) for _id in query.ids]
         else:
             if query.names is not None:
-                for collection in self._db.collection_names(include_system_collections=False):
-                    self._db[collection].create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
-            complex_query = create_mongodb_query(query=query)
+                self._db.experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
+            complex_query = create_mongodb_exp_query(query=query)
             return [inv_map_experiment(i) for i in self._db.experiments.find(complex_query)]
+
+    def list_ms_experiments(self, query: MultiStageExperimentQuery=None)-> list:
+        if query is None:
+            return [i for i in self._db["ms_experiments"].find()]
+        elif query.ids is not None and len(query.ids) > 0:
+            return [self.get(_id, collection="ms_experiments") for _id in query.ids]
+        else:
+            if query.names is not None:
+                self._db.ms_experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
+            complex_query = create_mongodb_mse_query(query=query)
+            return [inv_map_experiment(i) for i in self._db.ms_experiments.find(complex_query)]
 
     def update(self, experiment_id: int, experiment: dict):
         pass

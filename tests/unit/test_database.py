@@ -1,6 +1,6 @@
 import pytest
 from jikken import MultiStageExperiment
-from jikken.database import ExperimentQuery
+from jikken.database import ExperimentQuery, MultiStageExperimentQuery
 from jikken.experiment import Experiment
 
 
@@ -14,6 +14,19 @@ def db_one_experiment(jikken_db, one_experiment):
 def db_multiple_experiments(jikken_db, multiple_experiments):
     for exp in multiple_experiments:
         jikken_db.add(exp)
+    yield jikken_db
+
+
+@pytest.fixture()
+def db_one_multistage(jikken_db, one_multistage):
+    _id = jikken_db.add(one_multistage)
+    yield jikken_db, _id
+
+
+@pytest.fixture()
+def db_multiple_multistage(jikken_db, multiple_multistage):
+    for ms in multiple_multistage:
+        _id = jikken_db.add(ms)
     yield jikken_db
 
 
@@ -206,21 +219,45 @@ def test_list_experiments(db_three_experiments, tmpdir):
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
 
+    # And if I query with tags that don't mach I should get no results
     query = ExperimentQuery(tags=["tag_3"], schema_param_hashes=schema_parameter_hashes, query_type="or")
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 0
 
+    # And if i query with names  where only one existsI should get 1 result
     query = ExperimentQuery(names=["exp_4", "exp_5"])
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
 
+    # And if I query with multiple names I get all matching names
     query = ExperimentQuery(names=["exp_1", "exp_2", "exp_3"])
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 3
 
+    # And if I query with multiple names and tags I only get the exp that matches both name and tags
     query = ExperimentQuery(names=["exp_1", "exp_1", "exp_3"], tags=["tag_2"])
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
+
+
+@pytest.mark.test_listing
+def test_list_ms_experiments_one_experiment_is_returned_properly(db_one_multistage, tmpdir):
+    # Given a database with one mse inside
+    db, id = db_one_multistage
+    # When I query the db
+    mse_experiments = db.list_ms_experiments()
+    #  Then I get back the one mse
+    assert len(mse_experiments) == 1
+    # And when I query the experiments
+    experiments = db.list_experiments()
+    # Then I get back all the experiments of the mse
+    assert len(experiments) == 9
+    # And When I query the MSE by id
+    query = MultiStageExperimentQuery(ids=[id])
+    # Then I get back the mse
+    mse_experiments = db.list_ms_experiments(query=query)
+    assert len(mse_experiments) == 1
+
 
 std_options = [
     # std_type
