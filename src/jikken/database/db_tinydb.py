@@ -20,13 +20,13 @@ def create_tinydb_exp_query(query: ExperimentQuery):
         else:
             query_list.append(eq.tags.any(query.tags))
     if query.schema_hashes is not None and len(query.schema_hashes) > 0:
-        pattern = "(" + ")|(".join(query.schema_hashes) + ")"
+        pattern = r"(" + r")|(".join(query.schema_hashes) + r")"
         query_list.append(eq.schema_hash.matches(pattern))
     if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
-        pattern = "(" + ")|(".join(query.schema_param_hashes) + ")"
+        pattern = r"(" + r")|(".join(query.schema_param_hashes) + r")"
         query_list.append(eq.parameter_hash.matches(pattern))
     if query.status is not None and len(query.status) > 0:
-        pattern = "(" + ")|(".join(query.status) + ")"
+        pattern = r"(" + r")|(".join(query.status) + r")"
         query_list.append(eq.status.matches(pattern))
     and_query = reduce(lambda x, y: (x) & (y), query_list)
     return and_query
@@ -44,11 +44,13 @@ def create_tinydb_mse_query(query: MultiStageExperimentQuery):
         else:
             query_list.append(eq.tags.any(query.tags))
     if query.hashes is not None and len(query.hashes) > 0:
-        pattern = "(" + ")|(".join(query.schema_hashes) + ")"
+        pattern = r"(" + r")|(".join(query.schema_hashes) + r")"
         query_list.append(eq.hash.matches(pattern))
     if query.steps is not None and len(query.steps) > 0:
-        pattern = "(" + ")|(".join(query.steps) + ")"
-        query_list.append(eq.steps.matches(pattern))
+        if query.query_type == "and":
+            query_list.append(eq.steps.all(query.steps))
+        else:
+            query_list.append(eq.steps.any(query.steps))
     and_query = reduce(lambda x, y: (x) & (y), query_list)
     return and_query
 

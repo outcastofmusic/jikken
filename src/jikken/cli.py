@@ -57,7 +57,6 @@ def run(script_path, configuration_path, ref_path, args, tags, name):
               help="tags that can be used to distinguish the experiment inside the database."
                    " Multiple can be added e.g. -t org_name -t small_data -t model_1")
 def stage(script_path, input_dir, output_dir, configuration_path, ref_path, args, tags, name, stage_name):
-    # TODO create cli command that allows multistage steps
     setup = MultiStageExperimentSetup(script_path=script_path,
                                       input_path=input_dir,
                                       output_path=output_dir,

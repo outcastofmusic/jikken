@@ -127,7 +127,7 @@ class MongoDB(DB):
             if query.names is not None:
                 self._db.ms_experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
             complex_query = create_mongodb_mse_query(query=query)
-            return [inv_map_experiment(i) for i in self._db.ms_experiments.find(complex_query)]
+            return [i for i in self._db.ms_experiments.find(complex_query)]
 
     def update(self, experiment_id: int, experiment: dict):
         pass

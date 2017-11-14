@@ -32,13 +32,14 @@ def one_multistage(multiple_experiments):
 
 
 @pytest.fixture
-def multiple_multistage(multiple_experiments):
+def five_multistage(multiple_experiments):
     ms_experiments = []
     for ms_index in range(5):
         multistage = MultiStageExperiment(name="testname_{}".format(ms_index))
         last_step_hash = ""
         for index, experiment in enumerate(multiple_experiments):
-            multistage.add(experiment, stage_name="step_{}".format(index), last_step_hash=last_step_hash)
+            step_index = ms_index * 4 + index
+            multistage.add(experiment, stage_name="step_{}".format(step_index), last_step_hash=last_step_hash)
             last_step_hash = multistage.hash()
         ms_experiments.append(multistage)
     return ms_experiments

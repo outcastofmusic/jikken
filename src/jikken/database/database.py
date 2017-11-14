@@ -86,7 +86,12 @@ class DataBase(metaclass=Singleton):
         return self._database.list_experiments(query=query)
 
     def list_ms_experiments(self, query: MultiStageExperimentQuery = None) -> list:
-        return self._database.list_ms_experiments(query=query)
+        results = self._database.list_ms_experiments(query=query)
+        for doc in results:
+            for index, (step, exp_id) in enumerate(doc['experiments']):
+                exp = self._database.get(exp_id, "experiments")
+                doc["experiments"][index] = (step, exp)
+        return results
 
     def count(self) -> int:  # type () -> int
         """Return number of experiments in db."""

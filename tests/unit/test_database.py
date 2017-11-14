@@ -24,8 +24,8 @@ def db_one_multistage(jikken_db, one_multistage):
 
 
 @pytest.fixture()
-def db_multiple_multistage(jikken_db, multiple_multistage):
-    for ms in multiple_multistage:
+def db_five_multistage(jikken_db, five_multistage):
+    for ms in five_multistage:
         _id = jikken_db.add(ms)
     yield jikken_db
 
@@ -241,7 +241,7 @@ def test_list_experiments(db_three_experiments, tmpdir):
 
 
 @pytest.mark.test_listing
-def test_list_ms_experiments_one_experiment_is_returned_properly(db_one_multistage, tmpdir):
+def test_list_ms_experiments_one_experiment_is_returned_properly(db_one_multistage):
     # Given a database with one mse inside
     db, id = db_one_multistage
     # When I query the db
@@ -257,6 +257,41 @@ def test_list_ms_experiments_one_experiment_is_returned_properly(db_one_multista
     # Then I get back the mse
     mse_experiments = db.list_ms_experiments(query=query)
     assert len(mse_experiments) == 1
+    # And I check that all steps have the experiments retrieved and not their ids
+    for mse in mse_experiments:
+        for (key, exp) in mse['experiments']:
+            assert isinstance(exp, dict)
+            assert exp['type'] == 'experiment'
+
+
+@pytest.mark.test_listing
+def test_list_ms_experiments(db_five_multistage, tmpdir):
+    # Given a database with five mse inside
+    db = db_five_multistage
+    # When I query the db
+    mse_experiments = db.list_ms_experiments()
+    #  Then I get back the five mse
+    assert len(mse_experiments) == 5
+
+    # And When I query the MSE by names
+    query = MultiStageExperimentQuery(names=["testname_1", "testname_2", "wrong_name"])
+    # Then I get back the  2 mse
+    mse_experiments = db.list_ms_experiments(query=query)
+    assert len(mse_experiments) == 2
+
+    # And when I query by steps  and I get all mses that match all of those  steps
+    query = MultiStageExperimentQuery(steps=["step_4", "step_5", "step_8"])
+    # Then I get back the  2 mse
+    # the first one has from 1-9, the second from 4-13, the third from 8-17, etc.
+    mse_experiments = db.list_ms_experiments(query=query)
+    assert len(mse_experiments) == 2
+
+    # And when I query by steps (or) I get all mses that have any of  steps
+    query = MultiStageExperimentQuery(steps=["step_4", "step_5", "step_8"], query_type='or')
+    # Then I get back the  2 mse
+    # the first one has from 1-9, the second from 4-13, the third from 8-17, etc.
+    mse_experiments = db.list_ms_experiments(query=query)
+    assert len(mse_experiments) == 3
 
 
 std_options = [
@@ -295,7 +330,6 @@ status_options = [
     ('running'),
     ('completed'),
     ('error')
-
 ]
 
 
