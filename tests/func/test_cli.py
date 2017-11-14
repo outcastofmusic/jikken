@@ -25,10 +25,10 @@ def list_stub(*args, **kwargs):
          "parameter_hash": "123",
          "schema_hash": "456",
          "type": "experiment",
-         "commit_id":"cid",
-         "dirty":"False",
-         "repo":"url",
-         "monitored":{},
+         "commit_id": "cid",
+         "dirty": "False",
+         "repo": "url",
+         "monitored": {},
          "tags": ["hi"]}
         for index in
         range(2)]
@@ -50,9 +50,9 @@ def test_jikken_cli_list_tags(mocker):
 
 
 def test_jikken_cli_list(mocker):
-    mocker.patch.object(jikken.cli.api, 'list', new=list_stub)
+    mocker.patch.object(jikken.cli.api, 'list_experiments', new=list_stub)
     runner = CliRunner()
-    result = runner.invoke(jikken.cli.jikken_cli, ['list', "--stdout", "--stderr", "--no-monitored", "--no-git"])
+    result = runner.invoke(jikken.cli.jikken_cli, ['list', "exp", "--stdout", "--stderr", "--no-monitored", "--no-git"])
     expected_results = \
         """----------------------------------------------------------------------------------------------------
         id: 0 | status: done | tags ['hi'] | schema hash:456 | param hash:123
@@ -82,25 +82,26 @@ def test_jikken_cli_list(mocker):
     assert result.output.replace(" ", "") == expected_results.replace(" ", "")
     assert result.exit_code == 0
 
+
 def test_jikken_cli_list_no_args(mocker):
-    mocker.patch.object(jikken.cli.api, 'list', new=list_stub)
+    mocker.patch.object(jikken.cli.api, 'list_experiments', new=list_stub)
     runner = CliRunner()
-    result = runner.invoke(jikken.cli.jikken_cli, ['list'])
+    result = runner.invoke(jikken.cli.jikken_cli, ['list', "exp"])
     expected_results = \
-   """----------------------------------------------------------------------------------------------------
-   id: 0 | status: done | tags ['hi'] | schema hash: 456 |  param hash: 123
-   commit_id: cid | dirty: False | repo: url
-                                                variables                                              
-                                                ----------                                             
-   {'index': 0}
-   ----------------------------------------------------------------------------------------------------
-   ----------------------------------------------------------------------------------------------------
-   id: 1 | status: done | tags ['hi'] | schema hash: 456 |  param hash: 123
-   commit_id: cid | dirty: False | repo: url
-                                                variables                                              
-                                              ----------                                             
-   {'index': 1}
-   ----------------------------------------------------------------------------------------------------
-   """
+        """----------------------------------------------------------------------------------------------------
+        id: 0 | status: done | tags ['hi'] | schema hash: 456 |  param hash: 123
+        commit_id: cid | dirty: False | repo: url
+                                                     variables                                              
+                                                     ----------                                             
+        {'index': 0}
+        ----------------------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------------------
+        id: 1 | status: done | tags ['hi'] | schema hash: 456 |  param hash: 123
+        commit_id: cid | dirty: False | repo: url
+                                                     variables                                              
+                                                   ----------                                             
+        {'index': 1}
+        ----------------------------------------------------------------------------------------------------
+        """
     assert result.output.replace(" ", "") == expected_results.replace(" ", "")
     assert result.exit_code == 0
