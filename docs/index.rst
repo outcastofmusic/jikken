@@ -16,9 +16,6 @@ Jikken: a python3 experiment manager
 
    installation
    usage
-   experiment
-   multistage
-
 
 Indices and tables
 ==================

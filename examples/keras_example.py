@@ -6,7 +6,7 @@ https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/3.5-
 import click
 import numpy as np
 import yaml
-from jikken.monitor import log_value
+from jikken import log_value
 from keras import layers
 from keras import models
 from keras import optimizers

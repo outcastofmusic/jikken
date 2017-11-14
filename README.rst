@@ -27,14 +27,6 @@ Features
 Getting Started
 ###############
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-Prerequisites
-#############
-
-- python 3.5 or higher
-- pip
-- running mongodb version (for use with mongodb)
 
 
 Contributing
@@ -56,7 +48,7 @@ Release History
 Versioning
 ----------
 
-We use `SemVer <http://semver.org/>`_ for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
+We use `SemVer <http://semver.org/>`_ for versioning. For the versions available, see the `tags on this repository`_
 
 Authors
 -------
@@ -66,7 +58,7 @@ Authors
 License
 -------
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the MIT License - see the `LICENSE`_ file for details
 
 Acknowledgments
 ---------------
@@ -79,5 +71,7 @@ Acknowledgments
 .. _wiki: https://github.com/outcastofmusic/jikken/wiki
 .. _Python Testing with Pytest: https://pragprog.com/book/bopytest/python-testing-with-pytest
 .. _Deep Learning with Python: https://www.manning.com/books/deep-learning-with-python
+.. _LICENSE: https://github.com/outcastofmusic/jikken/blob/master/LICENSE
+.. _tags on this repository: https://github.com/outcastofmusic/jikken/tags
 
 
