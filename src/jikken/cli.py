@@ -107,7 +107,7 @@ def exp(ids, query, tags, names, schema, param_schema, status, stdout, stderr, v
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
 
-
+# TODO write cli test for list mse
 @list.command(help="(MultiStageExperiments): list multistage experiments")
 @click.option('--ids', '-a', multiple=True, help="the ids to print")
 @click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
