@@ -8,4 +8,3 @@ pytest-mock==1.6.3
 pytest==3.2.3
 smmap2==2.0.3
 tinydb==3.6.0
-traitlets==4.3.2

@@ -44,7 +44,7 @@ class MongoDB(DB):
         for index in range(3):
             try:
                 self._client = pymongo.MongoClient(db_path)
-                db_names = self._client.database_names()
+                _ = self._client.database_names()
             except ConnectionFailure:
                 index += 1
         return self._client[db_name] if self._client else None
