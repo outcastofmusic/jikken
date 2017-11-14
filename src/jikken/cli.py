@@ -70,7 +70,14 @@ def stage(script_path, input_dir, output_dir, configuration_path, ref_path, args
     api.run_stage(setup=setup)
 
 
-@jikken_cli.command(help="list experiments in db")
+@jikken_cli.group(context_settings={'help_option_names': ['-h', '--help']},
+                  help="Retrieve list of experiments from db matching a query")
+def list():
+    """Run the list command"""
+    pass
+
+
+@list.command(help="(Experiments): list experiments")
 @click.option('--ids', '-a', multiple=True, help="the ids to print")
 @click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")
 @click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
@@ -83,19 +90,46 @@ def stage(script_path, input_dir, output_dir, configuration_path, ref_path, args
 @click.option('--var/--no-var', default=True)
 @click.option('--git/--no-git', default=True)
 @click.option('--monitored/--no-monitored', default=True)
-def list(ids, query, tags, names, schema, param_schema, status, stdout, stderr, var, git, monitored):
+def exp(ids, query, tags, names, schema, param_schema, status, stdout, stderr, var, git, monitored):
     assert (len(ids) == 0) or (len(tags) == 0), "cannot provide both tags and ids"
-    query = api.ExperimentQuery(tags=tags,
-                                names=names,
-                                ids=ids,
-                                schema_hashes=schema,
-                                schema_param_hashes=param_schema,
-                                query_type=query,
-                                status=status
-                                )
-    if len(ids) == len(tags) == len(param_schema) == len(schema) == len(status) == 0:
+    query = api.ExperimentQuery(
+        tags=tags,
+        names=names,
+        ids=ids,
+        schema_hashes=schema,
+        schema_param_hashes=param_schema,
+        query_type=query,
+        status=status
+    )
+    if len(ids) == len(tags) == len(param_schema) == len(schema) == len(names) == len(status) == 0:
         query = None
-    results = api.list(query=query)
+    results = api.list_experiments(query=query)
+    for res in results:
+        print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
+
+
+@list.command(help="(MultiStageExperiments): list multistage experiments")
+@click.option('--ids', '-a', multiple=True, help="the ids to print")
+@click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
+@click.option('--steps', '-s', multiple=True)
+@click.option('--hashes', '-h', multiple=True)
+@click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
+@click.option('--stdout/--no-stdout', default=False)
+@click.option('--stderr/--no-stderr', default=False)
+@click.option('--var/--no-var', default=True)
+@click.option('--git/--no-git', default=True)
+@click.option('--monitored/--no-monitored', default=True)
+def mse(ids, query, names, hashes, steps, stdout, stderr, var, git, monitored):
+    query = api.MultiStageExperimentQuery(
+        names=names,
+        ids=ids,
+        hashes=hashes,
+        query_type=query,
+        steps=steps
+    )
+    if len(ids) == len(hashes) == len(steps) == len(names) == 0:
+        query = None
+    results = api.list_multi_stage_experiments(query=query)
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
 

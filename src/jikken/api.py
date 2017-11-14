@@ -3,7 +3,7 @@ from subprocess import PIPE, Popen
 from jikken import MultiStageExperiment
 from .multistage import load_stage_metadata
 
-from .database import setup_database, ExperimentQuery
+from .database import setup_database, ExperimentQuery, MultiStageExperimentQuery
 from .setups import ExperimentSetup, MultiStageExperimentSetup
 from .experiment import Experiment
 from .monitor import capture_value
@@ -125,18 +125,11 @@ def get(_id: int) -> dict:
     return experiment
 
 
-def list(*, query: ExperimentQuery) -> list:
+def list_experiments(*, query: ExperimentQuery) -> list:
     """return a list of experiment documents either based on ids or based on tags
 
     Args:
         query: ExperimentQuery with ids, tags, query_type schema and params_schema
-        ids (list):  a list of ids to retrieve from the database
-        tags (list): al list of tags to retrieve from the database
-        query_type (str): Can be either 'and' or 'or'. If it is and returns matches that match all tags if it is
-            or returns matches that match any tags
-        schema(str): a list of schema hashes to query the db
-        param_schema(str): a list of parameter schema hashes to query the db
-
     Returns:
             list: A list of dicts with each dict being an experiment document
     """
@@ -144,6 +137,17 @@ def list(*, query: ExperimentQuery) -> list:
         results = db.list_experiments(query=query)
     return results
 
+def list_multi_stage_experiments(*, query: MultiStageExperimentQuery) -> list:
+    """return a list of mse experiment documents either based on ids or based on tags
+
+    Args:
+        query: MultiStageExperimentQuery with ids, tags, query_type schema and params_schema
+    Returns:
+            list: A list of dicts with each dict being an experiment document
+    """
+    with setup_database() as db:
+        results = db.list_ms_experiments(query=query)
+    return results
 
 def update():
     # TODO be able to update the tags of an experiment or add metadata to it

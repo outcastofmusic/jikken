@@ -1,8 +1,7 @@
 from functools import reduce
 import tinydb
 from .database import ExperimentQuery, MultiStageExperimentQuery
-from traitlets import Any
-
+from typing import Any
 from .helpers import set_inner, add_inner
 from tinydb.operations import add, set
 from .db_abc import DB
@@ -53,6 +52,7 @@ def create_tinydb_mse_query(query: MultiStageExperimentQuery):
             query_list.append(eq.steps.any(query.steps))
     and_query = reduce(lambda x, y: (x) & (y), query_list)
     return and_query
+
 
 class TinyDB(DB):  # noqa : E801
     """Wrapper class for TinyDB.
