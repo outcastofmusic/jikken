@@ -7,9 +7,27 @@ import pymongo
 from .database import ExperimentQuery
 from pymongo.errors import ConnectionFailure
 
-from jikken import Experiment, MultiStageExperiment
 from .helpers import add_mongo, map_experiment, inv_map_experiment, set_mongo
 from .db_abc import DB
+
+
+def create_mongodb_query(query: ExperimentQuery):
+    """Create a complex mongodb query from an ExperimentQuery Object"""
+    query_list = []
+    qt = "$all" if query.query_type == 'and' else "$in"
+    if query.names is not None and len(query.names) > 0:
+        name_query = {"$text": {"$search": ' '.join([name for name in query.names])}}
+        query_list.append(name_query)
+    if query.tags is not None and len(query.tags) > 0:
+        query_list.append({"tags": {qt: query.tags}})
+    if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
+        query_list.append({"parameter_hash": {"$in": query.schema_param_hashes}})
+    if query.schema_hashes is not None and len(query.schema_hashes) > 0:
+        query_list.append({"schema_hash": {"$in": query.schema_hashes}})
+    if query.status is not None and len(query.status) > 0:
+        query_list.append({"status": {"$in": query.status}})
+    complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
+    return complex_query
 
 
 class MongoDB(DB):
@@ -19,6 +37,8 @@ class MongoDB(DB):
     def __init__(self, db_path: str, db_name: str):
         self._client = None
         self._db = self._connect(db_path, db_name)
+        for collection in self._db.collection_names(include_system_collections=False):
+            self._db[collection].create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
 
     def _connect(self, db_path, db_name):
         for index in range(3):
@@ -59,7 +79,8 @@ class MongoDB(DB):
         for collection in self._db.collection_names(include_system_collections=False):
             self._db[collection].drop()
 
-    def get(self, _id: str, collection: str = "experiments"):
+    def get(self, _id: str, collection: str = "experiments") -> (dict, None):
+        """Get a document from the database or None if document not found"""
         doc = self._db[collection].find_one({"_id": ObjectId(_id)})
         if doc is None:
             return
@@ -69,35 +90,28 @@ class MongoDB(DB):
             doc['id'] = doc.pop('_id')
             return doc
 
-    def list_experiments(self, query: ExperimentQuery = None):
-
+    def list_experiments(self, query: ExperimentQuery = None) -> list:
+        """return a list of experiments that match the query"""
         if query is None:
             return [inv_map_experiment(i) for i in self._db.experiments.find()]
         elif query.ids is not None and len(query.ids) > 0:
             return [self.get(_id) for _id in query.ids]
         else:
-            query_list = []
-            qt = "$all" if query.query_type == 'and' else "$in"
-            if query.tags is not None and len(query.tags) > 0:
-                query_list.append({"tags": {qt: query.tags}})
-            if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
-                query_list.append({"parameter_hash": {"$in": query.schema_param_hashes}})
-            if query.schema_hashes is not None and len(query.schema_hashes) > 0:
-                query_list.append({"schema_hash": {"$in": query.schema_hashes}})
-            if query.status is not None and len(query.status) > 0:
-                query_list.append({"status": {"$in": query.status}})
-            complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
+            if query.names is not None:
+                for collection in self._db.collection_names(include_system_collections=False):
+                    self._db[collection].create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
+            complex_query = create_mongodb_query(query=query)
             return [inv_map_experiment(i) for i in self._db.experiments.find(complex_query)]
 
     def update(self, experiment_id: int, experiment: dict):
         pass
 
-    def update_key(self, experiment_id: int, value: Any, key: str, mode='set'):
+    def update_key(self, experiment_id: int, value: Any, key: str, mode='set') -> None:
         if mode == 'set':
             self._db.experiments.update({"_id": ObjectId(experiment_id)}, set_mongo(value, key=key))
         elif mode == 'add':
             self._db.experiments.update({"_id": ObjectId(experiment_id)}, add_mongo(value, key=key))
 
     @property
-    def collections(self):
+    def collections(self) -> list:
         return self._db.collection_names(include_system_collections=False)

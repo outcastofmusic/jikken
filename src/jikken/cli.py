@@ -38,7 +38,8 @@ def run(script_path, configuration_path, ref_path, args, tags, name):
     api.run(setup=setup)
 
 
-@jikken_cli.command(help="run a stage of a multistage experiment from a script. e.g. jikken run script.py -c config.yaml")
+@jikken_cli.command(
+    help="run a stage of a multistage experiment from a script. e.g. jikken run script.py -c config.yaml")
 @click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option('--input_dir', '-i', required=False, type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option('--output_dir', '-o', required=True, type=click.Path(exists=False, file_okay=False, dir_okay=True))
@@ -73,6 +74,7 @@ def stage(script_path, input_dir, output_dir, configuration_path, ref_path, args
 @jikken_cli.command(help="list experiments in db")
 @click.option('--ids', '-a', multiple=True, help="the ids to print")
 @click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")
+@click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
 @click.option('--schema', '-s', multiple=True)
 @click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True)
 @click.option('--param_schema', '-p', multiple=True)
@@ -82,9 +84,10 @@ def stage(script_path, input_dir, output_dir, configuration_path, ref_path, args
 @click.option('--var/--no-var', default=True)
 @click.option('--git/--no-git', default=True)
 @click.option('--monitored/--no-monitored', default=True)
-def list(ids, query, tags, schema, param_schema, status, stdout, stderr, var, git, monitored):
+def list(ids, query, tags, names, schema, param_schema, status, stdout, stderr, var, git, monitored):
     assert (len(ids) == 0) or (len(tags) == 0), "cannot provide both tags and ids"
     query = api.ExperimentQuery(tags=tags,
+                                names=names,
                                 ids=ids,
                                 schema_hashes=schema,
                                 schema_param_hashes=param_schema,

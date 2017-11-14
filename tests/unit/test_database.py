@@ -210,6 +210,17 @@ def test_list_experiments(db_three_experiments, tmpdir):
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 0
 
+    query = ExperimentQuery(names=["exp_4", "exp_5"])
+    experiments = db.list_experiments(query=query)
+    assert len(experiments) == 1
+
+    query = ExperimentQuery(names=["exp_1", "exp_2", "exp_3"])
+    experiments = db.list_experiments(query=query)
+    assert len(experiments) == 3
+
+    query = ExperimentQuery(names=["exp_1", "exp_1", "exp_3"], tags=["tag_2"])
+    experiments = db.list_experiments(query=query)
+    assert len(experiments) == 1
 
 std_options = [
     # std_type

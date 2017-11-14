@@ -8,8 +8,8 @@ from jikken.multistage import MultiStageExperiment
 from .config import get_config, JikkenConfig
 
 ExperimentQuery = namedtuple("ExperimentQuery",
-                             ["tags", "ids", "schema_hashes", "status", "schema_param_hashes", "query_type"])
-ExperimentQuery.__new__.__defaults__ = (None, None, None, None, None, "and")
+                             ["tags", "ids", "schema_hashes", "status", "schema_param_hashes", "query_type", "names"])
+ExperimentQuery.__new__.__defaults__ = (None, None, None, None, None, "and", None)
 
 
 class Singleton(type):
@@ -64,8 +64,6 @@ class DataBase(metaclass=Singleton):
                 step_index = data_object.step_index(step)
                 multistage_dict['experiments'][step_index] = (step, _id)
             return self._database.add(multistage_dict)
-        # if isinstance(experiment, (Experiment, multistage)):
-        #     return self._database.add(experiment)
         else:
             raise TypeError("experiment {} was not Experiment|multistage".format(type(data_object)))
 
@@ -85,6 +83,7 @@ class DataBase(metaclass=Singleton):
 
     def count(self) -> int:  # type () -> int
         """Return number of experiments in db."""
+        # TODO add ability to return count of experiments, multistage experiments or everything
         return self._database.count()
 
     def update(self, experiment_id: int, experiment: Experiment) -> None:

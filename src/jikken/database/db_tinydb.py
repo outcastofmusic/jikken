@@ -3,10 +3,32 @@ import tinydb
 from .database import ExperimentQuery
 from traitlets import Any
 
-from jikken import Experiment, MultiStageExperiment
 from .helpers import set_inner, add_inner
 from tinydb.operations import add, set
 from .db_abc import DB
+
+
+def create_tinydb_query(query: ExperimentQuery):
+    eq = tinydb.Query()
+    query_list = []
+    if query.names is not None and len(query.names) > 0:
+        query_list.append(eq.name.search(r'(' + r'|'.join(query.names) + r')'))
+    if query.tags is not None and len(query.tags) > 0:
+        if query.query_type == "and":
+            query_list.append(eq.tags.all(query.tags))
+        else:
+            query_list.append(eq.tags.any(query.tags))
+    if query.schema_hashes is not None and len(query.schema_hashes) > 0:
+        pattern = "(" + ")|(".join(query.schema_hashes) + ")"
+        query_list.append(eq.schema_hash.matches(pattern))
+    if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
+        pattern = "(" + ")|(".join(query.schema_param_hashes) + ")"
+        query_list.append(eq.parameter_hash.matches(pattern))
+    if query.status is not None and len(query.status) > 0:
+        pattern = "(" + ")|(".join(query.status) + ")"
+        query_list.append(eq.status.matches(pattern))
+    and_query = reduce(lambda x, y: (x) & (y), query_list)
+    return and_query
 
 
 class TinyDB(DB):  # noqa : E801
@@ -43,24 +65,8 @@ class TinyDB(DB):  # noqa : E801
         elif query.ids is not None:
             return [self.get(_id) for _id in query.ids]
         else:
-            eq = tinydb.Query()
-            query_list = []
-            if query.tags is not None and len(query.tags) > 0:
-                if query.query_type == "and":
-                    query_list.append(eq.tags.all(query.tags))
-                else:
-                    query_list.append(eq.tags.any(query.tags))
-            if query.schema_hashes is not None and len(query.schema_hashes) > 0:
-                pattern = "(" + ")|(".join(query.schema_hashes) + ")"
-                query_list.append(eq.schema_hash.matches(pattern))
-            if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
-                pattern = "(" + ")|(".join(query.schema_param_hashes) + ")"
-                query_list.append(eq.parameter_hash.matches(pattern))
-            if query.status is not None and len(query.status) > 0:
-                pattern = "(" + ")|(".join(query.status) + ")"
-                query_list.append(eq.status.matches(pattern))
-            and_query = reduce(lambda x, y: (x) & (y), query_list)
-            return self._db.search(and_query)
+            complex_query = create_tinydb_query(query=query)
+            return self._db.search(complex_query)
 
     def count(self) -> int:
         """Return number of experiments in db."""
