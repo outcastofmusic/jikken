@@ -10,7 +10,7 @@ Create PIP Install once v0.1 is feature complete
 Install from Source
 ^^^^^^^^^^^^^^^^^^^
 
-Jikken  can be installed from source. This installation is compatible with Linux/Mac OS X and Python 3.{4,5,6}. In order to use
+Jikken  can be installed from source. This installation is compatible with Linux/Mac OS X and Python 3.{5,6}. In order to use
 mondoDB or elasticsearch a mongodb or es database need to be setup and running.
 
 * git clone the library::

@@ -16,7 +16,7 @@ experiment is in a git repo, the git info will be added as well.
 Features
 ########
 
-- Python 3 code
+- Python 3.{5,6} code
 - Support for TinyDB, MongoDB, and ES (to be implemented)
 - tagging of experiments
 - CLI to access experiment data
