@@ -105,6 +105,42 @@ def exp(ids, query, tags, names, schema, param_schema, status, stdout, stderr, v
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
 
+
+@list.command(help="(Best Experiment): get best experiment based on monitored metric")
+@click.option('--ids', '-a', multiple=True, help="the ids to print")
+@click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")
+@click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
+@click.option('--schema', '-s', multiple=True)
+@click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True)
+@click.option('--param_schema', '-p', multiple=True)
+@click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
+@click.option('--stdout/--no-stdout', default=False)
+@click.option('--stderr/--no-stderr', default=False)
+@click.option('--var/--no-var', default=True)
+@click.option('--git/--no-git', default=True)
+@click.option('--monitored/--no-monitored', default=True)
+@click.option('--metric', '-m', required=True,
+              help="the metric to compare. If an multiple values have been stored then last one is used")
+@click.option('--optimum', required=True, help="compare by searching for a minimum or a maximum",
+              type=click.Choice(["min", "max"]), default="min")
+def best(ids, query, tags, names, schema, param_schema, status, stdout, stderr, var, git, monitored, optimum, metric):
+    assert (len(ids) == 0) or (len(tags) == 0), "cannot provide both tags and ids"
+    query = api.ExperimentQuery(
+        tags=tags,
+        names=names,
+        ids=ids,
+        schema_hashes=schema,
+        schema_param_hashes=param_schema,
+        query_type=query,
+        status=status
+    )
+    best_result = api.get_best(query=query, optimum=optimum, metric=metric)
+    if best_result is not None:
+        print_experiment(best_result, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
+    else:
+        print("No experiment found")
+
+
 # TODO write cli test for list mse
 @list.command(help="(MultiStageExperiments): list multistage experiments")
 @click.option('--ids', '-a', multiple=True, help="the ids to print")

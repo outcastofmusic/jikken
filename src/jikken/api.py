@@ -7,8 +7,11 @@ from .database import setup_database, ExperimentQuery, MultiStageExperimentQuery
 from .setups import ExperimentSetup, MultiStageExperimentSetup
 from .experiment import Experiment
 from .monitor import capture_value
-from .utils import prepare_variables, prepare_command, update_stdout
+from .utils import prepare_variables, prepare_command
 import os
+import sys
+
+BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database
 
 
 def run(*, setup: ExperimentSetup) -> None:
@@ -74,7 +77,13 @@ def run_experiment(*, db, exp_id, cmd):
         line_buffer = ''
         try:
             db.update_status(exp_id, 'running')
-            line_buffer = update_stdout(db=db, exp_id=exp_id, stdout=p.stdout, line_buffer=line_buffer)
+            for line in p.stdout:
+                print_out = line.decode('utf-8')
+                line_buffer += print_out
+                print(print_out)
+                if len(line_buffer) > BUFFER_LIMIT:
+                    db.update_std(exp_id, line_buffer, std_type='stdout')
+                    line_buffer = ''
         except KeyboardInterrupt:
             db.update_status(exp_id, 'interrupted')
             print("Experiment Interrupted")
@@ -188,9 +197,30 @@ def delete_all() -> None:
         db.delete_all()
 
 
-def get_best():
-    # TODO write get best exp document, based on some val_ and metrics
-    pass
+def get_best(*, query: ExperimentQuery, metric: str, optimum: str = "min"):
+    assert optimum in ["min", "max"]
+    with setup_database() as db:
+        results = db.list_experiments(query=query)
+
+    if optimum == "min":
+        default_value = sys.float_info.max
+        compare = lambda x, y: x > y
+    else:
+        default_value = sys.float_info.min
+        compare = lambda x, y: x < y
+
+    best_result = default_value
+    best_experiment = None
+    for result in results:
+        metric_values = result['monitored'].get(metric, default_value)
+        if isinstance(metric_values, list):
+            current_value = float(metric_values[-1])
+        else:
+            current_value = float(metric_values)
+        if compare(best_result, current_value):
+            best_result = current_value
+            best_experiment = result
+    return best_experiment
 
 
 def resume():

@@ -239,9 +239,6 @@ def test_list_experiments(db_three_experiments, tmpdir):
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
 
-def test_get_best_experiment_based_on_var():
-    pass
-
 @pytest.mark.test_listing
 def test_list_ms_experiments_one_experiment_is_returned_properly(db_one_multistage):
     # Given a database with one mse inside

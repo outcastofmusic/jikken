@@ -202,17 +202,3 @@ def check_mongo(uri=None):
     except ServerSelectionTimeoutError:
         found_database = False
     return found_database
-
-
-BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database
-
-
-def update_stdout(db, exp_id, stdout, line_buffer):
-    for line in stdout:
-        print_out = line.decode('utf-8')
-        line_buffer += print_out
-        print(print_out)
-        if len(line_buffer) > BUFFER_LIMIT:
-            db.update_std(exp_id, line_buffer, std_type='stdout')
-            line_buffer = ''
-    return line_buffer
