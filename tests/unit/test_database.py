@@ -239,6 +239,8 @@ def test_list_experiments(db_three_experiments, tmpdir):
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
 
+def test_get_best_experiment_based_on_var():
+    pass
 
 @pytest.mark.test_listing
 def test_list_ms_experiments_one_experiment_is_returned_properly(db_one_multistage):
@@ -312,6 +314,12 @@ def test_update_std_experiments(std_type, db_one_experiment):
     exp = db.get(_id, "experiments")
     # Then the stdout or stderr key is updated
     assert exp[std_type] == new_string
+    # And when I append a new string
+    new_string_2 = "this is a second string"
+    db.update_std(_id, new_string_2, std_type)
+    exp = db.get(_id, "experiments")
+    # Then the new string gets updated
+    assert exp[std_type] == new_string + new_string_2
 
 
 def test_update_std_raises(db_one_experiment):

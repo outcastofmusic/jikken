@@ -7,24 +7,23 @@ from .database import setup_database, ExperimentQuery, MultiStageExperimentQuery
 from .setups import ExperimentSetup, MultiStageExperimentSetup
 from .experiment import Experiment
 from .monitor import capture_value
-from .utils import prepare_variables, prepare_command
+from .utils import prepare_variables, prepare_command, update_stdout
 import os
-
-BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database
 
 
 def run(*, setup: ExperimentSetup) -> None:
     """Runs an experiment script and captures the stdout and stderr
 
     Args:
-        configuration_path (str): The path to the configuration file/dir of the experiment
-        script_path (str): The path to the script that will run the experiment
-        args (list): Optional, list of strings with extra args not included in the configuration_path to
-             be passed to the script. Expected form is ["arg1=x", "arg2=y", "arg3=z"]
-        tags (list): Optional, list of strings with tags that describe the experiment
-        reference_configuration_path (str): Optional a path for a reference configuration. If it is given
-            the reference_configuration_path defines the experiment and the configuration_path only requires
-            the updated variables
+        setup (ExperimentSetup): An object with the setup to run an experiment including:
+            configuration_path (str): The path to the configuration file/dir of the experiment
+            script_path (str): The path to the script that will run the experiment
+            args (list): Optional, list of strings with extra args not included in the configuration_path to
+                 be passed to the script. Expected form is ["arg1=x", "arg2=y", "arg3=z"]
+            tags (list): Optional, list of strings with tags that describe the experiment
+            reference_configuration_path (str): Optional a path for a reference configuration. If it is given
+                the reference_configuration_path defines the experiment and the configuration_path only requires
+                the updated variables
     """
     with prepare_variables(config_directory=setup.configuration_path,
                            reference_directory=setup.reference_configuration_path) as vr:
@@ -72,16 +71,10 @@ def run_stage(*, setup: MultiStageExperimentSetup) -> None:
 def run_experiment(*, db, exp_id, cmd):
     error_found = False
     with Popen(cmd, stderr=PIPE, stdout=PIPE, bufsize=1) as p:
+        line_buffer = ''
         try:
             db.update_status(exp_id, 'running')
-            line_buffer = ''
-            for line in p.stdout:
-                print_out = line.decode('utf-8')
-                line_buffer += print_out
-                print(print_out)
-                if len(line_buffer) > BUFFER_LIMIT:
-                    db.update_std(exp_id, line_buffer, std_type='stdout')
-                    line_buffer = ''
+            line_buffer = update_stdout(db=db, exp_id=exp_id, stdout=p.stdout, line_buffer=line_buffer)
         except KeyboardInterrupt:
             db.update_status(exp_id, 'interrupted')
             print("Experiment Interrupted")
@@ -137,6 +130,7 @@ def list_experiments(*, query: ExperimentQuery) -> list:
         results = db.list_experiments(query=query)
     return results
 
+
 def list_multi_stage_experiments(*, query: MultiStageExperimentQuery) -> list:
     """return a list of mse experiment documents either based on ids or based on tags
 
@@ -148,6 +142,7 @@ def list_multi_stage_experiments(*, query: MultiStageExperimentQuery) -> list:
     with setup_database() as db:
         results = db.list_ms_experiments(query=query)
     return results
+
 
 def update():
     # TODO be able to update the tags of an experiment or add metadata to it

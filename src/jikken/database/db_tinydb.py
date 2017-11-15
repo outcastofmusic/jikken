@@ -11,20 +11,20 @@ def create_tinydb_exp_query(query: ExperimentQuery):
     """Create a complex query for experiments"""
     eq = tinydb.Query()
     query_list = []
-    if query.names is not None and len(query.names) > 0:
+    if len(query.names) > 0:
         query_list.append(eq.name.search(r'(' + r'|'.join(query.names) + r')'))
-    if query.tags is not None and len(query.tags) > 0:
+    if len(query.tags) > 0:
         if query.query_type == "and":
             query_list.append(eq.tags.all(query.tags))
         else:
             query_list.append(eq.tags.any(query.tags))
-    if query.schema_hashes is not None and len(query.schema_hashes) > 0:
+    if len(query.schema_hashes) > 0:
         pattern = r"(" + r")|(".join(query.schema_hashes) + r")"
         query_list.append(eq.schema_hash.matches(pattern))
-    if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
+    if len(query.schema_param_hashes) > 0:
         pattern = r"(" + r")|(".join(query.schema_param_hashes) + r")"
         query_list.append(eq.parameter_hash.matches(pattern))
-    if query.status is not None and len(query.status) > 0:
+    if len(query.status) > 0:
         pattern = r"(" + r")|(".join(query.status) + r")"
         query_list.append(eq.status.matches(pattern))
     and_query = reduce(lambda x, y: (x) & (y), query_list)
@@ -35,17 +35,17 @@ def create_tinydb_mse_query(query: MultiStageExperimentQuery):
     """Create a complex query for MultiStage Experiments"""
     eq = tinydb.Query()
     query_list = []
-    if query.names is not None and len(query.names) > 0:
+    if len(query.names) > 0:
         query_list.append(eq.name.search(r'(' + r'|'.join(query.names) + r')'))
-    if query.tags is not None and len(query.tags) > 0:
+    if len(query.tags) > 0:
         if query.query_type == "and":
             query_list.append(eq.tags.all(query.tags))
         else:
             query_list.append(eq.tags.any(query.tags))
-    if query.hashes is not None and len(query.hashes) > 0:
+    if len(query.hashes) > 0:
         pattern = r"(" + r")|(".join(query.schema_hashes) + r")"
         query_list.append(eq.hash.matches(pattern))
-    if query.steps is not None and len(query.steps) > 0:
+    if len(query.steps) > 0:
         if query.query_type == "and":
             query_list.append(eq.steps.all(query.steps))
         else:
@@ -84,20 +84,20 @@ class TinyDB(DB):  # noqa : E801
         """Return a experiment dict with matching id."""
         return self._db[collection].get(eid=int(doc_id))
 
-    def list_experiments(self, query: ExperimentQuery = None) -> list:
+    def list_experiments(self, query: ExperimentQuery) -> list:
         """Return list of experiments."""
-        if query is None:
+        if query.is_empty():
             return self._db["experiments"].all()
-        elif query.ids is not None:
+        elif len(query.ids) > 0:
             return [self.get(_id, "experiments") for _id in query.ids]
         else:
             complex_query = create_tinydb_exp_query(query=query)
             return self._db["experiments"].search(complex_query)
 
     def list_ms_experiments(self, query: MultiStageExperimentQuery) -> None:
-        if query is None:
+        if query.is_empty():
             return self._db["ms_experiments"].all()
-        elif query.ids is not None:
+        elif len(query.ids) > 0:
             return [self.get(_id, "ms_experiments") for _id in query.ids]
         else:
             complex_query = create_tinydb_mse_query(query=query)
@@ -115,7 +115,7 @@ class TinyDB(DB):  # noqa : E801
     def update_key(self, experiment_id: str, value: Any, key: (list, str), mode='set') -> None:
         experiment_id = int(experiment_id)
         if mode == 'set' and isinstance(key, list):
-            self._db["experimetns"].update(set_inner(key, value), eids=[experiment_id])
+            self._db["experiments"].update(set_inner(key, value), eids=[experiment_id])
         elif mode == 'set':
             self._db["experiments"].update(set(key, value), eids=[experiment_id])
         elif mode == 'add' and isinstance(key, list):

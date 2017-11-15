@@ -1,20 +1,11 @@
 import os
 from contextlib import contextmanager
-from collections import namedtuple
+from .query import ExperimentQuery, MultiStageExperimentQuery
 
 from jikken.experiment import Experiment
 from jikken.multistage import MultiStageExperiment
 
 from .config import get_config, JikkenConfig
-
-ExperimentQuery = namedtuple("ExperimentQuery",
-                             ["tags", "ids", "schema_hashes", "status", "schema_param_hashes", "names", "query_type"])
-ExperimentQuery.__new__.__defaults__ = (None, None, None, None, None, None, "and")
-
-MultiStageExperimentQuery = namedtuple("MultiStageExperimentQuery",
-                                       ["tags", "ids", "names", "steps", "hashes", "query_type"])
-MultiStageExperimentQuery.__new__.__defaults__ = (None, None, None, None, None, "and")
-
 
 class Singleton(type):
     def __init__(self, *args, **kwargs):
@@ -83,9 +74,11 @@ class DataBase(metaclass=Singleton):
 
     def list_experiments(self, query: ExperimentQuery = None) -> list:  # type (str) -> list[dict]
         """Return list of experiments."""
+        query = ExperimentQuery() if query is None else query
         return self._database.list_experiments(query=query)
 
     def list_ms_experiments(self, query: MultiStageExperimentQuery = None) -> list:
+        query = MultiStageExperimentQuery() if query is None else query
         results = self._database.list_ms_experiments(query=query)
         for doc in results:
             for index, (step, exp_id) in enumerate(doc['experiments']):

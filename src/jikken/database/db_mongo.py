@@ -15,16 +15,16 @@ def create_mongodb_exp_query(query: ExperimentQuery):
     """Create a complex mongodb query from an ExperimentQuery Object"""
     query_list = []
     qt = "$all" if query.query_type == 'and' else "$in"
-    if query.names is not None and len(query.names) > 0:
+    if len(query.names) > 0:
         name_query = {"$text": {"$search": ' '.join([name for name in query.names])}}
         query_list.append(name_query)
-    if query.tags is not None and len(query.tags) > 0:
+    if len(query.tags) > 0:
         query_list.append({"tags": {qt: query.tags}})
-    if query.schema_param_hashes is not None and len(query.schema_param_hashes) > 0:
+    if len(query.schema_param_hashes) > 0:
         query_list.append({"parameter_hash": {"$in": query.schema_param_hashes}})
-    if query.schema_hashes is not None and len(query.schema_hashes) > 0:
+    if len(query.schema_hashes) > 0:
         query_list.append({"schema_hash": {"$in": query.schema_hashes}})
-    if query.status is not None and len(query.status) > 0:
+    if len(query.status) > 0:
         query_list.append({"status": {"$in": query.status}})
     complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
     return complex_query
@@ -34,14 +34,14 @@ def create_mongodb_mse_query(query: MultiStageExperimentQuery):
     """Create a complex mongodb query from an MultiStageExperimentQuery Object"""
     query_list = []
     qt = "$all" if query.query_type == 'and' else "$in"
-    if query.names is not None and len(query.names) > 0:
+    if len(query.names) > 0:
         name_query = {"$text": {"$search": ' '.join([name for name in query.names])}}
         query_list.append(name_query)
-    if query.tags is not None and len(query.tags) > 0:
+    if len(query.tags) > 0:
         query_list.append({"tags": {qt: query.tags}})
-    if query.hashes is not None and len(query.hashes) > 0:
+    if len(query.hashes) > 0:
         query_list.append({"hash": {"$in": query.hashes}})
-    if query.steps is not None and len(query.steps) > 0:
+    if len(query.steps) > 0:
         query_list.append({"steps": {qt: query.steps}})
     complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
     return complex_query
@@ -106,25 +106,25 @@ class MongoDB(DB):
             doc['id'] = doc.pop('_id')
             return doc
 
-    def list_experiments(self, query: ExperimentQuery = None) -> list:
+    def list_experiments(self, query: ExperimentQuery) -> list:
         """return a list of experiments that match the query"""
-        if query is None:
+        if query.is_empty():
             return [inv_map_experiment(i) for i in self._db.experiments.find()]
-        elif query.ids is not None and len(query.ids) > 0:
+        elif len(query.ids) > 0:
             return [self.get(_id) for _id in query.ids]
         else:
-            if query.names is not None:
+            if len(query.names) > 0:
                 self._db.experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
             complex_query = create_mongodb_exp_query(query=query)
             return [inv_map_experiment(i) for i in self._db.experiments.find(complex_query)]
 
-    def list_ms_experiments(self, query: MultiStageExperimentQuery=None)-> list:
-        if query is None:
+    def list_ms_experiments(self, query: MultiStageExperimentQuery)-> list:
+        if query.is_empty():
             return [i for i in self._db["ms_experiments"].find()]
-        elif query.ids is not None and len(query.ids) > 0:
+        elif len(query.ids) > 0:
             return [self.get(_id, collection="ms_experiments") for _id in query.ids]
         else:
-            if query.names is not None:
+            if len(query.names) > 0:
                 self._db.ms_experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
             complex_query = create_mongodb_mse_query(query=query)
             return [i for i in self._db.ms_experiments.find(complex_query)]

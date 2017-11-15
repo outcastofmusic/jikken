@@ -101,8 +101,6 @@ def exp(ids, query, tags, names, schema, param_schema, status, stdout, stderr, v
         query_type=query,
         status=status
     )
-    if len(ids) == len(tags) == len(param_schema) == len(schema) == len(names) == len(status) == 0:
-        query = None
     results = api.list_experiments(query=query)
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
@@ -127,8 +125,6 @@ def mse(ids, query, names, hashes, steps, stdout, stderr, var, git, monitored):
         query_type=query,
         steps=steps
     )
-    if len(ids) == len(hashes) == len(steps) == len(names) == 0:
-        query = None
     results = api.list_multi_stage_experiments(query=query)
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
