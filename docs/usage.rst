@@ -244,7 +244,7 @@ Running `jikken list exp -h` returns the following
           -h, --help                      Show this message and exit.
 
 
-Firstly `-t`, `-n`, `-q` hvae the same behaviour as in `jikken list count`.
+Firstly `-t`, `-n`, `-q` have the same behaviour as in `jikken list count`.
 
 
 
