@@ -54,35 +54,7 @@ def test_jikken_cli_list(mocker):
     runner = CliRunner()
     result = runner.invoke(jikken.cli.jikken_cli, ['list', "exp", "--stdout", "--stderr", "--no-monitored", "--no-git"])
     expected_results = \
-        """id :  0 | |  status :  done | |  tags :  ['hi'] | |  schema hash :  456 | |  param hash :  123 | 
-    
-    
-                                                  variables                                             
-    {'index': 0}
-    
-    
-                                                   stdout                                               
-    'hi'
-    
-    
-                                                   stderr                                               
-    'bye'
-    ----------------------------------------------------------------------------------------------------
-     id :  1 | |  status :  done | |  tags :  ['hi'] | |  schema hash :  456 | |  param hash :  123 | 
-    
-    
-                                                  variables                                             
-    {'index': 1}
-    
-    
-                                                   stdout                                               
-    'hi'
-    
-    
-                                                   stderr                                               
-    'bye'
-    ----------------------------------------------------------------------------------------------------
-    """
+            """ name :  test_0  |  id :  0  |  status :  done  |  tags :  ['hi']  \n schema hash :  456  |  param hash :  123  \n\n\n                                              variables                                             \n{'index': 0}\n\n\n                                               stdout                                               \n'hi'\n\n\n                                               stderr                                               \n'bye'\n----------------------------------------------------------------------------------------------------\n name :  test_1  |  id :  1  |  status :  done  |  tags :  ['hi']  \n schema hash :  456  |  param hash :  123  \n\n\n                                              variables                                             \n{'index': 1}\n\n\n                                               stdout                                               \n'hi'\n\n\n                                               stderr                                               \n'bye'\n----------------------------------------------------------------------------------------------------\n"""
     assert result.output.replace(" ", "") == expected_results.replace(" ", "")
     assert result.exit_code == 0
 
@@ -92,20 +64,6 @@ def test_jikken_cli_list_no_args(mocker):
     runner = CliRunner()
     result = runner.invoke(jikken.cli.jikken_cli, ['list', "exp"])
     expected_results = \
-        """id :  0 | |  status :  done | |  tags :  ['hi'] | |  schema hash :  456 | |  param hash :  123 | 
-     commit :  cid |  |  dirty :  False |  |  repo :  url | 
-    
-    
-                                                  variables                                             
-    {'index': 0}
-    ----------------------------------------------------------------------------------------------------
-     id :  1 | |  status :  done | |  tags :  ['hi'] | |  schema hash :  456 | |  param hash :  123 | 
-     commit :  cid |  |  dirty :  False |  |  repo :  url | 
-    
-    
-                                                  variables                                             
-    {'index': 1}
-    ---------------------------------------------------------------------------------------------------- 
-    """
+            """ name :  test_0  |  id :  0  |  status :  done  |  tags :  ['hi']  \n schema hash :  456  |  param hash :  123  \n commit :  cid   |  dirty :  False   |  repo :  url  \n\n\n                                              variables                                             \n{'index': 0}\n----------------------------------------------------------------------------------------------------\n name :  test_1  |  id :  1  |  status :  done  |  tags :  ['hi']  \n schema hash :  456  |  param hash :  123  \n commit :  cid   |  dirty :  False   |  repo :  url  \n\n\n                                              variables                                             \n{'index': 1}\n----------------------------------------------------------------------------------------------------\n"""
     assert result.output.replace(" ", "") == expected_results.replace(" ", "")
     assert result.exit_code == 0
