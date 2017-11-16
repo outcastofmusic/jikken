@@ -94,17 +94,81 @@ and then update_config.yaml need only be ::
         input_parameters:
            batch_size: 64
 
-Similarly if `-r` is a directory, then `-c` must also be a directory with the sub.
+Similarly if `-r` is a directory, then `-c` must also be a directory with the files with updated variables need to match the relative paths of those in the reference directory. 
 
 
 Monitoring Variables
 ^^^^^^^^^^^^^^^^^^^^
 
+Jikken allows you to monitor variables as the code is executed and store their value as your experiments runs.
+In order to do this you need to import the log_value function from jikken. and then pass it it the value to be monitored e.g. ::
+
+        from jikken import log_value
+        for epoch in range(100):
+            loss = fancy_experiment()
+            if epoch % 10 == 0:
+                    log_value("loss",experiment)
+
+The above example will log the value of the loss every 10 epochs. `log_value()` can also be used with callback fuctionor hooks (see examples) that call it when it is required to log a value.
+
+Resuming An Experiment
+^^^^^^^^^^^^^^^^^^^^^^
+
+Not implemented yet
+
+Running Multistage Experiments
+-------------------------------
+
+Sometimes an experiment is too complicated and can be split into different stages. For example a multistage experimentwith three steps coul be designed as follows.
+- The first stage would convert input data to features.
+- The second stages gets the features and trains a model
+- The third stage tests the trained model on a test set
+
+By splitting an experiment in stages like this allows some stages to remain the same while changing other stages, e.g.train many different models with the same features. It also allows for segregating experiment info makin git much easier to check on data afterwards. 
+
+Jikken allows that with the stage subcommand,i.e.  `jikken stage`. Running `jikken stage -h` gives us: ::
+
+        Usage: jikken stage [OPTIONS] SCRIPT_PATH
+
+          run a stage of a multistage experiment from a script. e.g. jikken run
+            script.py -c config.yaml
+
+            Options:
+              -i, --input_dir DIRECTORY
+              -o, --output_dir DIRECTORY     [required]
+              -c, --configuration_path PATH  A file or a directory with files that hold
+                                             the variables that define the experiment
+                                             [required]
+              -n, --name TEXT                the experiment name  [required]
+              -s, --stage_name TEXT          the stage name  [required]
+              -r, --ref_path PATH            A file or a directory with files that hold
+                                             the variables that define the experiment
+              -a, --args TEXT                extra arguments that can be passed to the
+                                             script multiple can be added,e.g. -a a=2 -a
+                                             batch_size=63 -a early_stopping=False
+              -t, --tags TEXT                tags that can be used to distinguish the
+                                             experiment inside the database. Multiple can
+                                             be added e.g. -t org_name -t small_data -t
+                                             model_1
+              -h, --help                     Show this message and exit.
+
+
+`jikken stage` uses the same possitional argument `SCRIPT_PATH` and has a lot of common options with `jikken run`.
+The main difference is the addition of three more options:
+
+The first is the `-i`, `--input_dir` option. This holds the location of the input dir to the experiment and is not required as the first stage might not have require an input dir. 
+The `-o`, `--output_dir` option respectively,  is where the output of the stage will be stored. This directory should be used as the `-i` option of the subsequent step. Jikken will use those directories to store metadata in order to keep track of how the different stages relate to each other. An `-o` is required at every stage for this reason.
+Finally the `-s`, `--stage_name` option should be text that describes the specific stages. An example of this stage could be the following: ::
+
+    jikken stage my_experiment_preprocessing.py -c myconfig_preprocessing.yaml -n "my first experiment" -s "preprocessing" -o processing_results_dir
+    jikken stage my_experiment_training.py -c myconfig_training.yaml -n "my first experiment" -s "training" -t "svm" -i processing_results_dir -o trained_model_dir
+    jikken stage my_experiment_validation.py -c myconfig_validation.yaml -n "my first experiment" -s "validation" -i trained_model_dir -o validation_results_dir
 
 Retrieving Experiments from the database
 -----------------------------------------
 
 
-Running Multistage Experiments
--------------------------------
+Coding a script that works  with jikken
+----------------------------------------
+
 
