@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 @pytest.fixture()
 def db_with_monitored_experiments(tmpdir, jikken_db, mocker):
     list_experiments_mock = MagicMock()
-
+    original_func = jikken_db.list_experiments
     def setup_database_stub(db):
         db.list_experiments = list_experiments_mock
 
@@ -34,6 +34,7 @@ def db_with_monitored_experiments(tmpdir, jikken_db, mocker):
     list_experiments_mock.return_value = results
     mocker.patch.object(jikken.api, 'setup_database', return_value=setup_database_stub(jikken_db))
     yield
+    jikken_db.list_experiments = original_func
 
 
 exp_values = [
