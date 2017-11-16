@@ -187,6 +187,13 @@ Finally the `-s`, `--stage_name` option should be text that describes the specif
 Retrieving Experiments from the database
 -----------------------------------------
 
+Jikken allows you to retrieve information about experiments using the `jikken list` subcommands. 
+- `jikken list tags` retrieves a list of all tags in the database
+- `jikken list count` returns the number of all experiments in the database, (optinally maching names  and/or tags)
+- `jikken list exp` allows you to query the database for any experiment run, including  stages of multistage experiments.
+- `jikken list mse` allows you to query the database for multistage experiments.
+
+
 
 Coding a script that works  with jikken
 ----------------------------------------

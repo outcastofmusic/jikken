@@ -168,20 +168,21 @@ def mse(ids, query, names, hashes, steps, stdout, stderr, var, git, monitored):
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
 
 
-@jikken_cli.command(help="list all tags in db")
-def list_tags():
+@list.command(help="list all tags in db")
+def tags():
     tags = api.list_tags()
     print("tags".center(100), tags, sep='\n')
 
 
-@jikken_cli.command(help="Return total number of experiments in db or number that match tags query")
+@list.command(help="Return total number of experiments in db or number that match tags query")
 @click.option('--tags', '-t', multiple=True)
 @click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
-def count(tags, query):
-    if len(tags) == 0:
+@click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
+def count(tags, query,names):
+    if len(tags) == 0 or len(names) == 0:
         count = api.count()
     else:
-        query = api.ExperimentQuery(ids=[], tags=tags, query_type=query)
+        query = api.ExperimentQuery(ids=[],names=names, tags=tags, query_type=query)
         count = len(api.list(query=query))
     print("number of items: {}".format(count))
 
