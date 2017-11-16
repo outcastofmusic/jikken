@@ -15,8 +15,8 @@ class ExperimentQuery:
         self._schema_param_hashes = valid_list(schema_param_hashes)
         self._status = valid_list(status)
         self._names = valid_list(names)
-        assert query_type in ["and", "or"], "query type {} is not valid".format(query_type)
-        self._query_type = query_type
+        assert query_type in ["all", "any"], "query type {} is not valid".format(query_type)
+        self._query_type = "and" if query_type == "all" else "or"
 
     @property
     def tags(self):

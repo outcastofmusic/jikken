@@ -187,13 +187,72 @@ Finally the `-s`, `--stage_name` option should be text that describes the specif
 Retrieving Experiments from the database
 -----------------------------------------
 
-Jikken allows you to retrieve information about experiments using the `jikken list` subcommands. 
+Jikken allows you to retrieve information about experiments using the `jikken list` subcommands:
+
 - `jikken list tags` retrieves a list of all tags in the database
 - `jikken list count` returns the number of all experiments in the database, (optinally maching names  and/or tags)
 - `jikken list exp` allows you to query the database for any experiment run, including  stages of multistage experiments.
 - `jikken list mse` allows you to query the database for multistage experiments.
+- `jikken list best` returns the experiment that has the best, (min or max) value of some metric from the query
 
 
+jikken list tags
+^^^^^^^^^^^^^^^^
+
+`jikken list tags` is the simpler of all of the above subcommands. It has no arguments or options and simply returns a list of all tags in the database. 
+
+jikken list count
+^^^^^^^^^^^^^^^^^^
+`jikken list count` can be used to return the number of experiments in the database. This includes all experiments including mse stages. 
+Running `jikken list count` without arguments returns everyting in the db. `jikken list count` has three optional arguments:
+
+- `-t`, `--tags` can be used to provide a number of tags jikken will try to match
+- `-n`, `--name` can be used to provide a number of names jikken will try to match. Jikken will also match parts of names
+- `-q`, `--query` is used in conjuction of the above arguments. It can take two values `all` or `any`. `all` will try to match all provided tags and all provided names, while `or` will try to provide any of the provided tags and any of the provided names.  
+
+jikken list exp
+^^^^^^^^^^^^^^^^^^
+
+`jikken list exp` is the main command for retrieving experiment information. It has a plethora of options allowing for many different queries as well as how the retrieved data is presented. 
+
+Running `jikken list exp -h` returns the following
+
+.. code-block:: bash
+
+        Usage: jikken list exp [OPTIONS]
+
+          (Experiments): list experiments
+
+        Options:
+          -i, --ids TEXT                  the ids to print
+          -t, --tags TEXT                 the tags that need to be matched
+          -n, --names TEXT                experiment names that need to be matched
+          -s, --schema TEXT               hash that matches experiment schema hash
+          --status [running|error|interrupted|completed]
+                                          status of the experiment
+          -p, --param_schema TEXT         hash that matches the experiment schema with
+                                          parameters hash
+          -q, --query [all|any]           the type of query ot be used (all|any)
+          --stdout / --no-stdout          print the stdout of the experiments listed
+          --stderr / --no-stderr          print the stderr of the experiments listed
+          --var / --no-var                print the configuration variables of the
+                                          experiments listed
+          --git / --no-git                print git information of the experiments
+                                          listed
+          --monitored / --no-monitored    print monitored variables of the experiments
+                                          listed
+          -h, --help                      Show this message and exit.
+
+
+Firstly `-t`, `-n`, `-q` hvae the same behaviour as in `jikken list count`.
+
+
+
+jikken list best
+^^^^^^^^^^^^^^^^^^
+
+jikken list mse
+^^^^^^^^^^^^^^^^^^
 
 Coding a script that works  with jikken
 ----------------------------------------

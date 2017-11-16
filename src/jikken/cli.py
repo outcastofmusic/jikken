@@ -78,18 +78,19 @@ def list():
 
 
 @list.command(help="(Experiments): list experiments")
-@click.option('--ids', '-a', multiple=True, help="the ids to print")
+@click.option('--ids', '-i', multiple=True, help="the ids to print")
 @click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")
 @click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
-@click.option('--schema', '-s', multiple=True)
-@click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True)
-@click.option('--param_schema', '-p', multiple=True)
-@click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
-@click.option('--stdout/--no-stdout', default=False)
-@click.option('--stderr/--no-stderr', default=False)
-@click.option('--var/--no-var', default=True)
-@click.option('--git/--no-git', default=True)
-@click.option('--monitored/--no-monitored', default=True)
+@click.option('--schema', '-s', multiple=True, help="hash that matches experiment schema hash")
+@click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True,
+        help="status of the experiment")
+@click.option('--param_schema', '-p', multiple=True,help="hash that matches the experiment schema with parameters hash")
+@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all', help="the type of query ot be used (and|or)")
+@click.option('--stdout/--no-stdout', default=False, help="print the stdout of the experiments listed")
+@click.option('--stderr/--no-stderr', default=False, help="print the stderr of the experiments listed")
+@click.option('--var/--no-var', default=True, help="print the configuration variables of the experiments listed")
+@click.option('--git/--no-git', default=True, help="print git information of the experiments listed")
+@click.option('--monitored/--no-monitored', default=True, help="print monitored variables of the experiments listed")
 def exp(ids, query, tags, names, schema, param_schema, status, stdout, stderr, var, git, monitored):
     assert (len(ids) == 0) or (len(tags) == 0), "cannot provide both tags and ids"
     query = api.ExperimentQuery(
@@ -108,18 +109,19 @@ def exp(ids, query, tags, names, schema, param_schema, status, stdout, stderr, v
 
 
 @list.command(help="(Best Experiment): get best experiment based on monitored metric")
-@click.option('--ids', '-a', multiple=True, help="the ids to print")
+@click.option('--ids', '-i', multiple=True, help="the ids to print")
 @click.option('--tags', '-t', multiple=True, help="the tags that need to be matched")
 @click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
-@click.option('--schema', '-s', multiple=True)
-@click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True)
-@click.option('--param_schema', '-p', multiple=True)
-@click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
-@click.option('--stdout/--no-stdout', default=False)
-@click.option('--stderr/--no-stderr', default=False)
-@click.option('--var/--no-var', default=True)
-@click.option('--git/--no-git', default=True)
-@click.option('--monitored/--no-monitored', default=True)
+@click.option('--schema', '-s', multiple=True, help="hash that matches experiment schema hash")
+@click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True,
+        help="status of the experiment")
+@click.option('--param_schema', '-p', multiple=True,help="hash that matches the experiment schema with parameters hash")
+@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all', help="the type of query ot be used (and|or)")
+@click.option('--stdout/--no-stdout', default=False, help="print the stdout of the experiments listed")
+@click.option('--stderr/--no-stderr', default=False, help="print the stderr of the experiments listed")
+@click.option('--var/--no-var', default=True, help="print the configuration variables of the experiments listed")
+@click.option('--git/--no-git', default=True, help="print git information of the experiments listed")
+@click.option('--monitored/--no-monitored', default=True, help="print monitored variables of the experiments listed")
 @click.option('--metric', '-m', required=True,
               help="the metric to compare. If an multiple values have been stored then last one is used")
 @click.option('--optimum', required=True, help="compare by searching for a minimum or a maximum",
@@ -144,16 +146,16 @@ def best(ids, query, tags, names, schema, param_schema, status, stdout, stderr, 
 
 # TODO write cli test for list mse
 @list.command(help="(MultiStageExperiments): list multistage experiments")
-@click.option('--ids', '-a', multiple=True, help="the ids to print")
-@click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
-@click.option('--steps', '-s', multiple=True)
-@click.option('--hashes', '-h', multiple=True)
-@click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
-@click.option('--stdout/--no-stdout', default=False)
-@click.option('--stderr/--no-stderr', default=False)
-@click.option('--var/--no-var', default=True)
-@click.option('--git/--no-git', default=True)
-@click.option('--monitored/--no-monitored', default=True)
+@click.option('--ids', '-i', multiple=True, help="the ids to print")
+@click.option('--names', '-n', multiple=True, help="multistage experiment names that need to be matched")
+@click.option('--steps', '-s', multiple=True, help="name of steps in the multistage experiment")
+@click.option('--hashes', '-h', multiple=True, help="hash that matches the multistage experiment")
+@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all', help="the type of query ot be used (and|or)")
+@click.option('--stdout/--no-stdout', default=False, help="print the stdout of the experiments listed")
+@click.option('--stderr/--no-stderr', default=False, help="print the stderr of the experiments listed")
+@click.option('--var/--no-var', default=True, help="print the configuration variables of the experiments listed")
+@click.option('--git/--no-git', default=True, help="print git information of the experiments listed")
+@click.option('--monitored/--no-monitored', default=True, help="print monitored variables of the experiments listed")
 def mse(ids, query, names, hashes, steps, stdout, stderr, var, git, monitored):
     query = api.MultiStageExperimentQuery(
         names=names,
@@ -175,8 +177,8 @@ def tags():
 
 
 @list.command(help="Return total number of experiments in db or number that match tags query")
-@click.option('--tags', '-t', multiple=True)
-@click.option('--query', '-q', type=click.Choice(['and', 'or']), default='and')
+@click.option('--tags', '-t', multiple=True, help="tags that describe experiment")
+@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all',help="the type of query")
 @click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
 def count(tags, query,names):
     if len(tags) == 0 or len(names) == 0:
