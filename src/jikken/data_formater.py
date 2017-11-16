@@ -4,7 +4,7 @@ from  blessings import Terminal
 
 def format_header(term:Terminal, value: str, name:str):
     """ format bold """
-    return "{t.reverse} {name} {t.normal}: {t.bold} {value} {t.normal}| ".format(t=term, value=value, name=name)
+    return "{t.reverse} {name} {t.normal}: {t.bold} {value} {t.normal} ".format(t=term, value=value, name=name)
 
 
 class PrintExperiment:
@@ -22,13 +22,15 @@ class PrintExperiment:
         """Print the general experiment info """
 
         db_info = "| ".join([
+            format_header(self.term, experiment_dict['name'], "name"),
             format_header(self.term, experiment_dict['id'], "id"),
             format_header(self.term, experiment_dict['status'], "status"),
-            format_header(self.term, experiment_dict['tags'], "tags"),
+            format_header(self.term, experiment_dict['tags'], "tags")])
+        db_info_hash = "| ".join([
             format_header(self.term, experiment_dict['schema_hash'], "schema hash"),
             format_header(self.term, experiment_dict['parameter_hash'], "param hash"),
                               ])
-        print(db_info)
+        print(db_info,db_info_hash, sep="\n")
 
     def print_git_info(self, experiment_dict):
         """Print git info if available"""
