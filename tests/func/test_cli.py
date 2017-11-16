@@ -19,7 +19,7 @@ def test_jikken_cli_run(file_setup, mocker):
 
 def list_stub(*args, **kwargs):
     return [
-        {"stdout": "hi", "stderr": "bye",
+            {"name":"test_{}".format(index),"stdout": "hi", "stderr": "bye",
          "variables": {"index": index},
          "id": index, "status": "done",
          "parameter_hash": "123",
@@ -41,7 +41,7 @@ def list_tags_stub():
 def test_jikken_cli_list_tags(mocker):
     mocker.patch.object(jikken.cli.api, 'list_tags', new=list_tags_stub)
     runner = CliRunner()
-    result = runner.invoke(jikken.cli.jikken_cli, ["list_tags"])
+    result = runner.invoke(jikken.cli.jikken_cli, ["list","tags"])
     assert result.exit_code == 0
     tags = result.output.split("\n")[1]
     expected_tags = list_tags_stub()
