@@ -1,7 +1,7 @@
 import click
 import jikken.api as api
 from .setups import ExperimentSetup, MultiStageExperimentSetup
-from .data_formater import print_experiment
+from .data_formater import PrintExperiment
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -102,8 +102,9 @@ def exp(ids, query, tags, names, schema, param_schema, status, stdout, stderr, v
         status=status
     )
     results = api.list_experiments(query=query)
+    pe = PrintExperiment(stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
     for res in results:
-        print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
+        pe.print_experiment(res)
 
 
 @list.command(help="(Best Experiment): get best experiment based on monitored metric")
@@ -162,6 +163,7 @@ def mse(ids, query, names, hashes, steps, stdout, stderr, var, git, monitored):
         steps=steps
     )
     results = api.list_multi_stage_experiments(query=query)
+
     for res in results:
         print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
 
