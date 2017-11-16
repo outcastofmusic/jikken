@@ -243,9 +243,36 @@ Running `jikken list exp -h` returns the following
                                           listed
           -h, --help                      Show this message and exit.
 
+The options for list can be split into two categories. Options that affect the query to the database and options that affect how the results are presented in stdout.
+
+Query Options
+"""""""""""""
+
+Each experiment added to the database is assigned a unique id. This id is different depening on the type of underlying database.
+
+- `-i`, `-ids`, allows for explicitly retrieving specific ids. When the `-i` option is used no other option is taken into account to formulate the query. Multiple ids can be retrieved by using the option multiple times e.g.
+
+
+.. code-block:: bash
+
+        jikken list env -i id1 -i id2 -i id3
+
+- `-t`, `--tags` is used to retrieve experiments with matching tags. Multiple tags can be added by using the option multiple times. e.g.
+
+.. code-block:: bash
+
+        jikken list env -t tag1 -t tag2 -t tag3
+
+- `-n`, `--name` is used to retrieve experiments with matching names. Multiple names can be added to the query by using the option multiple times. e.g.
+
+.. code-block:: bash
+
+        jikken list env -n "my first experiment" -n "second"
 
 Firstly `-t`, `-n`, `-q` have the same behaviour as in `jikken list count`.
 
+Print Options
+"""""""""""""
 
 
 jikken list best
