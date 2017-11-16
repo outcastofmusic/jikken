@@ -1,0 +1,210 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BUFFER_LIMIT	src/jikken/api.py	/^BUFFER_LIMIT = 1000  # the number of characters added to an std stream before updating the database$/;"	v
+DB	src/jikken/database/db_abc.py	/^class DB(metaclass=ABCMeta):$/;"	c
+DEFAULT_PATH	src/jikken/database/config.py	/^DEFAULT_PATH = '~\/.jikken\/config'$/;"	v
+DataBase	src/jikken/database/database.py	/^class DataBase(metaclass=Singleton):$/;"	c
+Experiment	src/jikken/experiment.py	/^class Experiment:$/;"	c
+ExperimentQuery	src/jikken/database/database.py	/^ExperimentQuery = namedtuple("ExperimentQuery",$/;"	v
+JikkenConfig	src/jikken/database/config.py	/^JikkenConfig = namedtuple("JikkenConfig", ['db_path', 'db_type'])$/;"	v
+MongoDB	src/jikken/database/db_mongo.py	/^class MongoDB(DB):$/;"	c
+Singleton	src/jikken/database/database.py	/^class Singleton(type):$/;"	c
+TEST_CONFIG_JSON	tests/conftest.py	/^TEST_CONFIG_JSON = {$/;"	v
+TinyDB	src/jikken/database/db_tinydb.py	/^class TinyDB(DB):  # noqa : E801$/;"	c
+_	src/jikken/database/helpers.py	/^def _(number, *, key):$/;"	f
+_	src/jikken/database/helpers.py	/^def _(text, *, key):$/;"	f
+_	src/jikken/database/helpers.py	/^def _(value, *, key):$/;"	f
+__call__	src/jikken/database/database.py	/^    def __call__(self, *args, **kwargs):$/;"	m	class:Singleton	file:
+__init__	src/jikken/database/database.py	/^    def __init__(self, *args, **kwargs):$/;"	m	class:Singleton
+__init__	src/jikken/database/database.py	/^    def __init__(self, db_path, db_type):$/;"	m	class:DataBase
+__init__	src/jikken/database/db_mongo.py	/^    def __init__(self, db_path):$/;"	m	class:MongoDB
+__init__	src/jikken/database/db_tinydb.py	/^    def __init__(self, db_path):  # type (str) -> ()$/;"	m	class:TinyDB
+__init__	src/jikken/experiment.py	/^    def __init__(self, variables: dict, code_dir: str, tags: list = None):$/;"	m	class:Experiment
+__repr__	src/jikken/experiment.py	/^    def __repr__(self):$/;"	m	class:Experiment	file:
+_connect	src/jikken/database/db_mongo.py	/^    def _connect(self, db_path):$/;"	m	class:MongoDB
+abort_if_false	src/jikken/cli.py	/^def abort_if_false(ctx, param, value):$/;"	f
+add	src/jikken/database/database.py	/^    def add(self, experiment: Experiment) -> int:$/;"	m	class:DataBase
+add	src/jikken/database/db_abc.py	/^    def add(self, experiment: dict) -> int:$/;"	m	class:DB
+add	src/jikken/database/db_mongo.py	/^    def add(self, experiment: dict) -> str:$/;"	m	class:MongoDB
+add	src/jikken/database/db_tinydb.py	/^    def add(self, experiment: str) -> int:$/;"	m	class:TinyDB
+add_inner	src/jikken/database/helpers.py	/^def add_inner(fields, n):$/;"	f
+add_mongo	src/jikken/database/helpers.py	/^def add_mongo(value, *, key):$/;"	f
+add_multiple_experiments	tests/unit/test_database.py	/^def add_multiple_experiments(jikken_db, file_setup):$/;"	f
+add_one_experiment	tests/unit/test_database.py	/^def add_one_experiment(jikken_db, file_setup):$/;"	f
+author	setup.py	/^      author='Agis Oikonomou',$/;"	v
+capture_value	src/jikken/monitor.py	/^def capture_value(line):$/;"	f
+ch	src/jikken/monitor.py	/^ch = logging.StreamHandler()$/;"	v
+config_directory	tests/unit/test_utils.py	/^def config_directory(config_folder):$/;"	f
+config_folder	tests/unit/test_utils.py	/^def config_folder(tmpdir):$/;"	f
+count	src/jikken/api.py	/^def count() -> int:$/;"	f
+count	src/jikken/cli.py	/^def count(tags, query):$/;"	f
+count	src/jikken/database/database.py	/^    def count(self) -> int:  # type () -> int$/;"	m	class:DataBase
+count	src/jikken/database/db_abc.py	/^    def count(self) -> int:$/;"	m	class:DB
+count	src/jikken/database/db_mongo.py	/^    def count(self) -> int:$/;"	m	class:MongoDB
+count	src/jikken/database/db_tinydb.py	/^    def count(self) -> int:$/;"	m	class:TinyDB
+create_directory_from_variables	src/jikken/utils.py	/^def create_directory_from_variables(root_dir, variables):$/;"	f
+database_types	tests/conftest.py	/^database_types = ("tiny",$/;"	v
+db_config	tests/conftest.py	/^def db_config(tmpdir, request):$/;"	f
+db_stub	tests/func/test_run_experiment.py	/^    def db_stub():$/;"	f	function:setup_database_stub
+default	src/jikken/cli.py	/^              default=None,$/;"	v
+delete	src/jikken/api.py	/^def delete(_id: int) -> None:$/;"	f
+delete	src/jikken/database/database.py	/^    def delete(self, experiment_id):  # type (int) -> ()$/;"	m	class:DataBase
+delete	src/jikken/database/db_abc.py	/^    def delete(self, experiment_id: int) -> None:$/;"	m	class:DB
+delete	src/jikken/database/db_mongo.py	/^    def delete(self, experiment_id: int):$/;"	m	class:MongoDB
+delete	src/jikken/database/db_tinydb.py	/^    def delete(self, experiment_id: str) -> None:$/;"	m	class:TinyDB
+delete_all	src/jikken/api.py	/^def delete_all() -> None:$/;"	f
+delete_all	src/jikken/cli.py	/^def delete_all():$/;"	f
+delete_all	src/jikken/database/database.py	/^    def delete_all(self):$/;"	m	class:DataBase
+delete_all	src/jikken/database/db_abc.py	/^    def delete_all(self) -> None:$/;"	m	class:DB
+delete_all	src/jikken/database/db_mongo.py	/^    def delete_all(self) -> None:$/;"	m	class:MongoDB
+delete_all	src/jikken/database/db_tinydb.py	/^    def delete_all(self) -> None:$/;"	m	class:TinyDB
+description	setup.py	/^      description='Minimal Python3 CLI Experiment Manager',$/;"	v
+entry_points	setup.py	/^      entry_points={$/;"	v
+export_config	src/jikken/api.py	/^def export_config():$/;"	f
+extras_require	setup.py	/^      extras_require={'elasticsearch': 'elasticsearch-dsl'},$/;"	v
+file_setup	tests/conftest.py	/^def file_setup(tmpdir):$/;"	f
+formatter	src/jikken/monitor.py	/^formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - JEKKIN_MONITOR\\t%(message)s')$/;"	v
+get	src/jikken/api.py	/^def get(_id: int) -> dict:$/;"	f
+get	src/jikken/database/database.py	/^    def get(self, experiment_id: int) -> dict:  # type (int) -> dict$/;"	m	class:DataBase
+get	src/jikken/database/db_abc.py	/^    def get(self, experiment_id: int) -> dict:$/;"	m	class:DB
+get	src/jikken/database/db_mongo.py	/^    def get(self, experiment_id: str):$/;"	m	class:MongoDB
+get	src/jikken/database/db_tinydb.py	/^    def get(self, experiment_id: str) -> int:$/;"	m	class:TinyDB
+get_best	src/jikken/api.py	/^def get_best():$/;"	f
+get_commit_id	src/jikken/utils.py	/^def get_commit_id(directory):$/;"	f
+get_commit_status	src/jikken/utils.py	/^def get_commit_status(directory):$/;"	f
+get_config	src/jikken/database/config.py	/^def get_config(config_file=None):$/;"	f
+get_hash	src/jikken/utils.py	/^def get_hash(input_string: str):$/;"	f
+get_key_schema	src/jikken/utils.py	/^    def get_key_schema(dl, definition=None):$/;"	f	function:get_schema
+get_repo_origin	src/jikken/utils.py	/^def get_repo_origin(directory):$/;"	f
+get_schema	src/jikken/utils.py	/^def get_schema(dictionary, parameters=False, delimiter="_"):$/;"	f
+hash	src/jikken/experiment.py	/^    def hash(self):$/;"	m	class:Experiment
+help	src/jikken/cli.py	/^              help="A file or a directory with files that hold the variables that define the experiment")$/;"	v
+help	src/jikken/cli.py	/^              help="extra arguments that can be passed to the script multiple can be added,"$/;"	v
+help	src/jikken/cli.py	/^              help="tags that can be used to distinguish the experiment inside the database."$/;"	v
+home_dir	tests/unit/test_config.py	/^def home_dir(tmpdir, monkeypatch):$/;"	f
+install_requires	setup.py	/^      install_requires=['Click', 'tinydb', 'pymongo', 'gitpython', 'pyyaml'],$/;"	v
+inv_map_experiment	src/jikken/database/helpers.py	/^def inv_map_experiment(experiment: dict):$/;"	f
+jikken_callback	examples/keras_example.py	/^jikken_callback = LambdaCallback(on_epoch_end=lambda epoch, logs: log_value('val_loss', logs.get('val_loss', np.nan)))$/;"	v
+jikken_cli	src/jikken/cli.py	/^def jikken_cli():$/;"	f
+jikken_db	tests/conftest.py	/^def jikken_db(jikken_db_session):$/;"	f
+jikken_db_session	tests/conftest.py	/^def jikken_db_session(db_config):$/;"	f
+jikken_experiment	tests/unit/test_experiment.py	/^def jikken_experiment(tmpdir_factory):$/;"	f
+keys_to_add	tests/unit/test_db_mongo.py	/^keys_to_add = ($/;"	v
+license	setup.py	/^      license='BSD',$/;"	v
+list	src/jikken/api.py	/^def list(*, query: ExperimentQuery) -> list:$/;"	f
+list	src/jikken/cli.py	/^def list(ids, query, tags, schema, param_schema, status, stdout, stderr, var, git, monitored):$/;"	f
+list_experiments	src/jikken/database/database.py	/^    def list_experiments(self, query: ExperimentQuery = None):  # type (str) -> list[dict]$/;"	m	class:DataBase
+list_experiments	src/jikken/database/db_abc.py	/^    def list_experiments(self, query: ExperimentQuery) -> dict:$/;"	m	class:DB
+list_experiments	src/jikken/database/db_mongo.py	/^    def list_experiments(self, query: ExperimentQuery = None):$/;"	m	class:MongoDB
+list_experiments	src/jikken/database/db_tinydb.py	/^    def list_experiments(self, query: ExperimentQuery = None) -> list:$/;"	m	class:TinyDB
+list_stub	tests/func/test_cli.py	/^def list_stub(*args, **kwargs):$/;"	f
+list_tags	src/jikken/api.py	/^def list_tags() -> set:$/;"	f
+list_tags	src/jikken/cli.py	/^def list_tags():$/;"	f
+list_tags_stub	tests/func/test_cli.py	/^def list_tags_stub():$/;"	f
+load_variables_from_dir	src/jikken/utils.py	/^def load_variables_from_dir(experiment_dir):$/;"	f
+load_variables_from_filepath	src/jikken/utils.py	/^def load_variables_from_filepath(experiment_filepath, root=True):$/;"	f
+log_value	src/jikken/monitor.py	/^def log_value(name, value):$/;"	f
+logger	src/jikken/monitor.py	/^logger = logging.getLogger('jekkin')$/;"	v
+map_experiment	src/jikken/database/helpers.py	/^def map_experiment(experiment: dict):$/;"	f
+matcher	src/jikken/monitor.py	/^matcher = re.compile(pattern=pattern)$/;"	v
+package_dir	setup.py	/^      package_dir={'': 'src'},$/;"	v
+packages	setup.py	/^      packages=find_packages(where='src'),$/;"	v
+parameters_hash	src/jikken/experiment.py	/^    def parameters_hash(self):$/;"	m	class:Experiment
+pattern	src/jikken/monitor.py	/^pattern = "JEKKIN_MONITOR\\t([\\w_]+)\\t([\\w.]+)"$/;"	v
+multistage	src/jikken/cli.py	/^def multistage():$/;"	f
+prepare_variables	src/jikken/utils.py	/^def prepare_variables(*, config_directory, reference_directory=None):$/;"	f
+print_experiment	src/jikken/data_formater.py	/^def print_experiment(experiment_dict, stdout=False, stderr=False, variables=True, git=True, monitored=True):$/;"	f
+read_config	src/jikken/database/config.py	/^def read_config(config_file):$/;"	f
+resume	src/jikken/api.py	/^def resume():$/;"	f
+run	src/jikken/api.py	/^def run(*, configuration_path: str, script_path: str, args: list = None, tags: list = None,$/;"	f
+run	src/jikken/cli.py	/^def run(script_path, configuration_path, ref_path, args, tags):$/;"	f
+run_experiment_stub	tests/func/test_cli.py	/^def run_experiment_stub(*args, **kwargs):$/;"	f
+schema_hash	src/jikken/experiment.py	/^    def schema_hash(self):$/;"	m	class:Experiment
+set_inner	src/jikken/database/helpers.py	/^def set_inner(fields, n):$/;"	f
+set_mongo	src/jikken/database/helpers.py	/^def set_mongo(value, *, key):$/;"	f
+setup_database	src/jikken/database/database.py	/^def setup_database():$/;"	f
+setup_database_stub	tests/func/test_run_experiment.py	/^def setup_database_stub(db):$/;"	f
+setup_git	tests/unit/test_utils.py	/^def setup_git(config_folder):$/;"	f
+status_options	tests/unit/test_database.py	/^status_options = [$/;"	v
+std_options	tests/unit/test_database.py	/^std_options = [$/;"	v
+stop_db	src/jikken/database/database.py	/^    def stop_db(self):$/;"	m	class:DataBase
+stop_db	src/jikken/database/db_abc.py	/^    def stop_db(self):$/;"	m	class:DB
+stop_db	src/jikken/database/db_mongo.py	/^    def stop_db(self):$/;"	m	class:MongoDB
+stop_db	src/jikken/database/db_tinydb.py	/^    def stop_db(self):$/;"	m	class:TinyDB
+tags	src/jikken/experiment.py	/^    def tags(self):$/;"	m	class:Experiment
+test_add_and_return_valid_id	tests/unit/test_database.py	/^def test_add_and_return_valid_id(jikken_db, file_setup):$/;"	f
+test_add_increases_count	tests/unit/test_database.py	/^def test_add_increases_count(add_multiple_experiments):$/;"	f
+test_add_mongo	tests/unit/test_db_mongo.py	/^def test_add_mongo(key, value, expected):$/;"	f
+test_add_raises	tests/unit/test_database.py	/^def test_add_raises(jikken_db_session):$/;"	f
+test_added_task_has_id_set	tests/unit/test_database.py	/^def test_added_task_has_id_set(jikken_db, file_setup):$/;"	f
+test_commit_dirt_no_repo	tests/unit/test_utils.py	/^def test_commit_dirt_no_repo(config_folder):$/;"	f
+test_commit_dirty	tests/unit/test_utils.py	/^def test_commit_dirty(setup_git):$/;"	f
+test_commit_id	tests/unit/test_utils.py	/^def test_commit_id(setup_git):$/;"	f
+test_commit_id_no_repo	tests/unit/test_utils.py	/^def test_commit_id_no_repo(config_folder):$/;"	f
+test_create_dir_from_utils	tests/unit/test_utils.py	/^def test_create_dir_from_utils(config_directory):$/;"	f
+test_default_config_created	tests/unit/test_config.py	/^def test_default_config_created(home_dir):$/;"	f
+test_delete_experiments	tests/unit/test_database.py	/^def test_delete_experiments(add_multiple_experiments):$/;"	f
+test_delete_raises_no_id	tests/unit/test_database.py	/^def test_delete_raises_no_id(add_one_experiment):$/;"	f
+test_experiment_different_tags_hash	tests/unit/test_experiment.py	/^def test_experiment_different_tags_hash(jikken_experiment):$/;"	f
+test_experiment_parameters_schema	tests/unit/test_experiment.py	/^def test_experiment_parameters_schema(jikken_experiment):$/;"	f
+test_experiment_parameters_schema_comparison	tests/unit/test_experiment.py	/^def test_experiment_parameters_schema_comparison(jikken_experiment):$/;"	f
+test_experiment_schema	tests/unit/test_experiment.py	/^def test_experiment_schema(jikken_experiment):$/;"	f
+test_experiment_tags	tests/unit/test_experiment.py	/^def test_experiment_tags(jikken_experiment):$/;"	f
+test_experiment_variables	tests/unit/test_experiment.py	/^def test_experiment_variables(jikken_experiment):$/;"	f
+test_get_schema	tests/unit/test_utils.py	/^def test_get_schema(config_folder):$/;"	f
+test_get_schema_parameters	tests/unit/test_utils.py	/^def test_get_schema_parameters(config_folder):$/;"	f
+test_jikken_cli_list	tests/func/test_cli.py	/^def test_jikken_cli_list(mocker):$/;"	f
+test_jikken_cli_list_tags	tests/func/test_cli.py	/^def test_jikken_cli_list_tags(mocker):$/;"	f
+test_jikken_cli_run	tests/func/test_cli.py	/^def test_jikken_cli_run(file_setup, mocker):$/;"	f
+test_list_experiments	tests/unit/test_database.py	/^def test_list_experiments(add_multiple_experiments):$/;"	f
+test_load_from_dir	tests/unit/test_utils.py	/^def test_load_from_dir(config_directory):$/;"	f
+test_load_from_file	tests/unit/test_utils.py	/^def test_load_from_file(config_folder):$/;"	f
+test_load_from_wrong_file_raise	tests/unit/test_utils.py	/^def test_load_from_wrong_file_raise(config_folder):$/;"	f
+test_load_local_config	tests/unit/test_config.py	/^def test_load_local_config(home_dir, tmpdir):$/;"	f
+test_logging_and_capturing_value	tests/unit/test_monitor.py	/^def test_logging_and_capturing_value(name, value, capsys):$/;"	f
+test_multiple_experiments_have_same_schema	tests/unit/test_database.py	/^def test_multiple_experiments_have_same_schema(add_multiple_experiments):$/;"	f
+test_prepare_variables_no_update	tests/unit/test_utils.py	/^def test_prepare_variables_no_update(config_directory):$/;"	f
+test_prepare_variables_with_update_dir	tests/unit/test_utils.py	/^def test_prepare_variables_with_update_dir(config_directory, tmpdir):$/;"	f
+test_prepare_variables_with_update_file	tests/unit/test_utils.py	/^def test_prepare_variables_with_update_file(config_folder):$/;"	f
+test_read_default_config_file	tests/unit/test_config.py	/^def test_read_default_config_file(home_dir):$/;"	f
+test_repo_no_origin	tests/unit/test_utils.py	/^def test_repo_no_origin(setup_git):$/;"	f
+test_repo_origin	tests/unit/test_utils.py	/^def test_repo_origin(setup_git):$/;"	f
+test_run_experiment_and_experiment_is_added_to_database	tests/func/test_run_experiment.py	/^def test_run_experiment_and_experiment_is_added_to_database(file_setup, jikken_db, capsys, mocker):$/;"	f
+test_run_experiment_given_script_and_config	tests/func/test_run_experiment.py	/^def test_run_experiment_given_script_and_config(file_setup, capsys, jikken_db, mocker):$/;"	f
+test_run_experiment_with_error	tests/func/test_run_experiment.py	/^def test_run_experiment_with_error(file_setup, capsys, jikken_db, mocker):$/;"	f
+test_run_experiment_with_extra_args	tests/func/test_run_experiment.py	/^def test_run_experiment_with_extra_args(file_setup, capsys, jikken_db, mocker):$/;"	f
+test_run_experiment_with_tags	tests/func/test_run_experiment.py	/^def test_run_experiment_with_tags(file_setup, capsys, jikken_db, mocker):$/;"	f
+test_update_status_experiments	tests/unit/test_database.py	/^def test_update_status_experiments(status, add_one_experiment):$/;"	f
+test_update_status_raises	tests/unit/test_database.py	/^def test_update_status_raises(add_one_experiment):$/;"	f
+test_update_std_experiments	tests/unit/test_database.py	/^def test_update_std_experiments(std_type, add_one_experiment):$/;"	f
+test_update_std_raises	tests/unit/test_database.py	/^def test_update_std_raises(add_one_experiment):$/;"	f
+test_update_variables	tests/unit/test_utils.py	/^def test_update_variables():$/;"	f
+testdata	tests/unit/test_monitor.py	/^testdata = [$/;"	v
+tests_require	setup.py	/^      tests_require=['pytest', 'pytest-mock'],$/;"	v
+text_experiment_different_hash	tests/unit/test_experiment.py	/^def text_experiment_different_hash(jikken_experiment):$/;"	f
+text_same_experiment_hash	tests/unit/test_experiment.py	/^def text_same_experiment_hash(jikken_experiment):$/;"	f
+to_dict	src/jikken/experiment.py	/^    def to_dict(self):$/;"	m	class:Experiment
+train	examples/keras_example.py	/^def train(configuration_path, data_size):$/;"	f
+transform	src/jikken/database/helpers.py	/^    def transform(doc):$/;"	f	function:add_inner
+transform	src/jikken/database/helpers.py	/^    def transform(doc):$/;"	f	function:set_inner
+update	src/jikken/api.py	/^def update():$/;"	f
+update	src/jikken/database/database.py	/^    def update(self, experiment_id: int, experiment: Experiment) -> None:$/;"	m	class:DataBase
+update	src/jikken/database/db_abc.py	/^    def update(self, experiment_id: int, experiment: dict) -> None:$/;"	m	class:DB
+update	src/jikken/database/db_mongo.py	/^    def update(self, experiment_id: int, experiment: dict):$/;"	m	class:MongoDB
+update	src/jikken/database/db_tinydb.py	/^    def update(self, experiment_id: str, experiment: dict) -> None:$/;"	m	class:TinyDB
+update_key	src/jikken/database/db_abc.py	/^    def update_key(self, experiment_id: int, value: Any, key: str, mode='set') -> None:$/;"	m	class:DB
+update_key	src/jikken/database/db_mongo.py	/^    def update_key(self, experiment_id: int, value: Any, key: str, mode='set'):$/;"	m	class:MongoDB
+update_key	src/jikken/database/db_tinydb.py	/^    def update_key(self, experiment_id: str, value: Any, key: (list, str), mode='set') -> None:$/;"	m	class:TinyDB
+update_monitored	src/jikken/database/database.py	/^    def update_monitored(self, experiment_id, key, value):$/;"	m	class:DataBase
+update_status	src/jikken/database/database.py	/^    def update_status(self, experiment_id: int, status: str):$/;"	m	class:DataBase
+update_std	src/jikken/database/database.py	/^    def update_std(self, experiment_id, string, std_type):$/;"	m	class:DataBase
+update_variables	src/jikken/utils.py	/^def update_variables(reference_dict, update_dict):$/;"	f
+url	setup.py	/^      url='https:\/\/github.com\/outcastofmusic\/jikken',$/;"	v
+variables	src/jikken/experiment.py	/^    def variables(self):$/;"	m	class:Experiment
+vectorize_sequences	examples/keras_example.py	/^    def vectorize_sequences(sequences, dimension=data_size):$/;"	f	function:train
+version	setup.py	/^      version='0.1.0',$/;"	v
+write_default_config	src/jikken/database/config.py	/^def write_default_config():$/;"	f
