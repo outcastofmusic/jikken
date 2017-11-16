@@ -200,27 +200,27 @@ def test_list_experiments(db_three_experiments, tmpdir):
     assert len(experiments) == 4
 
     # And if we query with tags <and> we should get 1 experiment
-    query = ExperimentQuery(tags=["tag_1", "tag_2"], query_type="and")
+    query = ExperimentQuery(tags=["tag_1", "tag_2"], query_type="all")
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
 
     # And if we query with tags <or> we should get 2 experiments
-    query = ExperimentQuery(tags=["tag_1", "tag_2"], query_type="or")
+    query = ExperimentQuery(tags=["tag_1", "tag_2"], query_type="any")
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 2
     # And if I query with parameter hashes <or> I should get 2 experiments
     schema_parameter_hashes = ['4c48b5e07e377d8293f2ef196e077d6a', '9e77300cedbcf7deac233fb814b0be96']
-    query = ExperimentQuery(tags=["tag_1", "tag_2"], schema_param_hashes=schema_parameter_hashes, query_type="or")
+    query = ExperimentQuery(tags=["tag_1", "tag_2"], schema_param_hashes=schema_parameter_hashes, query_type="any")
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 2
 
     # And if I query with parameter hashes <and> I should get 1 experiments
-    query = ExperimentQuery(tags=["tag_1", "tag_2"], schema_param_hashes=schema_parameter_hashes, query_type="and")
+    query = ExperimentQuery(tags=["tag_1", "tag_2"], schema_param_hashes=schema_parameter_hashes, query_type="all")
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
 
     # And if I query with tags that don't mach I should get no results
-    query = ExperimentQuery(tags=["tag_3"], schema_param_hashes=schema_parameter_hashes, query_type="or")
+    query = ExperimentQuery(tags=["tag_3"], schema_param_hashes=schema_parameter_hashes, query_type="any")
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 0
 
@@ -286,7 +286,7 @@ def test_list_ms_experiments(db_five_multistage, tmpdir):
     assert len(mse_experiments) == 2
 
     # And when I query by steps (or) I get all mses that have any of  steps
-    query = MultiStageExperimentQuery(steps=["step_4", "step_5", "step_8"], query_type='or')
+    query = MultiStageExperimentQuery(steps=["step_4", "step_5", "step_8"], query_type="any")
     # Then I get back the  2 mse
     # the first one has from 1-9, the second from 4-13, the third from 8-17, etc.
     mse_experiments = db.list_ms_experiments(query=query)

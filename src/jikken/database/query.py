@@ -8,7 +8,7 @@ def valid_list(value=None):
 
 class ExperimentQuery:
     def __init__(self, tags=None, ids=None, schema_hashes=None, status=None, schema_param_hashes=None, names=None,
-                 query_type="and"):
+                 query_type="all"):
         self._tags = valid_list(tags)
         self._ids = valid_list(ids)
         self._schema_hashes = valid_list(schema_hashes)
@@ -55,14 +55,14 @@ class ExperimentQuery:
         )
 
 class MultiStageExperimentQuery:
-    def __init__(self, tags=None, ids=None, names=None, steps=None, hashes=None, query_type="and"):
+    def __init__(self, tags=None, ids=None, names=None, steps=None, hashes=None, query_type="all"):
         self._tags = valid_list(tags)
         self._ids = valid_list(ids)
         self._hashes = valid_list(hashes)
         self._steps = valid_list(steps)
         self._names = valid_list(names)
-        assert query_type in ["and", "or"], "query type {} is not valid".format(query_type)
-        self._query_type = query_type
+        assert query_type in ["all", "any"], "query type {} is not valid".format(query_type)
+        self._query_type = "and" if query_type == "all" else "or"
 
     @property
     def tags(self):
