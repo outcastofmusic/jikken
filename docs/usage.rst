@@ -257,19 +257,43 @@ Each experiment added to the database is assigned a unique id. This id is differ
 
         jikken list env -i id1 -i id2 -i id3
 
-- `-t`, `--tags` is used to retrieve experiments with matching tags. Multiple tags can be added by using the option multiple times. e.g.
+- `-t`, `--tags`. The tags is used to retrieve experiments with matching tags. Multiple tags can be added by using the option multiple times. e.g.
 
 .. code-block:: bash
 
         jikken list env -t tag1 -t tag2 -t tag3
 
-- `-n`, `--name` is used to retrieve experiments with matching names. Multiple names can be added to the query by using the option multiple times. e.g.
+- `-n`, `--names`. The names option is used to retrieve experiments with matching names. Multiple names can be added to the query by using the option multiple times. e.g.
 
 .. code-block:: bash
 
         jikken list env -n "my first experiment" -n "second"
 
-Firstly `-t`, `-n`, `-q` have the same behaviour as in `jikken list count`.
+- `-s`, `--schema`. The schema option is about a hash jikken creates based on the schema of an experiment. The hash takes into account the variables used to configure the experiment, but **not** their actual values, and the commit of the script repo if it is a git repo`. So for example if you run different experiments of the same model doing a hyperparameter search. All experiments will have the same schema hash, as the **schema** of the experiment remains the same. This option can be used multiple times as well. e.g.
+
+.. code-block:: bash
+
+        jikken list env -s hash1 -s hash2
+
+- `-p`, `--param_schema`. The param_schema option is about a hash jikken creates similar to the schema hash mentioned above, but this one takes into account the values of the variables as well. Hence experiments with the same param_schema will have been run with the exact same configuration and the exact same code. This option can be used multiple times as well. e.g. 
+
+.. code-block:: bash
+
+        jikken list env -p phash1 -p phash2
+
+- `--status`. The status option queries on the status parameter of an experiment. The status parameter is created by jikken whenever a new experiment is added. It can be any of the following:
+
+  - `created`: The experiment database entry has been created but the code has not been run yet.
+  - `running`: The experiment is currently running
+  - `completed`: The experiment has completed successfully
+  - `interrupted`: The experiment did not complete successfully because it was interrupted by the user. e.g. using Ctrl-C to stop it.
+  - `error`: The experiment did not complete successfully due to an error/exception while it was trying to run.
+
+As with the previous options this can be queried with multiple values e.g the following will return all experiments with status error or interrupted.
+
+.. code-block:: bash
+
+        jikken list env --status error --status interrupted
 
 Print Options
 """""""""""""
