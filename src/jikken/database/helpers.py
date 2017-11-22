@@ -88,3 +88,10 @@ def set_inner(fields, n):
         ref[fields[-1]] = n
 
     return transform
+
+
+def inverse_es_experiment(doc):
+    """inverse doc from ES"""
+    exp = doc['_source']
+    exp["id"] = doc["_id"]
+    return exp

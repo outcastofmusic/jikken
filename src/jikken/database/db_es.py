@@ -3,44 +3,61 @@ from typing import Any
 from elasticsearch import Elasticsearch, ConnectionError, NotFoundError
 
 from .database import ExperimentQuery, MultiStageExperimentQuery
+from .helpers import inverse_es_experiment
+from .db_abc import DB
 
-# from .helpers import add_mongo, map_experiment, inv_map_experiment, set_mongo
-from .db_abc import DB, ExperimentType
+
+def create_term_query(key, values, query_type):
+    """Return an all or any term query for es"""
+    if query_type == "or":
+        return [{"terms": {key: values}}]
+    else:
+        return [{"term": {key: value}} for value in values]
+
+
+def add_filter_query(query_dsl, key, values, query_type="or"):
+    """create filter es subqueries for terms"""
+    if "filter" not in query_dsl["bool"]:
+        query_dsl["bool"]["filter"] = {"bool": {"must": create_term_query(key, values, query_type)}}
+    else:
+        query_dsl["bool"]["filter"]["bool"]["must"].append(create_term_query(key, values, query_type))
+    return query_dsl
 
 
 def create_es_exp_query(query: ExperimentQuery):
-    """Create a complex mongodb query from an ExperimentQuery Object"""
-    query_list = []
-    qt = "$all" if query.query_type == 'and' else "$in"
+    """Create a complex es query from an ExperimentQuery Object"""
+    complex_query = {"bool": {}}
+
     if len(query.names) > 0:
-        name_query = {"$text": {"$search": ' '.join([name for name in query.names])}}
-        query_list.append(name_query)
+        name_query = [{"match": {"name":name}} for name in query.names]
+        complex_query["bool"]["should"] = name_query
+        complex_query["bool"]["minimum_should_match"] = 1
     if len(query.tags) > 0:
-        query_list.append({"tags": {qt: query.tags}})
+        complex_query = add_filter_query(complex_query, key="tags", values=query.tags, query_type=query.query_type)
     if len(query.schema_param_hashes) > 0:
-        query_list.append({"parameter_hash": {"$in": query.schema_param_hashes}})
+        complex_query = add_filter_query(complex_query, key="parameter_hash", values=query.schema_param_hashes)
     if len(query.schema_hashes) > 0:
-        query_list.append({"schema_hash": {"$in": query.schema_hashes}})
+        complex_query = add_filter_query(complex_query, key="schema_has", values=query.schema_hashes)
     if len(query.status) > 0:
-        query_list.append({"status": {"$in": query.status}})
-    complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
+        complex_query = add_filter_query(complex_query, key="status", values=query.status)
+    complex_query = {"query": complex_query}
     return complex_query
 
 
 def create_es_mse_query(query: MultiStageExperimentQuery):
-    """Create a complex mongodb query from an MultiStageExperimentQuery Object"""
-    query_list = []
-    qt = "$all" if query.query_type == 'and' else "$in"
+    """Create a complex es query from an MultiStageExperimentQuery Object"""
+    complex_query = {"bool": {}}
+
     if len(query.names) > 0:
-        name_query = {"$text": {"$search": ' '.join([name for name in query.names])}}
-        query_list.append(name_query)
+        name_query = [{"match": {"name":name}} for name in query.names]
+        complex_query["bool"]["should"] = name_query
+        complex_query["bool"]["minimum_should_match"] = 1
     if len(query.tags) > 0:
-        query_list.append({"tags": {qt: query.tags}})
+        complex_query = add_filter_query(complex_query, key="tags", values=query.tags, query_type=query.query_type)
     if len(query.hashes) > 0:
-        query_list.append({"hash": {"$in": query.hashes}})
+        complex_query = add_filter_query(complex_query, key="hash", values=query.hashes)
     if len(query.steps) > 0:
-        query_list.append({"steps": {qt: query.steps}})
-    complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
+        complex_query = add_filter_query(complex_query, key="steps", values=query.steps,query_type=query.query_type)
     return complex_query
 
 
@@ -70,20 +87,18 @@ class ElasticSearchDB(DB):
         self._client = None
 
     def add(self, doc: dict):
-        result = self._db.index(index=self.get_index(doc['type']), doc_type=doc['type'], body=doc)
+        result = self._db.index(index=self.get_index(doc['type']), doc_type=doc['type'], body=doc, refresh='wait_for')
         _id = result["_id"]
         return str(_id)
 
     def count(self) -> int:
         result = self._db.count()
         return result['count']
-        # count = 0
-        # for collection in self._db.collection_names(include_system_collections=False):
-        #     count += self._db[collection].count()
 
     def delete(self, experiment_id: int):
         try:
-            result = self._db.delete(index=self.get_index("experiment"), doc_type="experiment", id=experiment_id)
+            result = self._db.delete(index=self.get_index("experiment"), doc_type="experiment", id=experiment_id,
+                                     refresh='wait_for')
         except NotFoundError:
             raise KeyError("experiment id {} not found".format(experiment_id))
 
@@ -92,7 +107,7 @@ class ElasticSearchDB(DB):
         for index in self._db.indices.get(self.index + '*').keys():
             self._db.indices.delete(index=index)
 
-    def get(self, _id: str, collection: str = "experiments") -> (dict, None):
+    def get(self, _id: str, collection: str = "experiment") -> (dict, None):
         """Get a document from the database or None if document not found"""
         res = self._db.get(index=self.get_index(collection), doc_type=collection, id=_id)
         doc = res['_source']
@@ -100,29 +115,28 @@ class ElasticSearchDB(DB):
         return doc
 
     def list_experiments(self, query: ExperimentQuery) -> list:
-        pass
-        # """return a list of experiments that match the query"""
-        # if query.is_empty():
-        #     return [inv_map_experiment(i) for i in self._db.experiments.find()]
-        # elif len(query.ids) > 0:
-        #     return [self.get(_id) for _id in query.ids]
-        # else:
-        #     if len(query.names) > 0:
-        #         self._db.experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
-        #     complex_query = create_mongodb_exp_query(query=query)
-        #     return [inv_map_experiment(i) for i in self._db.experiments.find(complex_query)]
+        """return a list of experiments that match the query"""
+        if query.is_empty():
+            results = self._db.search(index=self.get_index("experiment"))
+            return [inverse_es_experiment(doc) for doc in results['hits']['hits']]
+        elif len(query.ids) > 0:
+            return [self.get(_id, collection="experiment") for _id in query.ids]
+        else:
+            complex_query = create_es_exp_query(query=query)
+            results = self._db.search(index=self.get_index("experiment"), body=complex_query)
+            return [inverse_es_experiment(doc) for doc in results['hits']['hits']]
 
     def list_ms_experiments(self, query: MultiStageExperimentQuery) -> list:
-        pass
-        # if query.is_empty():
-        #     return [i for i in self._db["ms_experiments"].find()]
-        # elif len(query.ids) > 0:
-        #     return [self.get(_id, collection="ms_experiments") for _id in query.ids]
-        # else:
-        # if len(query.names) > 0:
-        #     self._db.ms_experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
-        # complex_query = create_mongodb_mse_query(query=query)
-        # return [i for i in self._db.ms_experiments.find(complex_query)]
+        if query.is_empty():
+            results = self._db.search(index=self.get_index("multistage"))
+            results = [inverse_es_experiment(doc) for doc in results['hits']['hits']]
+        elif len(query.ids) > 0:
+            results = [self.get(_id, collection="multistage") for _id in query.ids]
+        else:
+            complex_query = create_es_mse_query(query=query)
+            results = self._db.search(index=self.get_index("multistage"), body=complex_query)
+            results = [inverse_es_experiment(doc) for doc in results['hits']['hits']]
+        return results
 
     def update(self, experiment_id: int, experiment: dict):
         pass
