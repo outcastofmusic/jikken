@@ -90,8 +90,18 @@ def set_inner(fields, n):
     return transform
 
 
-def inverse_es_experiment(doc):
-    """inverse doc from ES"""
-    exp = doc['_source']
-    exp["id"] = doc["_id"]
-    return exp
+def map_es_experiment(experiment: dict, doc_type="experiment"):
+    if doc_type == "experiment":
+        experiment['stdout'] = []
+        experiment['stderr'] = []
+    return experiment
+
+
+def inv_map_es_experiment(experiment: dict, doc_type="experiment"):
+    _id = experiment["_id"]
+    experiment = experiment['_source']
+    experiment['id'] = str(_id)
+    if doc_type == 'experiment':
+        experiment['stdout'] = "".join([line for line in experiment['stdout']])
+        experiment['stderr'] = "".join([line for line in experiment['stderr']])
+    return experiment

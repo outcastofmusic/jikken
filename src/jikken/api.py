@@ -58,7 +58,7 @@ def run_stage(*, setup: MultiStageExperimentSetup) -> None:
             exp_id = db.add(exp)
             if setup.input_path is not None:
                 multistage_id = load_stage_metadata(setup.input_path)["id"]
-                multi_stage_doc = db.get(multistage_id, doc_type="ms_experiments")
+                multi_stage_doc = db.get(multistage_id, doc_type="multistage")
                 multistage = MultiStageExperiment.from_dict(multi_stage_doc)
                 hash_key = multistage.hash()
             else:
