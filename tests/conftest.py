@@ -2,7 +2,7 @@ import json
 
 import pytest
 from jikken.database.config import JikkenConfig
-from jikken.utils import check_mongo
+from jikken.utils import check_mongo, check_es
 from jikken.database import DataBase
 
 
@@ -58,11 +58,12 @@ def file_setup(tmpdir):
 
 
 database_types = ("tiny",
-                  "mongo"
+                  "mongo",
+                  "es"
                   )
 
 
-@pytest.fixture(params=database_types)
+@pytest.fixture(params=database_types,ids=["tiny-db", "mongo-db", "elasticsearch"])
 def db_config(tmpdir, request):
     if request.param == 'tiny':
         db_path = str(tmpdir.mkdir("temp"))
@@ -71,6 +72,10 @@ def db_config(tmpdir, request):
         db_path = "mongodb://localhost:27019"
         if not check_mongo(uri=db_path):
             pytest.skip("mongo db not available")
+    elif request.param == 'es':
+        db_path = "http://localhost:9200"
+        if not check_es(url=db_path):
+            pytest.skip("es db not available")
     return JikkenConfig(db_path=db_path, db_type=request.param)
 
 

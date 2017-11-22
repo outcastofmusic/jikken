@@ -1,5 +1,6 @@
 import os
 from contextlib import contextmanager
+
 from .query import ExperimentQuery, MultiStageExperimentQuery
 
 from jikken.experiment import Experiment
@@ -34,8 +35,8 @@ class DataBase(metaclass=Singleton):
             from .db_mongo import MongoDB
             self._database = MongoDB(config.db_path, config.db_name)
         elif config.db_type == 'es':
-            # TODO implement es
-            raise NotImplementedError('ES not implemented yet')
+            from .db_es import ElasticSearchDB
+            self._database = ElasticSearchDB(config.db_path, config.db_name)
         else:
             raise ValueError("db_type must be a 'tiny' or 'mongo'")
 
@@ -51,7 +52,7 @@ class DataBase(metaclass=Singleton):
             for step, exp in data_object:
                 exp_dict = None
                 if exp.doc_id is not None:
-                    exp_dict = self._database.get(exp.doc_id, "experiments")
+                    exp_dict = self._database.get(exp.doc_id, "experiment")
                 if exp_dict is None:
                     _id = self._database.add(exp.to_dict())
                 else:
@@ -68,7 +69,7 @@ class DataBase(metaclass=Singleton):
         doc = self._database.get(doc_id, doc_type)
         if doc["type"] == "multistage":
             for index, (step, exp_id) in enumerate(doc["experiments"]):
-                exp = self._database.get(exp_id, "experiments")
+                exp = self._database.get(exp_id, "experiment")
                 doc["experiments"][index] = (step, exp)
         return doc
 
@@ -82,7 +83,7 @@ class DataBase(metaclass=Singleton):
         results = self._database.list_ms_experiments(query=query)
         for doc in results:
             for index, (step, exp_id) in enumerate(doc['experiments']):
-                exp = self._database.get(exp_id, "experiments")
+                exp = self._database.get(exp_id, "experiment")
                 doc["experiments"][index] = (step, exp)
         return results
 

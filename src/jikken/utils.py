@@ -202,3 +202,16 @@ def check_mongo(uri=None):
     except ServerSelectionTimeoutError:
         found_database = False
     return found_database
+
+
+def check_es(url=None):
+    from elasticsearch import Elasticsearch
+    url = "http://localhost:9200" if url is not None else url
+    es = Elasticsearch(url)
+    try:
+        es.cluster.health()
+        found_database = True
+    except ConnectionError:
+        found_database = False
+
+    return found_database

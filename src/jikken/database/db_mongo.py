@@ -72,9 +72,9 @@ class MongoDB(DB):
     def add(self, doc: dict):
         if doc["type"] == "experiment":
             doc = map_experiment(doc)
-            col = self._db["experiments"]
+            col = self._db[doc['type']]
         else:
-            col = self._db["ms_experiments"]
+            col = self._db[doc["type"]]
         _id = col.insert_one(doc).inserted_id
         return str(_id)
 
@@ -86,7 +86,7 @@ class MongoDB(DB):
 
     def delete(self, experiment_id: int):
         try:
-            self._db.experiments.delete_one({"_id": ObjectId(experiment_id)})
+            self._db.experiment.delete_one({"_id": ObjectId(experiment_id)})
         except InvalidId:
             raise KeyError("experiment id {} not found".format(experiment_id))
 
@@ -95,7 +95,7 @@ class MongoDB(DB):
         for collection in self._db.collection_names(include_system_collections=False):
             self._db[collection].drop()
 
-    def get(self, _id: str, collection: str = "experiments") -> (dict, None):
+    def get(self, _id: str, collection: str = "experiment") -> (dict, None):
         """Get a document from the database or None if document not found"""
         doc = self._db[collection].find_one({"_id": ObjectId(_id)})
         if doc is None:
@@ -109,34 +109,34 @@ class MongoDB(DB):
     def list_experiments(self, query: ExperimentQuery) -> list:
         """return a list of experiments that match the query"""
         if query.is_empty():
-            return [inv_map_experiment(i) for i in self._db.experiments.find()]
+            return [inv_map_experiment(i) for i in self._db.experiment.find()]
         elif len(query.ids) > 0:
             return [self.get(_id) for _id in query.ids]
         else:
             if len(query.names) > 0:
-                self._db.experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
+                self._db.experiment.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
             complex_query = create_mongodb_exp_query(query=query)
-            return [inv_map_experiment(i) for i in self._db.experiments.find(complex_query)]
+            return [inv_map_experiment(i) for i in self._db.experiment.find(complex_query)]
 
     def list_ms_experiments(self, query: MultiStageExperimentQuery)-> list:
         if query.is_empty():
-            return [i for i in self._db["ms_experiments"].find()]
+            return [i for i in self._db["multistage"].find()]
         elif len(query.ids) > 0:
-            return [self.get(_id, collection="ms_experiments") for _id in query.ids]
+            return [self.get(_id, collection="multistage") for _id in query.ids]
         else:
             if len(query.names) > 0:
-                self._db.ms_experiments.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
+                self._db.multistage.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
             complex_query = create_mongodb_mse_query(query=query)
-            return [i for i in self._db.ms_experiments.find(complex_query)]
+            return [i for i in self._db.multistage.find(complex_query)]
 
     def update(self, experiment_id: int, experiment: dict):
         pass
 
     def update_key(self, experiment_id: int, value: Any, key: str, mode='set') -> None:
         if mode == 'set':
-            self._db.experiments.update({"_id": ObjectId(experiment_id)}, set_mongo(value, key=key))
+            self._db.experiment.update({"_id": ObjectId(experiment_id)}, set_mongo(value, key=key))
         elif mode == 'add':
-            self._db.experiments.update({"_id": ObjectId(experiment_id)}, add_mongo(value, key=key))
+            self._db.experiment.update({"_id": ObjectId(experiment_id)}, add_mongo(value, key=key))
 
     @property
     def collections(self) -> list:

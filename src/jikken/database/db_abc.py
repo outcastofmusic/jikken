@@ -3,6 +3,13 @@ from typing import Any
 
 from .database import ExperimentQuery, MultiStageExperimentQuery
 
+from enum import Enum
+
+
+class ExperimentType(Enum):
+    Experiment = "experiment"
+    MultiStageExperiment = "multistage"
+
 
 class DB(metaclass=ABCMeta):
     @abstractmethod

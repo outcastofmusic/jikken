@@ -48,9 +48,9 @@ def all(request, one_experiment, one_multistage):
     maybe one day it will be added to pytest see: https://github.com/pytest-dev/pytest/issues/349
     """
     if request.param == 'experiment':
-        return one_experiment, "experiments"
+        return one_experiment, "experiment"
     else:
-        return one_multistage, "ms_experiments"
+        return one_multistage, "multistage"
 
 
 def test_add_raises(jikken_db_session):
@@ -125,9 +125,9 @@ def test_doc_retrieved_from_db_same(jikken_db, all):
 
     # Then they are equivalent
     new_doc = None
-    if doc_type == "experiments":
+    if doc_type == "experiment":
         new_doc = Experiment.from_dict(doc_from_db)
-    elif doc_type == "ms_experiments":
+    elif doc_type == "multistage":
         new_doc = MultiStageExperiment.from_dict(doc_from_db)
     assert doc == new_doc
 
@@ -167,7 +167,7 @@ def test_add_experiment_to_mse_already_in_db(jikken_db, one_experiment, one_mult
     doc_id = jikken_db.add(one_multistage)
     count = jikken_db.count()
     assert count == 10
-    multistage = jikken_db.get(doc_id=doc_id, doc_type="ms_experiments")
+    multistage = jikken_db.get(doc_id=doc_id, doc_type="multistage")
     new_multistage = MultiStageExperiment.from_dict(multistage)
     new_multistage.add(one_experiment, "stage_9", one_multistage.hash())
     mse_id = jikken_db.add(new_multistage)
@@ -308,13 +308,13 @@ def test_update_std_experiments(std_type, db_one_experiment):
     new_string = "this is a string"
     db.update_std(_id, new_string, std_type)
     # And I retrieve the experiment
-    exp = db.get(_id, "experiments")
+    exp = db.get(_id, "experiment")
     # Then the stdout or stderr key is updated
     assert exp[std_type] == new_string
     # And when I append a new string
     new_string_2 = "this is a second string"
     db.update_std(_id, new_string_2, std_type)
-    exp = db.get(_id, "experiments")
+    exp = db.get(_id, "experiment")
     # Then the new string gets updated
     assert exp[std_type] == new_string + new_string_2
 
@@ -345,7 +345,7 @@ def test_update_status_experiments(status, db_one_experiment):
     # When I update the status
     db.update_status(_id, status)
     # And I retrieve the experiment
-    exp = db.get(_id, "experiments")
+    exp = db.get(_id, "experiment")
     # Then status is updated
     assert exp['status'] == status
 

@@ -56,3 +56,46 @@ An example of a config file using mongo would be
     type = mongo
     name = jikken
 
+
+Setup MongoDB using docker
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+pull the mongodb image:
+
+.. code-block:: bash
+
+    docker pull mongo
+
+
+then run the image. You can use the `-p` flag to map the port to a localport (that matches the one in the config file
+and also mount a local folder where the db will be located
+
+.. code-block:: bash
+
+    docker run --name jikken-mongo -p $LOCALPORT:27017 -v $LOCALPATH:/data/db -d mongo
+
+For more info see the official `docker mongo`_ information.
+
+
+Setup ES using docker
+^^^^^^^^^^^^^^^^^^^^^
+
+pull the es image:
+
+.. code-block:: bash
+
+    docker pull docker.elastic.co/elasticsearch/elasticsearch-oss:6.0.0
+
+then run the image. (this command is for development mode):
+
+
+.. code-block:: bash
+
+    docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch-oss:6.0.0
+
+
+For more info see the official `docker es`_ guide.
+
+
+.. _docker es: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+.. _docker mongo: https://hub.docker.com/_/mongo/

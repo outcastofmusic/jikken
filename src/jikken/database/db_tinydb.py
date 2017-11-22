@@ -68,16 +68,15 @@ class TinyDB(DB):  # noqa : E801
         self._db = dict()
         for collection in self.collections:
             self._db[collection] = db.table(collection)
-        self.tables = {"experiment": "experiments", "multistage": "ms_experiments"}
 
     def stop_db(self):
         """Disconnect from DB."""
         pass
 
     def add(self, doc: dict) -> str:
-        _id = self._db[self.tables[doc["type"]]].insert(doc)
+        _id = self._db[doc["type"]].insert(doc)
         doc['id'] = str(_id)
-        self._db[self.tables[doc["type"]]].update(doc, eids=[_id])
+        self._db[doc["type"]].update(doc, eids=[_id])
         return str(_id)
 
     def get(self, doc_id: str, collection: str) -> int:
@@ -87,21 +86,21 @@ class TinyDB(DB):  # noqa : E801
     def list_experiments(self, query: ExperimentQuery) -> list:
         """Return list of experiments."""
         if query.is_empty():
-            return self._db["experiments"].all()
+            return self._db["experiment"].all()
         elif len(query.ids) > 0:
-            return [self.get(_id, "experiments") for _id in query.ids]
+            return [self.get(_id, "experiment") for _id in query.ids]
         else:
             complex_query = create_tinydb_exp_query(query=query)
-            return self._db["experiments"].search(complex_query)
+            return self._db["experiment"].search(complex_query)
 
     def list_ms_experiments(self, query: MultiStageExperimentQuery) -> None:
         if query.is_empty():
-            return self._db["ms_experiments"].all()
+            return self._db["multistage"].all()
         elif len(query.ids) > 0:
-            return [self.get(_id, "ms_experiments") for _id in query.ids]
+            return [self.get(_id, "multistage") for _id in query.ids]
         else:
             complex_query = create_tinydb_mse_query(query=query)
-            return self._db["ms_experiments"].search(complex_query)
+            return self._db["multistage"].search(complex_query)
 
     def count(self) -> int:
         """Return number of experiments in db."""
@@ -110,25 +109,25 @@ class TinyDB(DB):  # noqa : E801
 
     def update(self, experiment_id: str, experiment: dict) -> None:
         """Modify experiment in db with given experiment_id."""
-        self._db["experiments"].update(experiment, eids=[int(experiment_id)])
+        self._db["experiment"].update(experiment, eids=[int(experiment_id)])
 
     def update_key(self, experiment_id: str, value: Any, key: (list, str), mode='set') -> None:
         experiment_id = int(experiment_id)
         if mode == 'set' and isinstance(key, list):
-            self._db["experiments"].update(set_inner(key, value), eids=[experiment_id])
+            self._db["experiment"].update(set_inner(key, value), eids=[experiment_id])
         elif mode == 'set':
-            self._db["experiments"].update(set(key, value), eids=[experiment_id])
+            self._db["experiment"].update(set(key, value), eids=[experiment_id])
         elif mode == 'add' and isinstance(key, list):
-            self._db["experiments"].update(add_inner(key, value), eids=[experiment_id])
+            self._db["experiment"].update(add_inner(key, value), eids=[experiment_id])
         elif mode == 'add':
-            self._db["experiments"].update(add(key, value), eids=[experiment_id])
+            self._db["experiment"].update(add(key, value), eids=[experiment_id])
         else:
             raise ValueError("update mode {} not supported ".format(mode))
 
     def delete(self, experiment_id: str) -> None:
         """Remove a experiment from db with given experiment_id."""
         try:
-            self._db["experiments"].remove(eids=[int(experiment_id)])
+            self._db["experiment"].remove(eids=[int(experiment_id)])
         except ValueError:
             raise KeyError("key {} not found in TinyDB".format(experiment_id))
 
@@ -139,4 +138,4 @@ class TinyDB(DB):  # noqa : E801
 
     @property
     def collections(self):
-        return ["experiments", "ms_experiments"]
+        return ["experiment", "multistage"]

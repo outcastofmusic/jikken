@@ -204,11 +204,11 @@ jikken list tags
 jikken list count
 ^^^^^^^^^^^^^^^^^^
 `jikken list count` can be used to return the number of experiments in the database. This includes all experiments including mse stages. 
-Running `jikken list count` without arguments returns everyting in the db. `jikken list count` has three optional arguments:
+Running `jikken list count` without arguments returns everything in the db. `jikken list count` has three optional arguments:
 
 - `-t`, `--tags` can be used to provide a number of tags jikken will try to match
+- `-q`, `--query` is used in conjunction with the tags options. It can take two values `all` or `any`. `all` will try to match all provided tags, while `or` will try to provide any of the provided tags and any of the provided names.
 - `-n`, `--name` can be used to provide a number of names jikken will try to match. Jikken will also match parts of names
-- `-q`, `--query` is used in conjuction of the above arguments. It can take two values `all` or `any`. `all` will try to match all provided tags and all provided names, while `or` will try to provide any of the provided tags and any of the provided names.  
 
 jikken list exp
 ^^^^^^^^^^^^^^^^^^
@@ -257,11 +257,17 @@ Each experiment added to the database is assigned a unique id. This id is differ
 
         jikken list env -i id1 -i id2 -i id3
 
-- `-t`, `--tags`. The tags is used to retrieve experiments with matching tags. Multiple tags can be added by using the option multiple times. e.g.
+- `-t`, `--tags`. The tags option is used to retrieve experiments with matching tags. Multiple tags can be added by using the option multiple times. e.g.
 
 .. code-block:: bash
 
         jikken list env -t tag1 -t tag2 -t tag3
+
+- `-q`, `--query`. The query option is used in conjunction with the tags option. It can be set to `all` (Default) or `any`. The former query matching all tags provided while the latter any tags provided. e.g.
+
+.. code-block:: bash
+
+        jikken list env -t tag1 -t tag2 -t tag3 -q any
 
 - `-n`, `--names`. The names option is used to retrieve experiments with matching names. Multiple names can be added to the query by using the option multiple times. e.g.
 

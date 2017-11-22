@@ -1,10 +1,22 @@
 import pprint
 from  blessings import Terminal
 
+from pygments import highlight
+from pygments.lexers import Python3Lexer
+from pygments.formatters import Terminal256Formatter
+from pprint import pformat
 
-def format_header(term:Terminal, value: str, name:str):
+
+def pprint_color(obj):
+    """format object to print with colors
+    code taken from: https://gist.github.com/EdwardBetts/0814484fdf7bbf808f6f
+    """
+    print(highlight(pformat(obj), Python3Lexer(), Terminal256Formatter()))
+
+
+def format_header(term: Terminal, value: str, name: str):
     """ format bold """
-    return "{t.reverse} {name} {t.normal}: {t.bold} {value} {t.normal} ".format(t=term, value=value, name=name)
+    return "{t.green} {t.bold} {name} {t.normal}: {t.yellow} {value} {t.normal} ".format(t=term, value=value, name=name)
 
 
 class PrintExperiment:
@@ -29,8 +41,8 @@ class PrintExperiment:
         db_info_hash = "| ".join([
             format_header(self.term, experiment_dict['schema_hash'], "schema hash"),
             format_header(self.term, experiment_dict['parameter_hash'], "param hash"),
-                              ])
-        print(db_info,db_info_hash, sep="\n")
+        ])
+        print(db_info, db_info_hash, sep="\n")
 
     def print_git_info(self, experiment_dict):
         """Print git info if available"""
@@ -39,14 +51,15 @@ class PrintExperiment:
                 format_header(self.term, experiment_dict['commit_id'], "commit"),
                 format_header(self.term, experiment_dict['dirty'], "dirty"),
                 format_header(self.term, experiment_dict['repo'], "repo"),
-            ] )
+            ])
             print(git_info)
 
     def print_subsection(self, data_dict, name):
         """Print subsection with monitored data"""
         if len(data_dict) > 0:
-            print("\n","{t.reverse} {t.underline} {name} {t.normal}".format(t=self.term, name=name).center(100), sep="\n")
-            pprint.pprint(data_dict)
+            print("\n", "{t.green} {t.bold} {t.underline} {name} {t.normal}".format(t=self.term, name=name).center(100),
+                  sep="\n")
+            pprint_color(data_dict)
 
     def print_experiment(self, experiment_dict, stdout=False, stderr=False, variables=True, git=True, monitored=True):
         if experiment_dict['type'] == 'experiment':
