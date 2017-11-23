@@ -50,3 +50,7 @@ class DB(metaclass=ABCMeta):
     @abstractmethod
     def delete_all(self) -> None:
         pass
+
+    @property
+    def collections(self):
+        return ["experiment", "multistage"]

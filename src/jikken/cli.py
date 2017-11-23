@@ -38,8 +38,13 @@ def run(script_path, configuration_path, ref_path, args, tags, name):
     api.run(setup=setup)
 
 
-@jikken_cli.command(
-    help="run a stage of a multistage experiment from a script. e.g. jikken run script.py -c config.yaml")
+@jikken_cli.group(
+    help="run a stage of a multistage experiment from a script. e.g. jikken stage run script.py -c config.yaml")
+def stage():
+    pass
+
+
+@stage.command("run a stage experiment ")
 @click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option('--input_dir', '-i', required=False, type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option('--output_dir', '-o', required=True, type=click.Path(exists=False, file_okay=False, dir_okay=True))
@@ -56,7 +61,7 @@ def run(script_path, configuration_path, ref_path, args, tags, name):
 @click.option('--tags', '-t', multiple=True,
               help="tags that can be used to distinguish the experiment inside the database."
                    " Multiple can be added e.g. -t org_name -t small_data -t model_1")
-def stage(script_path, input_dir, output_dir, configuration_path, ref_path, args, tags, name, stage_name):
+def run(script_path, input_dir, output_dir, configuration_path, ref_path, args, tags, name, stage_name):
     setup = MultiStageExperimentSetup(script_path=script_path,
                                       input_path=input_dir,
                                       output_path=output_dir,
@@ -68,6 +73,35 @@ def stage(script_path, input_dir, output_dir, configuration_path, ref_path, args
                                       stage_name=stage_name
                                       )
     api.run_stage(setup=setup)
+
+
+@stage.command("resume a stage experiment ")
+@click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
+@click.option('--input_dir', '-i', required=False, type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@click.option('--output_dir', '-o', required=True, type=click.Path(exists=False, file_okay=False, dir_okay=True))
+@click.option('--configuration_path', '-c', required=True, type=click.Path(exists=True, file_okay=True, dir_okay=True),
+              help="A file or a directory with files that hold the variables that define the experiment")
+@click.option('--ref_path', '-r', required=False, type=click.Path(exists=True, file_okay=True, dir_okay=True),
+              default=None,
+              help="A file or a directory with files that hold the variables that define the experiment")
+@click.option('--args', '-a', multiple=True,
+              help="extra arguments that can be passed to the script multiple can be added,"
+                   "e.g. -a a=2 -a batch_size=63 -a early_stopping=False")
+@click.option('--tags', '-t', multiple=True,
+              help="tags that can be used to distinguish the experiment inside the database."
+                   " Multiple can be added e.g. -t org_name -t small_data -t model_1")
+def resume(script_path, input_dir, output_dir, configuration_path, ref_path, args, tags):
+    setup = MultiStageExperimentSetup(script_path=script_path,
+                                      input_path=input_dir,
+                                      output_path=output_dir,
+                                      configuration_path=configuration_path,
+                                      reference_configuration_path=ref_path,
+                                      args=args,
+                                      tags=tags,
+                                      name="",
+                                      stage_name=""
+                                      )
+    api.resume_stage(setup=setup)
 
 
 @jikken_cli.group(context_settings={'help_option_names': ['-h', '--help']},
@@ -83,9 +117,11 @@ def list():
 @click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
 @click.option('--schema', '-s', multiple=True, help="hash that matches experiment schema hash")
 @click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True,
-        help="status of the experiment")
-@click.option('--param_schema', '-p', multiple=True,help="hash that matches the experiment schema with parameters hash")
-@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all', help="the type of query ot be used (and|or)")
+              help="status of the experiment")
+@click.option('--param_schema', '-p', multiple=True,
+              help="hash that matches the experiment schema with parameters hash")
+@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all',
+              help="the type of query ot be used (and|or)")
 @click.option('--stdout/--no-stdout', default=False, help="print the stdout of the experiments listed")
 @click.option('--stderr/--no-stderr', default=False, help="print the stderr of the experiments listed")
 @click.option('--var/--no-var', default=True, help="print the configuration variables of the experiments listed")
@@ -114,9 +150,11 @@ def exp(ids, query, tags, names, schema, param_schema, status, stdout, stderr, v
 @click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
 @click.option('--schema', '-s', multiple=True, help="hash that matches experiment schema hash")
 @click.option('--status', type=click.Choice(["running", "error", "interrupted", "completed"]), multiple=True,
-        help="status of the experiment")
-@click.option('--param_schema', '-p', multiple=True,help="hash that matches the experiment schema with parameters hash")
-@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all', help="the type of query ot be used (and|or)")
+              help="status of the experiment")
+@click.option('--param_schema', '-p', multiple=True,
+              help="hash that matches the experiment schema with parameters hash")
+@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all',
+              help="the type of query ot be used (and|or)")
 @click.option('--stdout/--no-stdout', default=False, help="print the stdout of the experiments listed")
 @click.option('--stderr/--no-stderr', default=False, help="print the stderr of the experiments listed")
 @click.option('--var/--no-var', default=True, help="print the configuration variables of the experiments listed")
@@ -150,7 +188,8 @@ def best(ids, query, tags, names, schema, param_schema, status, stdout, stderr, 
 @click.option('--names', '-n', multiple=True, help="multistage experiment names that need to be matched")
 @click.option('--steps', '-s', multiple=True, help="name of steps in the multistage experiment")
 @click.option('--hashes', '-h', multiple=True, help="hash that matches the multistage experiment")
-@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all', help="the type of query ot be used (and|or)")
+@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all',
+              help="the type of query ot be used (and|or)")
 @click.option('--stdout/--no-stdout', default=False, help="print the stdout of the experiments listed")
 @click.option('--stderr/--no-stderr', default=False, help="print the stderr of the experiments listed")
 @click.option('--var/--no-var', default=True, help="print the configuration variables of the experiments listed")
@@ -178,13 +217,13 @@ def tags():
 
 @list.command(help="Return total number of experiments in db or number that match tags query")
 @click.option('--tags', '-t', multiple=True, help="tags that describe experiment")
-@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all',help="the type of query")
+@click.option('--query', '-q', type=click.Choice(['all', 'any']), default='all', help="the type of query")
 @click.option('--names', '-n', multiple=True, help="experiment names that need to be matched")
-def count(tags, query,names):
+def count(tags, query, names):
     if len(tags) == 0 or len(names) == 0:
         count = api.count()
     else:
-        query = api.ExperimentQuery(ids=[],names=names, tags=tags, query_type=query)
+        query = api.ExperimentQuery(ids=[], names=names, tags=tags, query_type=query)
         count = len(api.list(query=query))
     print("number of items: {}".format(count))
 

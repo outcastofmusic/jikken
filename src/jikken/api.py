@@ -7,7 +7,7 @@ from .database import setup_database, ExperimentQuery, MultiStageExperimentQuery
 from .setups import ExperimentSetup, MultiStageExperimentSetup
 from .experiment import Experiment
 from .monitor import capture_value
-from .utils import prepare_variables, prepare_command
+from .utils import prepare_variables, prepare_command, get_resume_name
 import os
 import sys
 
@@ -43,6 +43,33 @@ def run(*, setup: ExperimentSetup) -> None:
             run_experiment(db=db, exp_id=exp_id, cmd=cmd)
 
 
+def resume_stage(*, setup:MultiStageExperimentSetup)->None:
+    with prepare_variables(config_directory=setup.configuration_path,
+                           reference_directory=setup.reference_configuration_path) as vr:
+        variables, configuration_path = vr
+        extra_vars = {argument[0]: argument[1] for argument in setup.args}
+        variables = {**variables, **extra_vars}
+        cmd = prepare_command(configuration_path=configuration_path, setup=setup)
+        with setup_database() as db:
+            metadata = load_stage_metadata(setup.output_path)
+            multistage_id = metadata["id"]
+            multi_stage_doc = db.get(multistage_id, doc_type="multistage")
+            multistage = MultiStageExperiment.from_dict(multi_stage_doc)
+            hash_key = multistage.hash()
+            resume_name = get_resume_name(metadata["steps"][-1])
+            exp = Experiment(name=resume_name,
+                             variables=variables,
+                             code_dir=os.path.dirname(setup.script_path),
+                             tags=setup.tags + ["resumed"])
+
+            exp_id = db.add(exp)
+            multistage.add(exp, stage_name=resume_name, last_step_hash=hash_key)
+            ml_id = db.add(multistage)
+            multistage._id = ml_id
+            multistage.export_metadata(setup.output_path)
+            run_experiment(db=db, exp_id=exp_id, cmd=cmd)
+
+
 def run_stage(*, setup: MultiStageExperimentSetup) -> None:
     with prepare_variables(config_directory=setup.configuration_path,
                            reference_directory=setup.reference_configuration_path) as vr:
@@ -67,7 +94,7 @@ def run_stage(*, setup: MultiStageExperimentSetup) -> None:
             multistage.add(exp, stage_name=setup.stage_name, last_step_hash=hash_key)
             ml_id = db.add(multistage)
             multistage._id = ml_id
-            multistage.export_metadata(setup.output_path)
+            multistage.export_metadata(setup.output_path, exp_id)
             run_experiment(db=db, exp_id=exp_id, cmd=cmd)
 
 
@@ -223,9 +250,6 @@ def get_best(*, query: ExperimentQuery, metric: str, optimum: str = "min"):
     return best_experiment
 
 
-def resume():
-    # TODO think on how to resume an experiment without messing up the database
-    pass
 
 
 def export_config():

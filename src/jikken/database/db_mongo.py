@@ -53,7 +53,7 @@ class MongoDB(DB):
     def __init__(self, db_path: str, db_name: str):
         self._client = None
         self._db = self._connect(db_path, db_name)
-        for collection in self._db.collection_names(include_system_collections=False):
+        for collection in self.collections:
             self._db[collection].create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
 
     def _connect(self, db_path, db_name):
@@ -138,6 +138,3 @@ class MongoDB(DB):
         elif mode == 'add':
             self._db.experiment.update({"_id": ObjectId(experiment_id)}, add_mongo(value, key=key))
 
-    @property
-    def collections(self) -> list:
-        return self._db.collection_names(include_system_collections=False)

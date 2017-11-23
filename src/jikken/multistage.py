@@ -102,12 +102,16 @@ class MultiStageExperiment:
     def __eq__(self, other):
         return hash(self) == hash(other)
 
-    def export_metadata(self, directory):
+    def export_metadata(self, directory, exp_id=None):
         """Export metadata to file"""
         metadata = {"multistage_name": self._name,
                     "steps": [key for key in self._experiments.keys()],
                     "id": self._id,
                     "hash": self.hash()}
+        # save the doc ids to the metadata
+        metadata["exp_ids"] = [self._experiments[steps].doc_id for steps in metadata['steps']]
+        if exp_id is not None:
+            metadata["exp_ids"][-1] = exp_id
         save_stage_metadata(directory, metadata=metadata)
 
     def to_dict(self):
@@ -115,7 +119,7 @@ class MultiStageExperiment:
             "name": self._name,
             "hash": self.hash(),
             "experiments": [(key, item.to_dict()) for key, item in self._experiments.items()],
-            "steps":[key for key in self._experiments.keys()],
+            "steps": [key for key in self._experiments.keys()],
             "type": "multistage",
             "id": self._id
         }

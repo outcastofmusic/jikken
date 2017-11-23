@@ -47,7 +47,7 @@ Where:
 - type is the type of the database (valid options are: `tiny`, `mongo`, `es` (ES not implemented yet).
 - name is the name of the database to use. Default is `jikken`.
 
-An example of a config file using mongo would be
+An example of a config file using *Mongo* would be
 
 .. code-block:: ini
 
@@ -56,6 +56,14 @@ An example of a config file using mongo would be
     type = mongo
     name = jikken
 
+An example of a config file using *ElasticSearch* would be
+
+.. code-block:: ini
+
+    [db]
+    path = http:://localhost:9200
+    type = es
+    name = jikken
 
 Setup MongoDB using docker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

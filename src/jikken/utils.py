@@ -215,3 +215,13 @@ def check_es(url=None):
         found_database = False
 
     return found_database
+
+
+def get_resume_name(stage_name):
+    """return a new name with resume and an increasing index"""
+    split_stage_name = stage_name.split("_")
+    if len(split_stage_name) > 2 and split_stage_name[-2] == "resume":
+        resume_index = int(split_stage_name[-1]) + 1
+        return "_".join(split_stage_name[:-2] + ["resume_{}".format(resume_index)])
+    else:
+        return stage_name + "_resume_0"

@@ -67,7 +67,7 @@ class TinyDB(DB):  # noqa : E801
         db = tinydb.TinyDB(db_path + '/jikken_db.json')
         self._db = dict()
         for collection in self.collections:
-            self._db[collection] = db.table(collection)
+            self._db[collection] = db.table(db_name + "_" + collection)
 
     def stop_db(self):
         """Disconnect from DB."""
@@ -135,7 +135,3 @@ class TinyDB(DB):  # noqa : E801
         """Remove all experiments from db."""
         for collection in self.collections:
             self._db[collection].purge()
-
-    @property
-    def collections(self):
-        return ["experiment", "multistage"]

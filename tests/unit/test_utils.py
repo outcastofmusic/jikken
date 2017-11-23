@@ -1,6 +1,6 @@
 import copy
 import json
-
+import pytest
 import jikken.utils as utils
 import os
 import pytest
@@ -304,3 +304,24 @@ def test_update_variables():
     }
 
     assert actual_variables == expected_variables
+
+
+
+values = [
+    # value, expected_return
+    ("firststage", "firststage_resume_0"),
+    ("firststage_resume_0", "firststage_resume_1"),
+    ("first_stage_resume_0", "first_stage_resume_1"),
+    ("lots_of_under_scores_resume_0", "lots_of_under_scores_resume_1"),
+    ("stage_one", "stage_one_resume_0"),
+    ("stage_one_resume_0", "stage_one_resume_1")
+]
+
+
+@pytest.mark.parametrize("stage_name, expected", values)
+def test_resume_name(stage_name, expected):
+
+    actual = utils.get_resume_name(stage_name=stage_name)
+    assert actual == expected
+
+
