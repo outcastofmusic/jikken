@@ -2,10 +2,6 @@
 Installation
 ============
 
-TODO: Install with pip
-^^^^^^^^^^^^^^^^^^^^^^
-Create PIP Install once v0.1 is feature complete
-
 
 Install from Source
 ^^^^^^^^^^^^^^^^^^^

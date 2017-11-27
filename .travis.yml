@@ -6,4 +6,9 @@ install:
         - pip install -r requirements.txt
         - python setup.py install
 script:
-        - pytest -k "not mongo and not elasticsearch"
+        - pytest
+
+
+services:
+        - mongodb
+        - elasticsearch

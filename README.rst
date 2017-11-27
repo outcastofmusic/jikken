@@ -3,7 +3,10 @@ Jikken 実験
 ***********
 
 .. image:: https://travis-ci.org/outcastofmusic/jikken.svg?branch=master
-    :alt: cli_status
+    :alt: CLI Status
+.. image:: https://readthedocs.org/projects/jikken/badge/?version=latest
+    :alt: Documentation Status
+
 
 **Jikken**  is a lightweight cli experiment manager for scientific experiments written in python.
 
@@ -27,6 +30,7 @@ Features
 Getting Started
 ###############
 
+To install the package use `pip3 install jikken`
 
 
 Contributing
@@ -67,7 +71,8 @@ Acknowledgments
 * Francois Chollet and his book `Deep Learning with Python`_. The examples of jikken are all based on the ones from the book.
 
 
-.. _cli status: https://travis-ci.org/outcastofmusic/jikken.svg?branch=master
+.. _CLI Status: https://travis-ci.org/outcastofmusic/jikken.svg?branch=master
+.. _Documentation Status: http://jikken.readthedocs.io/en/latest/?badge=latest
 .. _wiki: https://github.com/outcastofmusic/jikken/wiki
 .. _Python Testing with Pytest: https://pragprog.com/book/bopytest/python-testing-with-pytest
 .. _Deep Learning with Python: https://www.manning.com/books/deep-learning-with-python
