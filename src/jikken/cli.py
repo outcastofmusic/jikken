@@ -8,7 +8,7 @@ from .data_formater import PrintExperiment
 @click.version_option(version='0.1.0')
 def jikken_cli():
     """Run the jikken application"""
-    # TODO write readme with instructions
+    pass
 
 
 @jikken_cli.command(help="run a single stage experiment from a script. e.g. jikken run script.py -c config.yaml")
@@ -41,10 +41,11 @@ def run(script_path, configuration_path, ref_path, args, tags, name):
 @jikken_cli.group(
     help="run a stage of a multistage experiment from a script. e.g. jikken stage run script.py -c config.yaml")
 def stage():
+    """Run the stage  group"""
     pass
 
 
-@stage.command("run a stage experiment ")
+@stage.command(help="run a stage experiment ")
 @click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option('--input_dir', '-i', required=False, type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option('--output_dir', '-o', required=True, type=click.Path(exists=False, file_okay=False, dir_okay=True))
@@ -75,7 +76,7 @@ def run(script_path, input_dir, output_dir, configuration_path, ref_path, args, 
     api.run_stage(setup=setup)
 
 
-@stage.command("resume a stage experiment ")
+@stage.command(help="resume a stage experiment ")
 @click.argument('script_path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
 @click.option('--input_dir', '-i', required=False, type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.option('--output_dir', '-o', required=True, type=click.Path(exists=False, file_okay=False, dir_okay=True))

@@ -127,11 +127,6 @@ In order to do this you need to import the log_value function from jikken. and t
 
 The above example will log the value of the loss every 10 epochs. `log_value()` can also be used with callback fuctionor hooks (see examples) that call it when it is required to log a value.
 
-Resuming An Experiment
-^^^^^^^^^^^^^^^^^^^^^^
-
-Not implemented yet
-
 Running Multistage Experiments
 -------------------------------
 
@@ -142,11 +137,11 @@ Sometimes an experiment is too complicated and can be split into different stage
 
 By splitting an experiment in stages like this allows some stages to remain the same while changing other stages, e.g.train many different models with the same features. It also allows for segregating experiment info makin git much easier to check on data afterwards. 
 
-Jikken allows that with the stage subcommand,i.e.  `jikken stage`. Running `jikken stage -h` gives us:
+Jikken allows that with the stage subcommand,i.e.  `jikken stage run `. Running `jikken stage run -h` gives us:
 
 .. code-block:: bash
 
-        Usage: jikken stage [OPTIONS] SCRIPT_PATH
+        Usage: jikken stage run [OPTIONS] SCRIPT_PATH
 
           run a stage of a multistage experiment from a script. e.g. jikken run
             script.py -c config.yaml
@@ -171,7 +166,7 @@ Jikken allows that with the stage subcommand,i.e.  `jikken stage`. Running `jikk
               -h, --help                     Show this message and exit.
 
 
-`jikken stage` uses the same possitional argument `SCRIPT_PATH` and has a lot of common options with `jikken run`.
+`jikken stage run` uses the same positional argument `SCRIPT_PATH` and has a lot of common options with `jikken run`.
 The main difference is the addition of three more options:
 
 The first is the `-i`, `--input_dir` option. This holds the location of the input dir to the experiment and is not required as the first stage might not have require an input dir. 
@@ -183,6 +178,12 @@ Finally the `-s`, `--stage_name` option should be text that describes the specif
     jikken stage my_experiment_preprocessing.py -c myconfig_preprocessing.yaml -n "my first experiment" -s "preprocessing" -o processing_results_dir
     jikken stage my_experiment_training.py -c myconfig_training.yaml -n "my first experiment" -s "training" -t "svm" -i processing_results_dir -o trained_model_dir
     jikken stage my_experiment_validation.py -c myconfig_validation.yaml -n "my first experiment" -s "validation" -i trained_model_dir -o validation_results_dir
+
+Resuming An Experiment
+^^^^^^^^^^^^^^^^^^^^^^
+
+As stages of multistage experiments have outputs this can be used to load the files from an output and resume a single stage. E.g. A training stage that has trained and saved the models weights to an output folder can load the model from the output folder and continue training.
+this can be done by using the `jikken stage resume` command
 
 Retrieving Experiments from the database
 -----------------------------------------
