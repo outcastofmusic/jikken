@@ -42,7 +42,7 @@ To install the package use `pip3 install jikken`
 Contributing
 ------------
 
-1. Fork it `here`_
+1. Fork it `here <https://github.com/outcastofmusic/jikken/fork>`_
 2. Create your feature branch (`git checkout -b feature/fooBar`)
 3. Commit your changes (`git commit -am 'Add some fooBar'`)
 4. Push to the branch (`git push origin feature/fooBar`)
@@ -84,5 +84,4 @@ Acknowledgments
 .. _Deep Learning with Python: https://www.manning.com/books/deep-learning-with-python
 .. _LICENSE: https://github.com/outcastofmusic/jikken/blob/master/LICENSE
 .. _tags on this repository: https://github.com/outcastofmusic/jikken/tags
-.. _here: https://github.com/outcastofmusic/jikken/fork
 
