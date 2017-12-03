@@ -16,6 +16,11 @@ accepts a positional argument with either a directory with json/yaml config file
 or a path to single json/yaml file. That's it. Optionally if the code of the
 experiment is in a git repo, the git info will be added as well.
 
+Documentation
+#############
+
+The documentation of jikken can be found  `here <http://jikken.readthedocs.io/en/latest/usage.html#usage-example>`_
+
 Features
 ########
 
