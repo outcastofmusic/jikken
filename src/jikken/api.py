@@ -202,6 +202,7 @@ def delete(_id: int) -> None:
         _id (int): the document id
 
     """
+    # TODO add functionality to delete ms experiments as well
     with setup_database() as db:
         db.delete(_id)
 
