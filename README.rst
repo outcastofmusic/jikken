@@ -19,7 +19,8 @@ experiment is in a git repo, the git info will be added as well.
 Documentation
 #############
 
-The documentation of jikken can be found  `here <http://jikken.readthedocs.io/en/latest/usage.html#usage-example>`_
+The documentation of jikken can be found  `here <http://jikken.readthedocs.io/en/latest/>`_
+A usage example can be found here `here <http://jikken.readthedocs.io/en/latest/usage.html#usage-example>`_
 
 Features
 ########
