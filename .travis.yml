@@ -1,14 +1,20 @@
+sudo: required
 language: python
+
 python:
-        - "3.5"
-        - "3.6"
-install:
-        - pip install -r requirements.txt
-        - python setup.py install
-script:
-        - pytest
+  - "3.5"
+  - "3.6"
 
 
 services:
-        - mongodb
-        - elasticsearch
+  - docker
+
+before_install:
+  - docker-compose up
+
+install:
+  - pip install -r requirements.txt
+  - python setup.py install
+
+script:
+  - pytest
