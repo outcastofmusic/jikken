@@ -8,9 +8,8 @@ setup(name='jikken',
       url='https://github.com/outcastofmusic/jikken',
       packages=find_packages(where='src'),
       package_dir={'': 'src'},
-      install_requires=['Click', 'tinydb', 'pymongo', 'gitpython', 'pyyaml', 'blessings','Pygments'],
+      install_requires=['Click', 'tinydb', 'pymongo', 'gitpython', 'pyyaml', 'blessings','Pygments', "elasticsearch-py"],
       tests_require=['pytest', 'pytest-mock'],
-      extras_require={'elasticsearch': 'elasticsearch-dsl'},
       entry_points={
           'console_scripts': [
               'jikken = jikken.cli:jikken_cli',
