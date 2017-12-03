@@ -53,6 +53,11 @@ Contributing
 Release History
 ----------------
 
+* 0.2.0
+    * Added mongodb and ES support
+    * Added support for multistage experiments
+    * started writing documentation on read the docs
+
 * 0.1.0
     * Work in progress
 
