@@ -1,6 +1,18 @@
 import os
 
 
+def prepare_arg(argument):
+    """Prepend dashes to conform with cli standards on arguments if necessary"""
+    keyword, arg = argument.split("=")
+    if len(keyword) == 1:
+        keyword = "-" + keyword
+    elif len(keyword) == 2 and keyword[0] == "-":
+        pass
+    elif keyword[:2] != "--":
+        keyword = "--" + keyword
+    return [keyword, arg]
+
+
 class ExperimentSetup:
     """Configuration Class that holds the inputs for an experiment run"""
 
@@ -22,7 +34,9 @@ class ExperimentSetup:
         self._conf_path = configuration_path
         self._script_path = script_path
         self._name = name
-        self._args = [] if args is None else [argument.split("=") for argument in args]
+        self._args = []
+
+        self._args = [] if args is None else [prepare_arg(argument) for argument in args]
         self._tags = [] if tags is None else tags[:]
         ref_conf_path = reference_configuration_path
         assert ref_conf_path is None or os.path.exists(ref_conf_path), "ref conf path: {} does not exist".format(
