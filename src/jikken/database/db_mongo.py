@@ -46,6 +46,7 @@ def create_mongodb_mse_query(query: MultiStageExperimentQuery):
     complex_query = query_list[0] if len(query_list) == 1 else {"$and": query_list}
     return complex_query
 
+
 class MongoDB(DB):
     """Wrapper class for MongoDB.
     """
@@ -90,6 +91,15 @@ class MongoDB(DB):
         except InvalidId:
             raise KeyError("experiment id {} not found".format(experiment_id))
 
+    def delete_mse(self, experiment_id: int):
+        doc = self.get(experiment_id, "multistage")
+        try:
+            self._db.multistage.delete_one({"_id": ObjectId(experiment_id)})
+        except InvalidId:
+            raise KeyError("experiment id {} not found".format(experiment_id))
+        for step, exp_id in doc['experiments']:
+            self.delete(exp_id)
+
     def delete_all(self) -> None:
         """Remove all experiments from db"""
         for collection in self._db.collection_names(include_system_collections=False):
@@ -114,18 +124,20 @@ class MongoDB(DB):
             return [self.get(_id) for _id in query.ids]
         else:
             if len(query.names) > 0:
-                self._db.experiment.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
+                self._db.experiment.create_index([("name", pymongo.TEXT)], name="search_index",
+                                                 default_language='english')
             complex_query = create_mongodb_exp_query(query=query)
             return [inv_map_experiment(i) for i in self._db.experiment.find(complex_query)]
 
-    def list_ms_experiments(self, query: MultiStageExperimentQuery)-> list:
+    def list_ms_experiments(self, query: MultiStageExperimentQuery) -> list:
         if query.is_empty():
             return [i for i in self._db["multistage"].find()]
         elif len(query.ids) > 0:
             return [self.get(_id, collection="multistage") for _id in query.ids]
         else:
             if len(query.names) > 0:
-                self._db.multistage.create_index([("name", pymongo.TEXT)], name="search_index", default_language='english')
+                self._db.multistage.create_index([("name", pymongo.TEXT)], name="search_index",
+                                                 default_language='english')
             complex_query = create_mongodb_mse_query(query=query)
             return [i for i in self._db.multistage.find(complex_query)]
 
@@ -137,4 +149,3 @@ class MongoDB(DB):
             self._db.experiment.update({"_id": ObjectId(experiment_id)}, set_mongo(value, key=key))
         elif mode == 'add':
             self._db.experiment.update({"_id": ObjectId(experiment_id)}, add_mongo(value, key=key))
-

@@ -131,6 +131,16 @@ class TinyDB(DB):  # noqa : E801
         except ValueError:
             raise KeyError("key {} not found in TinyDB".format(experiment_id))
 
+    def delete_mse(self, experiment_id: str) -> None:
+        """Remove a experiment from db with given experiment_id."""
+        doc = self.get(experiment_id, "multistage")
+        try:
+            self._db["multistage"].remove(eids=[int(experiment_id)])
+        except ValueError:
+            raise KeyError("key {} not found in TinyDB".format(experiment_id))
+        for step, exp_id in doc['experiments']:
+            self.delete(exp_id)
+
     def delete_all(self) -> None:
         """Remove all experiments from db."""
         for collection in self.collections:

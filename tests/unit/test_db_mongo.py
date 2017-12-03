@@ -6,7 +6,7 @@ keys_to_add = (
     ("key1", "hi", {"$push": {"key1": "hi"}}),
     (["key1", "key2"], "hi", {"$push": {"key1.key2": "hi"}}),
     ("key1", 1, {"$inc": {"key1": 1}}),
-    ("key1", ["hello", "bye"], {"$addToSet": {"key1": ["hello", "bye"]}}),
+    ("key1", ["hello"], {"$addToSet": {"key1": "hello"}}),
     ("key1", {"hello", "bye"}, {"$addToSet": {"key1": {"hello", "bye"}}})
 )
 

@@ -163,6 +163,15 @@ def test_delete_experiments(db_three_experiments, tmpdir):
     assert db.count() == 0
 
 
+def test_delete_mse_experiment(jikken_db, one_multistage):
+    doc_id = jikken_db.add(one_multistage)
+    count = jikken_db.count()
+    assert count == 10
+    jikken_db.delete(doc_id, doc_type="multistage")
+    count = jikken_db.count()
+    assert count == 0
+
+
 def test_add_experiment_to_mse_already_in_db(jikken_db, one_experiment, one_multistage):
     doc_id = jikken_db.add(one_multistage)
     count = jikken_db.count()
@@ -238,6 +247,7 @@ def test_list_experiments(db_three_experiments, tmpdir):
     query = ExperimentQuery(names=["exp_1", "exp_1", "exp_3"], tags=["tag_2"])
     experiments = db.list_experiments(query=query)
     assert len(experiments) == 1
+
 
 @pytest.mark.test_listing
 def test_list_ms_experiments_one_experiment_is_returned_properly(db_one_multistage):
@@ -327,6 +337,35 @@ def test_update_std_raises(db_one_experiment):
     # Then the db raises a Value error
     with pytest.raises(ValueError):
         db.update_std(_id, new_string, 'error')
+
+
+monitored_params = [
+    (["hello", "bye"]),
+    ([1.1, 2.2]),
+    ([[1, 2], [3, 4]])
+
+]
+
+
+@pytest.mark.parametrize("monitored_inputs", monitored_params, ids=["string", "int", "list"])
+def test_updated_monitored(monitored_inputs, db_one_experiment):
+    # Given a db with one experiment
+    db, _id = db_one_experiment
+
+    key = "test_var"
+    value = monitored_inputs[0]
+    # When I update a new value
+    db.update_monitored(_id, key=key, value=value)
+    # Then it gets created as a list
+    exp = db.get(_id, "experiment")
+    # assert exp['monitored'][key] == [monitored_inputs[0]]
+    # and when I update the same key
+    value = monitored_inputs[1]
+    # When I update a new value
+    db.update_monitored(_id, key=key, value=value)
+    # Then the new value gets appended
+    exp = db.get(_id, "experiment")
+    assert exp['monitored'][key] == monitored_inputs
 
 
 status_options = [

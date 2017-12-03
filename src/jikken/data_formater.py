@@ -1,5 +1,5 @@
 import pprint
-from  blessings import Terminal
+from blessings import Terminal
 
 from pygments import highlight
 from pygments.lexers import Python3Lexer
@@ -61,7 +61,7 @@ class PrintExperiment:
                   sep="\n")
             pprint_color(data_dict)
 
-    def print_experiment(self, experiment_dict, stdout=False, stderr=False, variables=True, git=True, monitored=True):
+    def print_experiment(self, experiment_dict):
         if experiment_dict['type'] == 'experiment':
             self.print_db_info(experiment_dict)
             if self.print_git:

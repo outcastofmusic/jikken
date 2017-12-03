@@ -43,7 +43,7 @@ def run(*, setup: ExperimentSetup) -> None:
             run_experiment(db=db, exp_id=exp_id, cmd=cmd)
 
 
-def resume_stage(*, setup:MultiStageExperimentSetup)->None:
+def resume_stage(*, setup: MultiStageExperimentSetup) -> None:
     with prepare_variables(config_directory=setup.configuration_path,
                            reference_directory=setup.reference_configuration_path) as vr:
         variables, configuration_path = vr
@@ -195,16 +195,15 @@ def list_tags() -> set:
     return set({tag for exp in results for tag in exp['tags']})
 
 
-def delete(_id: int) -> None:
+def delete(_id: int, doc_type) -> None:
     """Delete the document with this id from the database
 
     Args:
         _id (int): the document id
 
     """
-    # TODO add functionality to delete ms experiments as well
     with setup_database() as db:
-        db.delete(_id)
+        db.delete(_id, doc_type=doc_type)
 
 
 def count() -> int:
@@ -249,8 +248,6 @@ def get_best(*, query: ExperimentQuery, metric: str, optimum: str = "min"):
             best_result = current_value
             best_experiment = result
     return best_experiment
-
-
 
 
 def export_config():

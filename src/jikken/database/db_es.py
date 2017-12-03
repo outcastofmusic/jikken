@@ -3,7 +3,7 @@ from typing import Any
 from elasticsearch import Elasticsearch, ConnectionError, NotFoundError
 
 from .database import ExperimentQuery, MultiStageExperimentQuery
-from .helpers import inv_map_es_experiment, map_es_experiment
+from .helpers import inv_map_es_experiment, map_es_experiment, nested_dict
 from .db_abc import DB
 
 
@@ -102,6 +102,16 @@ class ElasticSearchDB(DB):
         except NotFoundError:
             raise KeyError("experiment id {} not found".format(experiment_id))
 
+    def delete_mse(self, experiment_id: int):
+        doc = self.get(experiment_id, "multistage")
+        try:
+            result = self._db.delete(index=self.get_index("multistage"), doc_type="multistage", id=experiment_id,
+                                     refresh='wait_for')
+        except NotFoundError:
+            raise KeyError("experiment id {} not found".format(experiment_id))
+        for step, exp_id in doc["experiments"]:
+            self.delete(exp_id)
+
     def delete_all(self) -> None:
         """Remove all experiments from db"""
         for index in self._db.indices.get(self.index + '*').keys():
@@ -141,8 +151,12 @@ class ElasticSearchDB(DB):
 
     def update_key(self, experiment_id: int, value: Any, key: str, mode='set') -> None:
         if mode == "set":
-            body = {"doc": {key: value}}
+            body = {"doc": nested_dict(key, value)}
         else:
+            if isinstance(value, list):
+                value = value[0]
+            if isinstance(key, list):
+                key = ".".join(key)
             body = {
                 "script": {
                     "source": "ctx._source.{field}.add(params.value)".format(field=key),

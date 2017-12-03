@@ -31,6 +31,7 @@ class DB(metaclass=ABCMeta):
     @abstractmethod
     def list_ms_experiments(self, query: MultiStageExperimentQuery) -> dict:
         pass
+
     @abstractmethod
     def count(self) -> int:
         pass
@@ -45,6 +46,10 @@ class DB(metaclass=ABCMeta):
 
     @abstractmethod
     def delete(self, experiment_id: int) -> None:
+        pass
+
+    @abstractmethod
+    def delete_mse(self, experiment_id: int) -> None:
         pass
 
     @abstractmethod

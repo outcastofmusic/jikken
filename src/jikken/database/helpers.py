@@ -49,8 +49,14 @@ def _(number, *, key):
     return {"$inc": {key: number}}
 
 
-@add_mongo.register(set)
 @add_mongo.register(list)
+def _(value, *, key):
+    if isinstance(key, list):
+        key = ".".join(key)
+    return {"$addToSet": {key: value[0]}}
+
+
+@add_mongo.register(set)
 def _(value, *, key):
     if isinstance(key, list):
         key = ".".join(key)
@@ -105,3 +111,19 @@ def inv_map_es_experiment(experiment: dict, doc_type="experiment"):
         experiment['stdout'] = "".join([line for line in experiment['stdout']])
         experiment['stderr'] = "".join([line for line in experiment['stderr']])
     return experiment
+
+
+def nested_dict(key, value):
+    """Create a nested dict if the key is a list of keywords"""
+    if isinstance(key, list):
+        d = {}
+        ref = d
+        for key_value in key:
+            if key_value == key[-1]:
+                d[key_value] = value
+            else:
+                d[key_value] = {}
+                d = d[key_value]
+    else:
+        ref = {key: value}
+    return ref

@@ -8,6 +8,7 @@ from jikken.multistage import MultiStageExperiment
 
 from .config import get_config, JikkenConfig
 
+
 class Singleton(type):
     def __init__(self, *args, **kwargs):
         self._instance = None
@@ -111,15 +112,20 @@ class DataBase(metaclass=Singleton):
             raise ValueError("status: {} not correct".format(status))
 
     def update_monitored(self, experiment_id, key, value):
-        exp = self._database.get(experiment_id, collection="experiments")
+        exp = self._database.get(experiment_id, collection="experiment")
         if key not in exp['monitored']:
             self._database.update_key(experiment_id, value=[value], key=['monitored', key], mode='set')
         else:
             self._database.update_key(experiment_id, value=[value], key=['monitored', key], mode='add')
 
-    def delete(self, experiment_id):  # type (int) -> ()
+    def delete(self, experiment_id, doc_type="experiment"):  # type (int) -> ()
         """Remove a experiment from db with given experiment_id."""
-        self._database.delete(experiment_id)
+        if doc_type == "experiment":
+            self._database.delete(experiment_id)
+        elif doc_type == "multistage":
+            self._database.delete_mse(experiment_id)
+        else:
+            raise ValueError("doc_type {} not supported".format(doc_type))
 
     def delete_all(self):
         """Remove all experiments from db."""

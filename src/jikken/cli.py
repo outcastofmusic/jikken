@@ -178,7 +178,8 @@ def best(ids, query, tags, names, schema, param_schema, status, stdout, stderr, 
     )
     best_result = api.get_best(query=query, optimum=optimum, metric=metric)
     if best_result is not None:
-        print_experiment(best_result, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
+        pe = PrintExperiment(stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
+        pe.print_experiment(best_result)
     else:
         print("No experiment found")
 
@@ -206,8 +207,9 @@ def mse(ids, query, names, hashes, steps, stdout, stderr, var, git, monitored):
     )
     results = api.list_multi_stage_experiments(query=query)
 
+    pe = PrintExperiment(stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
     for res in results:
-        print_experiment(res, stdout=stdout, stderr=stderr, variables=var, git=git, monitored=monitored)
+        pe.print_experiment(res)
 
 
 @list.command(help="list all tags in db")
@@ -234,11 +236,38 @@ def abort_if_false(ctx, param, value):
         ctx.abort()
 
 
-@jikken_cli.command(help="Clear database of all experiments")
+@jikken_cli.group(context_settings={'help_option_names': ['-h', '--help']},
+                  help="Delete experiments")
+def delete():
+    """Run the list command"""
+    pass
+
+
+@delete.command(help="Clear database of experiments with ids")
+@click.option('--yes', is_flag=True, callback=abort_if_false,
+              expose_value=False,
+              prompt='Are you sure you want to delete the experiments?')
+@click.option('--ids', '-i', multiple=True, help="the ids to print", required=True)
+def exp(ids):
+    for id in ids:
+        api.delete(id, doc_type="experiment")
+
+
+@delete.command(help="Clear database of mse experiments with ids")
+@click.option('--yes', is_flag=True, callback=abort_if_false,
+              expose_value=False,
+              prompt='Are you sure you want to delete the experiments?')
+@click.option('--ids', '-i', multiple=True, help="the ids to print", required=True)
+def mse(ids):
+    for id in ids:
+        api.delete(id, doc_type="multistage")
+
+
+@delete.command(help="Clear database of all experiments")
 @click.option('--yes', is_flag=True, callback=abort_if_false,
               expose_value=False,
               prompt='Are you sure you want to drop the db?')
-def delete_all():
+def all():
     api.delete_all()
 
 
