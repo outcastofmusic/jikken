@@ -16,11 +16,6 @@ accepts a positional argument with either a directory with json/yaml config file
 or a path to single json/yaml file. That's it. Optionally if the code of the
 experiment is in a git repo, the git info will be added as well.
 
-Documentation
-#############
-
-The documentation of jikken can be found  `here <http://jikken.readthedocs.io/en/latest/>`_
-A usage example can be found here `here <http://jikken.readthedocs.io/en/latest/usage.html#usage-example>`_
 
 Features
 ########
@@ -36,8 +31,14 @@ Features
 Getting Started
 ###############
 
-To install the package use `pip3 install jikken`
+To install the package use:
 
+.. code-block:: bash
+
+    pip3 install jikken
+
+The documentation of jikken can be found  `here <http://jikken.readthedocs.io/en/latest/>`_
+A usage example can be found here `here <http://jikken.readthedocs.io/en/latest/usage.html#usage-example>`_
 
 Contributing
 ------------
