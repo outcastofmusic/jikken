@@ -8,7 +8,7 @@ setup(name='jikken',
       url='https://github.com/outcastofmusic/jikken',
       packages=find_packages(where='src'),
       package_dir={'': 'src'},
-      install_requires=['Click', 'tinydb', 'pymongo', 'gitpython', 'pyyaml', 'blessings','Pygments', "elasticsearch-py"],
+      install_requires=['Click', 'tinydb', 'pymongo', 'gitpython', 'pyyaml', 'blessings','Pygments', "elasticsearch"],
       tests_require=['pytest', 'pytest-mock'],
       entry_points={
           'console_scripts': [
