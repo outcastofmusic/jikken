@@ -34,9 +34,10 @@ Installation
 Jikken can be installed from pip. This installation is compatible with Linux/Mac OSX and Python 3.5 or greater is required. To install the package use:
 
 
-.. cod-block::bash
+.. code-block::bash
 
     pip install jikken
+
 
 or if the default python on your system is 2.7 use instead
 
