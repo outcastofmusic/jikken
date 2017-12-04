@@ -28,17 +28,47 @@ Features
 - support for json/yaml configs
 - understands git directories
 
-Getting Started
+Installation
 ###############
 
-To install the package use:
+Jikken can be installed from pip. This installation is compatible with Linux/Mac OSX and Python 3.5 or greater is required. To install the package use:
+
+
+.. cod-block::bash
+
+    pip install jikken
+
+or if the default python on your system is 2.7 use instead
 
 .. code-block:: bash
 
     pip3 install jikken
 
-The documentation of jikken can be found  `here <http://jikken.readthedocs.io/en/latest/>`_
-A usage example can be found here `here <http://jikken.readthedocs.io/en/latest/usage.html#usage-example>`_
+
+Usage Example
+#############
+
+The main goal of *Jikken* is to require as little changes to your experiment code as possible. It's main assumption is that you have a script that runs an experiment and that
+the scripts accepts at least a positional argument with the location of the experiment's config.
+e.g. Let's assume you have an experiment runs by running my_experiment.py and it reads its configuration from a yaml file myconfig.yaml you would run it with:
+
+.. code-block:: bash
+
+    python my_experiment.py myconfig.yaml
+
+Then in order to let jikken record the experiment you would run instead:
+
+.. code-block:: bash
+
+    jikken run my_experiment.py -c myconfig.yaml -n "my first experiment"
+
+Jikken will then capture the config, Start the experiment, capture stdout and stderr, and save the information in the database as set in the config file.
+
+
+Documentation
+#############
+
+The full documentation of jikken can be found  `here <http://jikken.readthedocs.io/en/latest/>`_
 
 Contributing
 ------------
