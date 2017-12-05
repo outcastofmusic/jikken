@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='jikken',
-      version='0.2.0',
+      version='0.2.1',
       license='BSD',
       description='Minimal Python3 CLI Experiment Manager',
       author='Agis Oikonomou',

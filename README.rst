@@ -84,6 +84,11 @@ Contributing
 Release History
 ----------------
 
+* 0.2.1
+    * Fixed bug with updated monitored  (and added test)
+    * Added cli delete command for both experiments and multistage experiments
+    * refactored documentation a bit
+
 * 0.2.0
     * Added mongodb and ES support
     * Added support for multistage experiments
