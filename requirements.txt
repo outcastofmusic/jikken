@@ -1,5 +1,5 @@
 GitPython==2.1.7
-PyYAML==3.12
+PyYAML==5.1
 click==6.7
 gitdb2==2.0.3
 pymongo==3.5.1
